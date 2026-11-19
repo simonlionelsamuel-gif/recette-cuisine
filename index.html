@@ -207,6 +207,7 @@ html.apk .tabbar{padding-bottom:14px}
 .ingrow input,.ingrow select{border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 8px;font-size:15px;font-weight:600;min-width:0;width:100%}
 .ingrow .rm{border:0;background:none;color:var(--muted);font-size:16px}
 .filebtn{display:block;text-align:center}
+.linkbtn{display:block;text-align:center;text-decoration:none}
 .choice{display:flex;gap:14px;align-items:center;border:1.5px solid var(--line);background:var(--bg);border-radius:16px;padding:14px;text-align:left;width:100%;cursor:pointer}
 .choice .em{font-size:30px}
 .choice b{display:block;font-size:16px}
@@ -334,7 +335,7 @@ const UNITS = {
   barquette:['barquette',1],barquettes:['barquette',1],
   cs:['c. à s.',1],cc:['c. à c.',1],pincee:['pincée',1],pincees:['pincée',1],gousse:['gousse',1],gousses:['gousse',1]
 };
-const EDIT_UNITS = ['', 'pce','g','kg','ml','dl','l','c. à s.','c. à c.','pincée','gousse','paquet','boîte','bouteille','sachet','pot','botte','tranche','barquette'];
+const EDIT_UNITS = ['', 'pce','g','kg','ml','dl','l','c. à s.','c. à c.','pincée','gousse','brin','paquet','boîte','bouteille','sachet','pot','botte','tranche','barquette'];
 
 /* ---------- Outils ---------- */
 const $ = s => document.querySelector(s);
@@ -596,7 +597,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.7';
+const APP_VERSION = '1.0.8';
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
 const API_BASE = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
@@ -815,6 +816,7 @@ async function photoURL(path){
   const url = URL.createObjectURL(blob); photoUrls.set(path, url); return url;
 }
 function hydratePhotos(root){
+  root.querySelectorAll('[data-img]').forEach(el => { const img = new Image(); img.onload = () => { el.style.backgroundImage = `url("${el.dataset.img}")`; el.classList.add('has'); }; img.src = el.dataset.img; });
   root.querySelectorAll('[data-photo]').forEach(async el => { const u = await photoURL(el.dataset.photo); if (u) { el.style.backgroundImage = `url("${u}")`; el.classList.add('has'); } });
 }
 function shrink(file, max=1280, quality=0.82){
@@ -932,16 +934,16 @@ function renderRecipes(){
   const q = norm(state.recQuery);
   let list = recipes().map(([id,r]) => ({id, r, m: matchRecipe(r, roots)}));
   if (state.favOnly) list = list.filter(x => x.r.fav);
-  if (q) list = list.filter(x => norm(x.r.title).includes(q) || (x.r.ingredients||[]).some(i => norm(i.name).includes(q)));
+  if (q) list = list.filter(x => norm(x.r.title).includes(q) || (x.r.tags||[]).some(t => norm(t).includes(q)) || (x.r.ingredients||[]).some(i => norm(i.name).includes(q)));
   if (roots.length) list = list.filter(x => x.m.have > 0).sort((a,b) => (b.m.have - a.m.have) || (a.m.missing.length - b.m.missing.length));
   else list.sort((a,b) => (b.r.fav?1:0) - (a.r.fav?1:0) || a.r.title.localeCompare(b.r.title, 'fr'));
   let html = '';
   if (!recipes().length) html = `<div class="empty"><b aria-hidden="true">📖</b>Aucune recette pour l’instant.</div>`;
   else if (!list.length) html = `<div class="empty"><b aria-hidden="true">🤔</b>Aucune recette ne correspond. Retire un ingrédient ou un filtre.</div>`;
   html += `<div class="cards">` + list.map(({id, r, m}) => `<button class="rcard" type="button" data-rec="${id}">
-      <span class="rphoto" ${r.photo ? `data-photo="${esc(r.photo)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></span>
+      <span class="rphoto" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></span>
       <span class="rbody"><span class="rtitle">${esc(r.title)}</span>
-      <span class="rmeta">${r.time ? `<span>⏱ ${esc(r.time)} min</span>` : ''}<span>👥 ${r.persons||4}</span>${r.fav ? '<span class="fav">❤</span>' : ''}</span>
+      <span class="rmeta">${r.time ? `<span>⏱ ${esc(r.time)} min</span>` : ''}<span>👥 ${r.persons||4}</span>${r.fav ? '<span class="fav">❤</span>' : ''}${r.source && r.source.url ? `<span>${esc(r.source.name)}</span>` : ''}</span>
       ${roots.length ? `<span class="rmatch ${m.missing.length===0?'full':''}">${m.missing.length===0 ? 'Tu as tout ✓' : `Tu as ${m.have}/${m.total} · manque ${esc(m.missing.slice(0,3).map(i=>i.name.toLowerCase()).join(', '))}${m.missing.length>3?'…':''}`}</span>` : ''}
       </span></button>`).join('') + `</div>`;
   $('#recList').innerHTML = html;
@@ -1010,7 +1012,7 @@ function openRecipe(id){
   const draw = () => {
     const persons = Math.round(base * factor * 10) / 10;
     openSheet(`<div class="rhead">
-        <div class="rhero" ${r.photo ? `data-photo="${esc(r.photo)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></div>
+        <div class="rhero" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></div>
         <button class="close" type="button" data-close aria-label="Fermer">✕</button>
       </div>
       <h3 class="rtitle-big">${esc(r.title)}</h3>
@@ -1025,7 +1027,7 @@ function openRecipe(id){
       <ul class="ings">${(r.ingredients||[]).map(i => { const q = scaleQty(i.qty, i.unit, factor); return `<li><span class="em" aria-hidden="true">${iconFor({name:i.name, cat:guessCat(i.name)})}</span><b>${esc(fmtQty(q, i.unit).replace(/^× /,''))}</b><span>${esc(i.name)}</span></li>`; }).join('')}</ul>
       <button class="btn" type="button" id="rToList">🛒 Ajouter à la liste de courses</button>
       <h4>Préparation</h4>
-      <ol class="steps">${(r.steps||[]).map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+      ${(r.steps||[]).length ? `<ol class="steps">${r.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : r.source && r.source.url ? `<a class="btn ghost linkbtn" href="${esc(r.source.url)}" target="_blank" rel="noopener">Voir la préparation sur ${esc(r.source.name)} ↗</a><p class="hint">Les étapes restent sur le site d’origine. Tu peux les ajouter à la fiche avec « Modifier ».</p>` : '<p class="hint">Pas encore d’étapes. Ajoute-les avec « Modifier ».</p>'}
       ${r.note ? `<p class="hint">📝 ${esc(r.note)}</p>` : ''}
       <div class="actions"><button class="btn ghost" type="button" id="rFav">${r.fav ? '❤ Favori' : '♡ Ajouter aux favoris'}</button><button class="btn ghost" type="button" id="rEdit">✏️ Modifier</button></div>`, true);
     hydratePhotos($('#sheet'));
