@@ -34,17 +34,19 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
+html{overflow-x:hidden}
 body{overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 
-header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,#FF8A3D 0%,#FF6B35 55%,#F2542D 100%);color:#fff;padding:max(14px, calc(env(safe-area-inset-top) + 10px)) 16px 14px;display:grid;gap:12px;border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(242,84,45,.25)}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,#FF8A3D 0%,#FF6B35 55%,#F2542D 100%);color:#fff;padding:max(14px, calc(env(safe-area-inset-top) + 10px)) 16px 14px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr);border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(242,84,45,.25)}
 html.apk header{padding-top:40px}
 .hwrap{max-width:560px;margin:0 auto;width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .hwrap>*{min-width:0}
+.add form>*{min-width:0}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-h1{font-family:var(--display);font-weight:900;font-size:26px;white-space:nowrap;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h1{font-family:var(--display);font-weight:900;font-size:28px;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .topr{display:flex;align-items:center;gap:8px;min-width:0}
 .status{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:5px 10px}
 .dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.6;flex:none}
@@ -60,7 +62,6 @@ h1{font-family:var(--display);font-weight:900;font-size:26px;white-space:nowrap;
 
 .add{position:relative}
 .add form{display:flex;gap:8px}
-.add form>*{min-width:0}
 .add input{flex:1;min-width:0;border:0;background:#fff;color:var(--ink);border-radius:14px;padding:13px 14px;font-size:16px;font-weight:600;box-shadow:0 2px 0 rgba(0,0,0,.06)}
 .add input::placeholder{color:#9AA79F;font-weight:500}
 .add input:focus{outline:3px solid var(--sun)}
@@ -108,7 +109,6 @@ li.done .icon{filter:grayscale(.7);opacity:.6}
 .empty{background:var(--surface);border-radius:18px;padding:26px 20px;text-align:center;color:var(--muted);margin-top:20px;font-weight:600}
 .empty b{display:block;font-size:34px;margin-bottom:6px}
 .tools{display:grid;gap:8px;margin-top:26px}
-.ver{text-align:center;color:var(--muted);font-size:13px;font-weight:700;margin:18px 0 0}
 
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:14px;padding:11px 15px;display:flex;gap:14px;align-items:center;font-size:14.5px;font-weight:700;z-index:20;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .toast button{border:0;background:none;color:var(--sun);font-weight:900;padding:0}
@@ -144,9 +144,80 @@ html.apk .setup{padding-top:56px}
 .card{background:var(--surface);border-radius:18px;padding:16px;display:grid;gap:12px;box-shadow:0 1px 3px rgba(30,43,36,.06)}
 #suMsg{color:var(--warn);font-weight:800;min-height:1.2em}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* Onglets */
+body[data-tab="list"] .only-rec, body[data-tab="rec"] .only-list{display:none!important}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);display:flex;justify-content:center;gap:8px;padding:8px 16px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(30,43,36,.08)}
+html.apk .tabbar{padding-bottom:14px}
+.tabbar button{flex:1;max-width:260px;border:0;background:none;border-radius:14px;padding:8px 6px;font-weight:900;font-size:14px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+.tabbar button .em{font-size:22px}
+.tabbar button[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+.tabbar .n{position:absolute;top:4px;right:calc(50% - 26px);background:var(--accent);color:#fff;border-radius:999px;font-size:11px;padding:0 6px;min-width:18px}
+.tabbar .n:empty{display:none}
+.wrap{padding-bottom:calc(130px + env(safe-area-inset-bottom))}
+.toast{bottom:calc(86px + env(safe-area-inset-bottom))}
+/* Propositions verticales */
+.sugg{top:52px}
+/* Recettes */
+.hrow{display:flex;gap:8px;align-items:center}
+.hrow form{flex:1;display:flex;gap:8px;min-width:0}
+.hrow form>*{min-width:0}
+.hchips{display:flex;flex-wrap:wrap;gap:6px}
+.hchips:empty{display:none}
+.hchip{border:0;background:#fff;color:var(--ink);border-radius:999px;padding:5px 10px 5px 8px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:5px}
+.hchip b{color:var(--muted);margin-left:2px}
+.toggle{border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:999px;padding:7px 12px;font-weight:800;font-size:14px;white-space:nowrap}
+.toggle[aria-pressed="true"]{background:#fff;color:var(--accent)}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.qinfo{color:#fff;font-weight:700;font-size:13px}
+.cards{display:grid;gap:12px;margin-top:16px}
+.rcard{display:flex;gap:12px;align-items:stretch;text-align:left;border:0;background:var(--surface);border-radius:18px;padding:10px;box-shadow:0 1px 3px rgba(30,43,36,.06),0 6px 16px rgba(30,43,36,.05)}
+.rphoto{flex:none;width:86px;height:86px;border-radius:14px;background:var(--accent-soft) center/cover no-repeat;display:grid;place-items:center}
+.rphoto.has .remoji,.rhero.has .remoji{display:none}
+.remoji{font-size:40px}
+.rbody{display:grid;gap:4px;align-content:center;min-width:0}
+.rtitle{font-weight:900;font-size:16.5px;overflow-wrap:anywhere}
+.rmeta{display:flex;flex-wrap:wrap;gap:4px 10px;color:var(--muted);font-weight:700;font-size:13px}
+.rmeta .fav{color:var(--warn)}
+.rmatch{font-size:13px;font-weight:800;color:#8A3A12;background:var(--accent-soft);border-radius:8px;padding:2px 8px;justify-self:start}
+.rmatch.full{color:#0E6B3F;background:#DDF5E8}
+.sheet.full{max-height:96%;border-radius:20px 20px 0 0}
+.rhead{position:relative}
+.rhero{height:190px;border-radius:18px;background:var(--accent-soft) center/cover no-repeat;display:grid;place-items:center}
+.rhero .remoji{font-size:72px}
+.rhero.small{height:120px}
+.rhero.small .remoji{font-size:40px}
+.close{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.92);font-size:16px;font-weight:900}
+.rtitle-big{font-size:24px!important}
+.rmeta.big{font-size:14px}
+.rmeta a{color:var(--accent)}
+.card.soft{background:var(--bg);box-shadow:none}
+.scale{display:grid;gap:12px}
+.stepper{display:flex;align-items:center;gap:12px;justify-content:center}
+.stepper button{width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:22px;font-weight:900}
+.stepper output{font-weight:900;font-size:18px;min-width:110px;text-align:center;font-variant-numeric:tabular-nums}
+.sheet h4{margin:4px 0 0;font-size:16px;font-weight:900}
+.sheet ul.ings li{min-height:44px;gap:10px}
+.sheet ul.ings li b{min-width:72px;font-variant-numeric:tabular-nums;color:#8A3A12}
+.sheet ul.ings li .em{font-size:20px;flex:none}
+.sheet ul.ings li span:last-child{font-weight:700}
+.steps{margin:0;padding-left:22px;display:grid;gap:10px;font-weight:600;line-height:1.5}
+.steps li::marker{color:var(--accent);font-weight:900}
+.ingrow{display:grid;grid-template-columns:62px 92px 1fr 34px;gap:6px;margin-bottom:6px}
+.ingrow input,.ingrow select{border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 8px;font-size:15px;font-weight:600;min-width:0;width:100%}
+.ingrow .rm{border:0;background:none;color:var(--muted);font-size:16px}
+.filebtn{display:block;text-align:center}
+.choice{display:flex;gap:14px;align-items:center;border:1.5px solid var(--line);background:var(--bg);border-radius:16px;padding:14px;text-align:left;width:100%;cursor:pointer}
+.choice .em{font-size:30px}
+.choice b{display:block;font-size:16px}
+.choice small{color:var(--muted);font-weight:600;font-size:13px}
+.progress{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
+.progress i{display:block;height:100%;width:2%;background:var(--accent);transition:width .3s}
+.fab{margin-left:auto}
+.ver{text-align:center;color:var(--muted);font-size:13px;font-weight:700;margin:18px 0 0}
 </style>
 </head>
-<body>
+<body data-tab="list">
 <section class="setup" id="setup" hidden>
   <h1>Nos courses</h1>
   <p>Première ouverture sur ce téléphone : relie l’app à votre liste privée. À faire une seule fois.</p>
@@ -173,36 +244,52 @@ html.apk .setup{padding-top:56px}
   <header>
    <div class="hwrap">
     <div class="top">
-      <h1>Nos courses</h1>
+      <h1><span class="only-list">Nos courses</span><span class="only-rec">Recettes</span></h1>
       <div class="topr">
         <button class="status" id="status" type="button"><i class="dot"></i><span>Connexion…</span></button>
         <button class="iconbtn" id="openSettings" type="button" aria-label="Réglages">⚙</button>
       </div>
     </div>
-    <div class="stores" id="stores" role="toolbar" aria-label="Magasin"></div>
-    <div class="add">
+    <div class="add only-list">
       <form id="addForm" autocomplete="off">
-        <input id="addInput" type="text" placeholder="Ajouter… ex. lait, 2 kg pommes" aria-label="Ajouter un article" enterkeyhint="done">
+        <input id="addInput" type="text" placeholder="Ajouter… ex. lait, 2 kg pommes" aria-label="Ajouter un article" enterkeyhint="done" autocapitalize="sentences">
         <button class="btn" type="submit">Ajouter</button>
       </form>
       <div class="sugg" id="sugg" hidden></div>
     </div>
+    <div class="add only-rec">
+      <form id="haveForm" autocomplete="off">
+        <input id="haveInput" type="text" placeholder="Ce que j’ai… ex. poulet, poivrons" aria-label="Ingrédient que j’ai ou nom de recette" enterkeyhint="search">
+        <button class="btn" type="submit">OK</button>
+      </form>
+      <div class="sugg" id="haveSugg" hidden></div>
+    </div>
+    <div class="hchips only-rec" id="haveChips"></div>
+    <div class="filters only-rec">
+      <button class="toggle" type="button" id="favOnly" aria-pressed="false">❤ Favoris</button>
+      <button class="toggle" type="button" id="clearQuery">Tout afficher</button>
+      <button class="btn fab" type="button" id="addRecipe">+ Recette</button>
+    </div>
    </div>
   </header>
   <div class="wrap">
-    <div class="usual" id="usual"></div>
-    <main id="list"></main>
-    <div class="tools">
-      <button class="btn ghost" id="openOrder" type="button">Ordre des rayons</button>
+    <div class="only-list">
+      <div class="usual" id="usual"></div>
+      <main id="list"></main>
+      <p class="ver" id="ver"></p>
     </div>
-    <p class="ver" id="ver"></p>
+    <div class="only-rec"><main id="recList"></main></div>
   </div>
+  <nav class="tabbar" aria-label="Sections">
+    <button type="button" id="tabList"><span class="em" aria-hidden="true">🛒</span>Courses<span class="n"></span></button>
+    <button type="button" id="tabRec"><span class="em" aria-hidden="true">📖</span>Recettes</button>
+  </nav>
 </div>
 
 <div class="toast" id="toast" hidden role="status"><span id="toastMsg"></span><button id="toastUndo" type="button">Annuler</button></div>
 <div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
-
 <script>
+
 
 /* ---------- Référentiels ---------- */
 const CATS = [
@@ -220,12 +307,6 @@ const CATS = [
   ['aut','Divers','#8C8C8C']
 ];
 const CAT = Object.fromEntries(CATS.map(([id,name,color])=>[id,{id,name,color}]));
-const STORES = [
-  {id:'migros-sallaz', name:'Migros Sallaz'},
-  {id:'coop-sallaz', name:'Coop Sallaz'},
-  {id:'coop-caroline', name:'Coop Caroline'},
-  {id:'marche', name:'Marché Lausanne'}
-];
 const DEFAULT_ORDER = {
   default:['fl','bou','via','lai','fec','epi','dou','boi','sur','men','hyg','aut'],
   marche:['fl','lai','via','bou','epi','fec','dou','boi','sur','men','hyg','aut']
@@ -250,9 +331,10 @@ const UNITS = {
   x:['pce',1],pce:['pce',1],pces:['pce',1],piece:['pce',1],pieces:['pce',1],
   paquet:['paquet',1],paquets:['paquet',1],boite:['boîte',1],boites:['boîte',1],bouteille:['bouteille',1],bouteilles:['bouteille',1],
   sachet:['sachet',1],sachets:['sachet',1],pot:['pot',1],pots:['pot',1],botte:['botte',1],bottes:['botte',1],tranche:['tranche',1],tranches:['tranche',1],
-  barquette:['barquette',1],barquettes:['barquette',1]
+  barquette:['barquette',1],barquettes:['barquette',1],
+  cs:['c. à s.',1],cc:['c. à c.',1],pincee:['pincée',1],pincees:['pincée',1],gousse:['gousse',1],gousses:['gousse',1]
 };
-const EDIT_UNITS = ['', 'pce','g','kg','ml','dl','l','paquet','boîte','bouteille','sachet','pot','botte','tranche','barquette'];
+const EDIT_UNITS = ['', 'pce','g','kg','ml','dl','l','c. à s.','c. à c.','pincée','gousse','paquet','boîte','bouteille','sachet','pot','botte','tranche','barquette'];
 
 /* ---------- Outils ---------- */
 const $ = s => document.querySelector(s);
@@ -266,7 +348,7 @@ const num = n => Number(n).toLocaleString('fr-CH',{maximumFractionDigits:2});
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 function guessCat(name){
-  const learned = state.doc.catalog[slug(keyOf(name))];
+  const learned = (typeof listFile !== 'undefined') && L().catalog[slug(keyOf(name))];
   if (learned && learned.cat) return learned.cat;
   const prod = findProduct(name); if (prod) return prod.cat;
   const n = ' ' + norm(name).split(' ').map(sing).join(' ') + ' ';
@@ -302,7 +384,7 @@ function fmtQty(q, u){
   if (u === 'g') return q >= 1000 ? num(q/1000)+' kg' : num(q)+' g';
   if (u === 'ml') return q >= 1000 ? num(q/1000)+' l' : q >= 100 ? num(q/100)+' dl' : num(q)+' ml';
   if (!u || u === 'pce') return '× '+num(q);
-  return num(q)+' '+u+(q > 1 && !/s$/.test(u) ? 's' : '');
+  return num(q)+' '+u+(q > 1 && !/[s.]$/.test(u) ? 's' : '');
 }
 function toEdit(q, u){ // valeur affichée dans le formulaire
   if (q == null) return ['', u==='pce'?'pce':u];
@@ -326,132 +408,185 @@ function roundScaled(q, u){
 }
 
 
-// Produits connus : mots-clés | icône | rayon | quantité par défaut | unité par défaut (testés dans l'ordre)
+
+// Produits connus : mots-clés | icône | rayon | unité logique (testés dans l'ordre, le plus précis d'abord)
 const PRODUCT_LINES = `
-gel douche|savon|shampoing|shampooing|apres shampoing;🧴;hyg;1;pce
-dentifrice|brosse a dent;🪥;hyg;1;pce
-deodorant|creme solaire|creme main|lait corporel;🧴;hyg;1;pce
-mouchoir;🤧;hyg;1;paquet
-papier toilette|papier wc;🧻;men;1;paquet
-essuie tout|sopalin|papier menage;🧻;men;1;paquet
-lessive|adoucissant;🧺;men;1;pce
-liquide vaisselle|produit vaisselle|pastille lave|tablette lave;🧽;men;1;pce
-eponge;🧽;men;1;paquet
-sac poubelle;🗑️;men;1;paquet
-ampoule;💡;men;1;pce
-pile;🔋;men;1;paquet
-lait de coco;🥥;epi;1;boîte
-tomates pelees|tomate pelee|tomates concassees|coulis|concentre de tomate|puree de tomate|passata;🥫;epi;1;boîte
-pate feuilletee|pate brisee|pate a pizza|pate a gateau|pate sablee|fond de tarte;🥧;epi;1;pce
-pate a tartiner|caotina|ovomaltine|nutella|confiture;🍯;epi;1;pot
-patate douce;🍠;fl;500;g
-pomme de terre|patate;🥔;fl;1;kg
-pomme;🍎;fl;1;kg
-poire;🍐;fl;1;kg
-banane;🍌;fl;1;kg
-mandarine|clementine;🍊;fl;1;kg
-orange;🍊;fl;1;kg
-citron|lime;🍋;fl;3;pce
-raisin;🍇;fl;500;g
-fraise|framboise;🍓;fl;500;g
-myrtille|mure;🫐;fl;250;g
-cerise;🍒;fl;500;g
-peche|nectarine|abricot|prune;🍑;fl;500;g
-ananas;🍍;fl;1;pce
-mangue;🥭;fl;1;pce
-pasteque;🍉;fl;1;pce
-melon;🍈;fl;1;pce
-kiwi;🥝;fl;4;pce
-avocat;🥑;fl;2;pce
-tomate cerise;🍅;fl;250;g
-tomate;🍅;fl;500;g
-poivron;🫑;fl;2;pce
-piment;🌶️;fl;2;pce
-concombre;🥒;fl;1;pce
-courgette;🥒;fl;2;pce
-aubergine;🍆;fl;1;pce
-carotte;🥕;fl;1;kg
-echalote;🧅;fl;250;g
-oignon;🧅;fl;1;kg
-ail;🧄;fl;1;pce
-brocoli|chou fleur|chou-fleur;🥦;fl;1;pce
-salade|laitue|batavia|iceberg|doucette|mache|rucola|roquette|endive;🥬;fl;1;pce
-epinard;🥬;fl;500;g
-poireau|chou|blette|celeri;🥬;fl;1;pce
-haricot;🫘;fl;500;g
-mais;🌽;epi;1;boîte
-champignon;🍄;fl;250;g
-courge|potiron|butternut;🎃;fl;1;pce
-herbes de provence|herbe de provence;🧂;epi;1;pot
-herbe|persil|basilic|coriandre|ciboulette|menthe|thym|romarin|aneth|gingembre;🌿;fl;1;botte
-fenouil|asperge|radis|betterave|artichaut;🥗;fl;500;g
-croissant;🥐;bou;4;pce
-baguette;🥖;bou;1;pce
-pain|tresse|zopf|toast|brioche|petit pain|ballon;🍞;bou;1;pce
-gateau|tarte|cake;🍰;bou;1;pce
-tortilla|wrap;🌯;epi;1;paquet
-poulet|dinde;🍗;via;500;g
-saucisse|cervelas|merguez|chipolata|wienerli|schublig;🌭;via;4;pce
-lard|lardon|bacon;🥓;via;150;g
-jambon|salami|viande sechee|charcuterie;🍖;via;200;g
-boeuf|steak|hache|entrecote|porc|veau|agneau|escalope|emince|viande|cotelette|roti;🥩;via;500;g
-thon|sardine;🐟;epi;2;boîte
-saumon|truite|cabillaud|poisson|perche|colin|dorade;🐟;via;300;g
-crevette|scampi;🦐;via;200;g
-lait;🥛;lai;1;l
-yogourt|yaourt|yogurt|skyr;🥣;lai;4;pce
-creme;🥛;lai;2;dl
-beurre;🧈;lai;250;g
-oeuf;🥚;lai;6;pce
-fromage|gruyere|emmental|tete de moine|raclette|vacherin|tomme|reblochon|appenzeller|parmesan|feta|mozzarella|mascarpone|ricotta|sere|cottage|brie|camembert|cheddar|comte;🧀;lai;200;g
-pate|spaghetti|penne|tagliatelle|fusilli|lasagne|nouille|macaroni|cornette|linguine;🍝;fec;500;g
-riz|risotto;🍚;fec;1;kg
-quinoa|couscous|boulgour|semoule|polenta|farine;🌾;fec;1;kg
-lentille|pois chiche;🫘;fec;500;g
-cereale|muesli|flocon|avoine|granola|cornflakes;🥣;fec;1;paquet
-gnocchi|ravioli|tortellini;🥟;fec;500;g
-huile;🫒;epi;1;bouteille
-olive;🫒;epi;1;pot
-vinaigre;🍶;epi;1;bouteille
-sel|poivre|epice|curry|paprika|cumin|cannelle|muscade;🧂;epi;1;pot
-sucre;🍬;epi;1;kg
-miel;🍯;epi;1;pot
-cafe;☕;epi;1;paquet
-coca|limonade|rivella|ice tea|the froid|soda;🥤;boi;1;bouteille
-the|tisane|infusion;🍵;epi;1;paquet
-moutarde|mayonnaise|ketchup|sauce|pesto|tahini;🥫;epi;1;pce
-bouillon|conserve;🥫;epi;1;paquet
-sesame|graine|noix|amande|noisette|cacahuete|pignon|pistache;🥜;epi;1;sachet
-levure|bicarbonate|vanille|sucre vanille;🧁;epi;1;paquet
-chocolat;🍫;dou;2;pce
-biscuit|cookie|petit beurre|gaufrette|madeleine;🍪;dou;1;paquet
-chips|apero|bretzel|cracker;🥨;dou;1;paquet
-popcorn;🍿;dou;1;paquet
-bonbon|gomme|chewing;🍬;dou;1;paquet
-glace;🍨;sur;1;pce
-pizza;🍕;sur;1;pce
-frites;🍟;sur;1;paquet
-surgele;🧊;sur;1;paquet
-eau;💧;boi;6;bouteille
-jus;🧃;boi;1;l
-sirop;🧃;boi;1;bouteille
-biere;🍺;boi;6;bouteille
-vin|prosecco|champagne;🍷;boi;1;bouteille
-`.trim().split('\n').map(l => { const [k,icon,cat,q,u] = l.split(';'); return {kws:k.split('|').map(w => w.split(' ').map(sing).join(' ')), icon, cat, q:+q, u}; });
+gel douche|shampoing|shampooing|apres shampoing|lait corporel|creme main|creme solaire|deodorant;🧴;hyg;pce
+savon;🧼;hyg;pce
+dentifrice|brosse a dent|fil dentaire;🪥;hyg;pce
+rasoir|lame de rasoir;🪒;hyg;paquet
+mouchoir;🤧;hyg;paquet
+coton tige|coton|demaquillant;☁️;hyg;paquet
+couche|lingette;👶;hyg;paquet
+pansement;🩹;hyg;paquet
+papier toilette|papier wc;🧻;men;paquet
+essuie tout|sopalin|papier menage;🧻;men;paquet
+lessive|adoucissant|detachant;🧺;men;pce
+liquide vaisselle|produit vaisselle|pastille lave|tablette lave|sel lave;🫧;men;pce
+eponge;🧽;men;paquet
+nettoyant|javel|vinaigre menage|anticalcaire;🧹;men;pce
+sac poubelle;🗑️;men;paquet
+ampoule;💡;men;pce
+pile;🔋;men;paquet
+bougie;🕯️;men;pce
+allumette|briquet;🔥;men;pce
+papier alu|aluminium|papier cuisson|film alimentaire|sac congelation;📦;men;pce
+lait de coco|creme de coco;🥥;epi;boîte
+noix de coco;🥥;fl;pce
+tomates pelees|tomate pelee|tomates concassees|coulis|concentre de tomate|puree de tomate|passata|sauce tomate;🥫;epi;boîte
+pois chiche|haricots rouges|haricot rouge|haricots blancs|lentille;🫘;fec;g
+pate feuilletee|pate brisee|pate sablee|fond de tarte;🥧;epi;pce
+pate a pizza;🍕;epi;pce
+pate a tartiner|nutella|caotina|ovomaltine|cacao;🍫;epi;pot
+confiture|gelee;🍓;epi;pot
+miel;🍯;epi;pot
+patate douce;🍠;fl;g
+pomme de terre|patate;🥔;fl;kg
+pomme;🍎;fl;kg
+poire;🍐;fl;kg
+banane;🍌;fl;kg
+mandarine|clementine|orange;🍊;fl;kg
+citron|lime;🍋;fl;pce
+raisin;🍇;fl;g
+fraise|framboise;🍓;fl;g
+myrtille|mure|cassis;🫐;fl;g
+cerise;🍒;fl;g
+peche|nectarine|abricot|prune|pruneau;🍑;fl;g
+ananas;🍍;fl;pce
+mangue;🥭;fl;pce
+pasteque;🍉;fl;pce
+melon;🍈;fl;pce
+kiwi;🥝;fl;pce
+avocat;🥑;fl;pce
+tomate;🍅;fl;g
+poivron;🫑;fl;pce
+piment;🌶️;fl;pce
+concombre|cornichon;🥒;fl;pce
+courgette;🥒;fl;pce
+aubergine;🍆;fl;pce
+carotte;🥕;fl;kg
+oignon|echalote;🧅;fl;pce
+ail;🧄;fl;pce
+gingembre;🫚;fl;g
+brocoli|chou fleur|chou-fleur|romanesco;🥦;fl;pce
+salade|laitue|batavia|iceberg|doucette|mache|rucola|roquette|endive|cresson;🥗;fl;pce
+epinard|blette|cote de bette|chou|chou rouge|chou frise|chou de bruxelles;🥬;fl;g
+poireau|celeri|fenouil|asperge|rhubarbe;🌱;fl;pce
+petit pois|pois mange-tout|pois gourmand|haricot vert|haricot;🫛;fl;g
+mais;🌽;epi;boîte
+champignon|bolet|chanterelle;🍄;fl;g
+courge|potiron|butternut;🎃;fl;pce
+radis|betterave|navet|panais|topinambour|artichaut;🥗;fl;g
+herbes de provence|herbe de provence;🌿;epi;pot
+herbe|persil|basilic|coriandre|ciboulette|menthe|thym|romarin|aneth|sauge|laurier|estragon;🌿;fl;botte
+croissant;🥐;bou;pce
+baguette;🥖;bou;pce
+bagel;🥯;bou;pce
+tresse|zopf;🥨;bou;pce
+pain|toast|brioche|petit pain|ballon|pain de mie;🍞;bou;pce
+gaufre;🧇;bou;paquet
+crepe|pancake;🥞;bou;paquet
+muffin|cupcake;🧁;bou;pce
+donut|beignet|berliner;🍩;bou;pce
+gateau|tarte|cake|biscuit roule;🍰;bou;pce
+tortilla|wrap|tacos|pain pita;🌯;epi;paquet
+poulet|emince de poulet|volaille|cuisse de poulet|aile de poulet|blanc de poulet|nugget;🍗;via;g
+dinde;🦃;via;g
+saucisse|cervelas|merguez|chipolata|wienerli|schublig|saucisson;🌭;via;pce
+lard|lardon|bacon|pancetta;🥓;via;g
+jambon|salami|viande sechee|charcuterie|coppa|chorizo;🍖;via;g
+hache|steak hache|viande hachee|burger|hamburger;🍔;via;g
+boeuf|emince de boeuf|entrecote|rumsteck|filet de boeuf;🐄;via;g
+veau;🐮;via;g
+porc|cotelette|filet mignon|roti de porc;🐖;via;g
+agneau|gigot;🐑;via;g
+steak|escalope|emince|viande|roti|cordon bleu|schnitzel;🥩;via;g
+thon|sardine|maquereau en boite|anchois;🥫;epi;boîte
+saumon|sushi;🍣;via;g
+crevette|scampi|gambas;🦐;via;g
+moule|huitre|fruit de mer;🦪;via;g
+calamar|seiche|poulpe;🦑;via;g
+truite|cabillaud|poisson|perche|colin|dorade|merlu;🐟;via;g
+oeuf;🥚;lai;pce
+lait;🥛;lai;l
+yogourt|yaourt|yogurt|skyr|petit suisse;🥣;lai;pce
+creme|crème|mascarpone|sere|cottage|ricotta|fromage frais|philadelphia;🍶;lai;dl
+beurre|margarine;🧈;lai;g
+raclette|fondue|moitie-moitie|vacherin fribourgeois;🫕;lai;g
+fromage|gruyere|emmental|tete de moine|tomme|reblochon|appenzeller|parmesan|feta|mozzarella|brie|camembert|cheddar|comte|sbrinz|gorgonzola|chevre;🧀;lai;g
+nouille|ramen|vermicelle|nouilles chinoises|udon;🍜;fec;g
+pate|spaghetti|penne|tagliatelle|fusilli|lasagne|macaroni|cornette|linguine|farfalle|tortellini|ravioli;🍝;fec;g
+gnocchi|knoepfli|spaetzli;🥟;fec;g
+riz|risotto|riz basmati;🍚;fec;kg
+polenta;🌽;fec;g
+quinoa|couscous|boulgour|semoule|farine|maizena|epeautre;🌾;fec;kg
+cereale|muesli|flocon|avoine|granola|cornflakes|porridge;🥣;fec;paquet
+huile|olive;🫒;epi;bouteille
+vinaigre|sauce soja|soja;🍶;epi;bouteille
+sel;🧂;epi;paquet
+poivre|muscade|clou de girofle;🫙;epi;pot
+curry|cumin|curcuma|garam;🍛;epi;pot
+paprika|chili|harissa|tabasco;🌶️;epi;pot
+cannelle;🪵;epi;pot
+vanille|sucre vanille|levure|bicarbonate|gelatine;🧁;epi;paquet
+sucre|sucre glace|cassonade;🍬;epi;kg
+cafe|capsule;☕;epi;paquet
+coca|limonade|rivella|ice tea|the froid|soda|cola;🥤;boi;bouteille
+the|tisane|infusion;🍵;epi;paquet
+ketchup;🍅;epi;pce
+moutarde|mayonnaise|sauce|pesto|tahini|chutney|vinaigrette;🫙;epi;pce
+bouillon|fond de veau|cube;🍲;epi;paquet
+conserve;🥫;epi;boîte
+noix|amande|noisette|chataigne|marron;🌰;epi;sachet
+cacahuete|beurre de cacahuete;🥜;epi;sachet
+sesame|graine|pignon|pistache|lin|chia|tournesol;🌱;epi;sachet
+raisin sec|abricot sec|datte|figue seche|fruit sec;🍇;epi;sachet
+chocolat;🍫;dou;pce
+biscuit|cookie|petit beurre|gaufrette|madeleine|biscotte;🍪;dou;paquet
+chips|apero|bretzel|cracker|crackers;🥨;dou;paquet
+popcorn;🍿;dou;paquet
+bonbon|gomme|chewing|reglisse;🍬;dou;paquet
+glace|sorbet|cornet;🍨;sur;pce
+pizza;🍕;sur;pce
+frites;🍟;sur;paquet
+legumes surgeles|surgele;🧊;sur;paquet
+eau gazeuse|eau petillante|eau minerale gazeuse;🫧;boi;bouteille
+eau;💧;boi;bouteille
+jus|nectar|smoothie;🧃;boi;l
+sirop;🍹;boi;bouteille
+biere;🍺;boi;bouteille
+champagne|prosecco|mousseux;🍾;boi;bouteille
+vin;🍷;boi;bouteille
+lait d'avoine|lait d avoine|lait d'amande|lait de soja|boisson vegetale;🥛;boi;l
+croquette|patee|litiere;🐾;aut;paquet
+fleur|bouquet;💐;aut;pce
+`.trim().split('\n').map(l => { const [k,icon,cat,u] = l.split(';'); return {kws:k.split('|').map(w => norm(w).split(' ').map(sing).join(' ')), icon, cat, u}; });
+
+// Mots courants proposés pendant la saisie (en plus de l'historique)
+const DICTIONARY = `Abricots|Ail|Ananas|Aneth|Asperges|Aubergines|Avocats|Bananes|Basilic|Betteraves|Blettes|Brocoli|Carottes|Céleri|Cerises|Champignons|Chanterelles|Chou|Chou rouge|Chou-fleur|Choux de Bruxelles|Ciboulette|Citrons|Citrons verts|Clémentines|Concombre|Coriandre|Cornichons|Courge butternut|Courgettes|Cresson|Doucette|Échalotes|Endives|Épinards|Fenouil|Fraises|Framboises|Gingembre|Haricots verts|Kiwis|Laitue|Mangue|Melon|Menthe|Myrtilles|Nectarines|Oignons|Oignons rouges|Oranges|Pamplemousse|Pastèque|Patates douces|Pêches|Persil|Petits pois|Piments|Poireaux|Poires|Poivrons|Pommes|Pommes de terre|Prunes|Radis|Raisin|Rhubarbe|Romarin|Roquette|Salade|Thym|Tomates|Tomates cerises|Baguette|Brioche|Croissants|Pain|Pain complet|Pain de mie|Petits pains|Tresse|Tortillas|Bacon|Blanc de poulet|Bœuf haché|Cervelas|Chipolatas|Cordon bleu|Côtelettes de porc|Crevettes|Cuisses de poulet|Dinde|Émincé de poulet|Émincé de bœuf|Entrecôte|Escalopes|Filet de porc|Filets de cabillaud|Filets de perche|Jambon|Lardons|Merguez|Poulet|Poulet entier|Rôti de porc|Salami|Saucisses|Saucisse aux choux|Saumon|Saumon fumé|Steak haché|Thon|Truite|Veau|Viande hachée|Viande séchée|Beurre|Crème|Crème acidulée|Crème entière|Demi-crème|Emmental|Feta|Fromage|Fromage râpé|Gruyère|Lait|Lait entier|Lait drink|Mascarpone|Mozzarella|Œufs|Parmesan|Raclette|Ricotta|Séré|Tête de Moine|Vacherin|Yogourts|Yogourt nature|Boulgour|Céréales|Couscous|Farine|Flocons d'avoine|Gnocchi|Knöpfli|Lasagnes|Lentilles|Muesli|Nouilles|Pâtes|Penne|Pois chiches|Polenta|Quinoa|Riz|Riz basmati|Riz risotto|Semoule|Spaghetti|Spätzli|Tagliatelles|Amandes|Bicarbonate|Bouillon|Cacao|Café|Cannelle|Caotina|Capsules de café|Chocolat|Chocolat noir|Concentré de tomate|Confiture|Cumin|Curry|Fond de tarte|Graines de sésame|Haricots rouges|Herbes de Provence|Huile d'olive|Huile de colza|Ketchup|Lait de coco|Levure|Maïs|Mayonnaise|Miel|Moutarde|Muscade|Noisettes|Noix|Olives|Ovomaltine|Paprika|Pâte à pizza|Pâte feuilletée|Pâte brisée|Pesto|Pignons|Poivre|Raisins secs|Sauce soja|Sauce tomate|Sel|Sucre|Sucre glace|Sucre vanillé|Thé|Tisane|Tomates pelées|Vanille|Vinaigre|Vinaigre balsamique|Biscuits|Bonbons|Chips|Cookies|Crackers|Popcorn|Bretzels|Frites|Glace|Légumes surgelés|Pizza|Épinards surgelés|Bière|Eau|Eau gazeuse|Jus d'orange|Jus de pomme|Ice Tea|Rivella|Sirop|Vin blanc|Vin rouge|Prosecco|Lait d'avoine|Allumettes|Aluminium|Ampoules|Bougies|Éponges|Essuie-tout|Film alimentaire|Lessive|Liquide vaisselle|Mouchoirs|Nettoyant|Papier cuisson|Papier toilette|Piles|Sacs poubelle|Pastilles lave-vaisselle|Adoucissant|Brosse à dents|Coton-tiges|Déodorant|Dentifrice|Gel douche|Lingettes|Pansements|Rasoirs|Savon|Shampoing|Crème solaire|Couches|Croquettes|Litière|Fleurs`.split('|');
+
 const CAT_ICON = {fl:'🥬',bou:'🍞',via:'🥩',lai:'🧀',fec:'🍝',epi:'🥫',dou:'🍫',boi:'🧃',sur:'🧊',men:'🧽',hyg:'🧴',aut:'🛒'};
+const prodCache = new Map();
 function findProduct(name){
-  const n = ' ' + norm(name).split(' ').map(sing).join(' ') + ' ';
+  const n0 = norm(name);
+  if (prodCache.has(n0)) return prodCache.get(n0);
+  const n = ' ' + n0.split(' ').map(sing).join(' ') + ' ';
   const toks = n.trim().split(' ');
+  // le mot principal en français vient en premier : on garde le produit trouvé le plus tôt dans le nom, puis le mot-clé le plus long
+  let hit = null, best = [99, 0];
   for (const p of PRODUCT_LINES){
     for (const k of p.kws){
-      if (k.includes(' ')) { if (n.includes(' '+k+' ') || n.includes(' '+k)) return p; }
-      else if (toks.some(t => t === k || (k.length >= 5 && t.startsWith(k)))) return p;
+      let pos = -1;
+      if (k.includes(' ')) { const at = n.indexOf(' '+k+' ') >= 0 ? n.indexOf(' '+k+' ') : n.indexOf(' '+k); if (at >= 0) pos = n.slice(0, at+1).trim().split(' ').filter(Boolean).length; }
+      else pos = toks.findIndex(t => t === k || (k.length >= 5 && t.startsWith(k)));
+      if (pos >= 0 && (pos < best[0] || (pos === best[0] && k.length > best[1]))) { hit = p; best = [pos, k.length]; }
     }
   }
-  return null;
+  prodCache.set(n0, hit);
+  return hit;
 }
 const iconFor = i => { const p = findProduct(i.name); return p ? p.icon : (CAT_ICON[i.cat] || '🛒'); };
-// Unité logique par produit : sans quantité, on garde juste l'unité (quantité vide) ; un nombre seul prend cette unité
+// Unité logique : sans quantité on garde juste l'unité ; un nombre seul prend cette unité
 function withDefaults(p){
   const prod = findProduct(p.name);
   if (!prod) return p;
@@ -461,199 +596,322 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.6';
+const APP_VERSION = '1.0.7';
 /* ---------- Configuration GitHub ---------- */
-const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', path:'data/liste.json', branch:'main' };
-const API = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
+const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
+const API_BASE = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
 const POLL_MS = 10000;
-const KEY_CFG = 'rc-config', KEY_DOC = 'rc-doc', KEY_STORE = 'rc-store';
+const KEY_CFG = 'rc-config', KEY_TAB = 'rc-tab';
 
 /* ---------- État ---------- */
-const state = { doc:{version:1, items:{}, catalog:{}, config:{orders:{}, updatedAt:0}}, store:'all', status:'idle', lastSync:0, me:'' };
 let cfg = {token:'', name:''};
-let sha = null, etag = null, dirty = false, pushing = false, pulling = false, pushTimer = null, pollTimer = null;
-
-const items = () => Object.fromEntries(Object.entries(state.doc.items).filter(([,i]) => !i.deleted));
-function saveLocal(){ try{ localStorage.setItem(KEY_DOC, JSON.stringify({doc:state.doc, sha, dirty})); }catch(e){} }
-function loadLocal(){
-  try{ const c = JSON.parse(localStorage.getItem(KEY_CFG)); if (c) cfg = c; }catch(e){}
-  try{ const d = JSON.parse(localStorage.getItem(KEY_DOC)); if (d && d.doc) { state.doc = d.doc; sha = d.sha; dirty = !!d.dirty; } }catch(e){}
-  try{ const s = localStorage.getItem(KEY_STORE); if (s && (s==='all' || STORES.some(x=>x.id===s))) state.store = s; }catch(e){}
-  state.me = cfg.name || '';
-}
-
-/* ---------- Synchronisation avec le dépôt privé ---------- */
-const enc = str => { const b = new TextEncoder().encode(str); let bin=''; b.forEach(x => bin += String.fromCharCode(x)); return btoa(bin); };
-const dec = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g,'')), c => c.charCodeAt(0)));
+const state = { tab:'list', status:'idle', lastSync:0, have:[], recQuery:'', favOnly:false };
 const headers = () => ({ 'Authorization':'Bearer '+cfg.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' });
-
+const enc = str => { const b = new TextEncoder().encode(str); let bin=''; for (let i=0;i<b.length;i+=8192) bin += String.fromCharCode.apply(null, b.subarray(i,i+8192)); return btoa(bin); };
+const dec = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g,'')), c => c.charCodeAt(0)));
+const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
 function mergeMaps(a={}, b={}, stamp){
   const out = {...a};
   for (const [k,v] of Object.entries(b)) { const cur = out[k]; if (!cur || (stamp(v)||0) >= (stamp(cur)||0)) out[k] = v; }
   return out;
 }
-function mergeDocs(local, remote){
-  const r = remote || {};
-  return {
-    version:1,
-    items: mergeMaps(local.items, r.items, x => x.updatedAt),
-    catalog: mergeMaps(local.catalog, r.catalog, x => x.last),
-    config: ((r.config && r.config.updatedAt) || 0) > ((local.config && local.config.updatedAt) || 0) ? r.config : (local.config || {orders:{}, updatedAt:0})
+
+/* ---------- Fichiers synchronisés avec le dépôt privé ---------- */
+function syncFile(path, empty, merge, onChange, every){
+  const f = { path, doc: empty(), sha:null, etag:null, dirty:false, pulling:false, pushing:false, timer:null, every: every || 1, tick:0, ok:true };
+  const lsKey = 'rc-file:' + path;
+  f.save = () => { try{ localStorage.setItem(lsKey, JSON.stringify({doc:f.doc, sha:f.sha, dirty:f.dirty})); }catch(e){} };
+  f.load = () => { try{ const d = JSON.parse(localStorage.getItem(lsKey)); if (d && d.doc) { f.doc = d.doc; f.sha = d.sha; f.dirty = !!d.dirty; } }catch(e){} };
+  f.pull = async () => {
+    if (!cfg.token || f.pulling) return;
+    f.pulling = true;
+    try {
+      const h = headers(); if (f.etag && !f.dirty) h['If-None-Match'] = f.etag;
+      const r = await fetch(API_BASE + path + '?ref=' + GH.branch + '&t=' + Date.now(), {headers:h, cache:'no-store'});
+      if (r.status === 304) { f.ok = true; return; }
+      if (r.status === 404) { f.sha = null; f.dirty = true; f.ok = true; f.schedule(0); return; }
+      if (r.status === 401 || r.status === 403) { setStatus('auth'); f.ok = false; return; }
+      if (!r.ok) { f.ok = false; return; }
+      f.etag = r.headers.get('ETag');
+      const j = await r.json();
+      let remote = {}; try { remote = JSON.parse(dec(j.content)); } catch(e){}
+      f.sha = j.sha;
+      const merged = merge(f.doc, remote);
+      const changedForUs = !same(merged, f.doc);
+      if (!same(merged, remote)) f.dirty = true;
+      f.doc = merged; f.save(); f.ok = true;
+      if (changedForUs) onChange();
+      if (f.dirty) f.schedule(0);
+    } catch(e) { f.ok = false; }
+    finally { f.pulling = false; refreshStatus(); }
   };
+  f.schedule = (delay=700) => { clearTimeout(f.timer); f.timer = setTimeout(() => f.push(), delay); refreshStatus(); };
+  f.push = async (attempt=0) => {
+    if (!cfg.token || !f.dirty) return;
+    if (f.pushing) { f.schedule(500); return; }
+    f.pushing = true; refreshStatus();
+    try {
+      const snapshot = JSON.stringify(f.doc);
+      const body = { message: 'Mise à jour par ' + (cfg.name || 'un téléphone'), content: enc(JSON.stringify(f.doc, null, 1)), branch: GH.branch };
+      if (f.sha) body.sha = f.sha;
+      const r = await fetch(API_BASE + path, {method:'PUT', headers:{...headers(), 'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      if (r.status === 409 || r.status === 422) {
+        f.pushing = false; f.etag = null;
+        if (attempt < 3) { await f.pull(); return f.push(attempt+1); }
+        f.ok = false; return;
+      }
+      if (r.status === 401 || r.status === 403) { setStatus('auth'); f.ok = false; return; }
+      if (!r.ok) { f.ok = false; f.schedule(15000); return; }
+      const j = await r.json();
+      f.sha = j.content && j.content.sha; f.etag = null; f.ok = true;
+      if (JSON.stringify(f.doc) === snapshot) f.dirty = false;
+      f.save(); state.lastSync = Date.now();
+      if (f.dirty) f.schedule(300);
+    } catch(e) { f.ok = false; f.schedule(15000); }
+    finally { f.pushing = false; refreshStatus(); }
+  };
+  f.changed = () => { f.dirty = true; f.save(); onChange(); f.schedule(); };
+  return f;
 }
-const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
+
+const listFile = syncFile('data/liste.json',
+  () => ({version:1, items:{}, catalog:{}, config:{orders:{}, updatedAt:0}}),
+  (l, r={}) => ({ version:1, items: mergeMaps(l.items, r.items, x => x.updatedAt), catalog: mergeMaps(l.catalog, r.catalog, x => x.last),
+    config: ((r.config && r.config.updatedAt) || 0) > ((l.config && l.config.updatedAt) || 0) ? r.config : (l.config || {orders:{}, updatedAt:0}) }),
+  () => render(), 1);
+const recFile = syncFile('data/recettes.json',
+  () => ({version:1, recipes:{}}),
+  (l, r={}) => ({ version:1, recipes: mergeMaps(l.recipes, r.recipes, x => x.updatedAt) }),
+  () => render(), 3);
+const FILES = [listFile, recFile];
+
 function setStatus(s){ if (state.status !== s) { state.status = s; renderStatus(); } }
-
-async function pull(){
-  if (!cfg.token || pulling) return;
-  pulling = true;
-  try {
-    const h = headers(); if (etag && !dirty) h['If-None-Match'] = etag;
-    const r = await fetch(API + '?ref=' + GH.branch + '&t=' + Date.now(), {headers:h, cache:'no-store'});
-    if (r.status === 304) { state.lastSync = Date.now(); setStatus(dirty ? 'saving' : 'ok'); return; }
-    if (r.status === 404) { sha = null; dirty = true; schedulePush(0); return; } // fichier pas encore créé
-    if (r.status === 401 || r.status === 403) { setStatus('auth'); return; }
-    if (!r.ok) { setStatus('offline'); return; }
-    etag = r.headers.get('ETag');
-    const j = await r.json();
-    let remote = {}; try { remote = JSON.parse(dec(j.content)); } catch(e){}
-    sha = j.sha;
-    const merged = mergeDocs(state.doc, remote);
-    const changedForUs = !same(merged, state.doc);
-    if (!same(merged, remote)) dirty = true;
-    state.doc = merged; saveLocal();
-    state.lastSync = Date.now();
-    if (changedForUs) render();
-    setStatus(dirty ? 'saving' : 'ok');
-    if (dirty) schedulePush(0);
-  } catch(e) { setStatus('offline'); }
-  finally { pulling = false; }
+function refreshStatus(){
+  if (state.status === 'auth') return renderStatus();
+  const busy = FILES.some(f => f.dirty || f.pushing);
+  const ok = FILES.every(f => f.ok);
+  if (ok) state.lastSync = Date.now();
+  setStatus(!ok ? 'offline' : busy ? 'saving' : 'ok');
 }
-function schedulePush(delay=700){ clearTimeout(pushTimer); pushTimer = setTimeout(push, delay); }
-async function push(attempt=0){
-  if (!cfg.token || !dirty) return;
-  if (pushing) { schedulePush(500); return; }
-  pushing = true; setStatus('saving');
-  try {
-    // ménage : on oublie les suppressions de plus de 30 jours
-    const limit = Date.now() - 30*864e5;
-    for (const [id,i] of Object.entries(state.doc.items)) if (i.deleted && (i.updatedAt||0) < limit) delete state.doc.items[id];
-    const body = { message: 'Liste mise à jour par ' + (cfg.name || 'un téléphone'), content: enc(JSON.stringify(state.doc, null, 1)), branch: GH.branch };
-    if (sha) body.sha = sha;
-    const snapshot = JSON.stringify(state.doc);
-    const r = await fetch(API, {method:'PUT', headers:{...headers(), 'Content-Type':'application/json'}, body: JSON.stringify(body)});
-    if (r.status === 409 || r.status === 422) { // quelqu'un a écrit entre-temps : on fusionne et on réessaie
-      pushing = false; etag = null;
-      if (attempt < 3) { await pull(); return push(attempt+1); }
-      setStatus('offline'); return;
-    }
-    if (r.status === 401 || r.status === 403) { setStatus('auth'); return; }
-    if (!r.ok) { setStatus('offline'); schedulePush(15000); return; }
-    const j = await r.json();
-    sha = j.content && j.content.sha; etag = null;
-    if (JSON.stringify(state.doc) === snapshot) dirty = false; // sinon une modification est arrivée pendant l'envoi
-    saveLocal(); state.lastSync = Date.now();
-    setStatus(dirty ? 'saving' : 'ok');
-    if (dirty) schedulePush(300);
-  } catch(e) { setStatus('offline'); schedulePush(15000); }
-  finally { pushing = false; }
-}
-function changed(){ dirty = true; saveLocal(); render(); schedulePush(); }
-function startPolling(){
-  clearInterval(pollTimer);
-  pollTimer = setInterval(() => { if (document.visibilityState === 'visible') pull(); }, POLL_MS);
-}
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pull(); });
-window.addEventListener('online', () => { pull(); if (dirty) schedulePush(0); });
+let pollTimer = null;
+function pullAll(force){ FILES.forEach(f => { f.tick++; if (force || f.tick % f.every === 0) f.pull(); }); }
+function startPolling(){ clearInterval(pollTimer); pollTimer = setInterval(() => { if (document.visibilityState === 'visible') pullAll(false); }, POLL_MS); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pullAll(true); });
+window.addEventListener('online', () => { pullAll(true); FILES.forEach(f => f.dirty && f.schedule(0)); });
 
-/* ---------- Écritures ---------- */
-const backend = {
-  putItem(id,d){ state.doc.items[id] = {...d, updatedAt: Date.now()}; changed(); },
-  delItem(id){ state.doc.items[id] = {deleted:true, updatedAt: Date.now()}; changed(); },
-  putCat(k,d){ state.doc.catalog[k] = {...d, last: d.last || Date.now()}; dirty = true; saveLocal(); schedulePush(); },
-  putConfig(d){ state.doc.config = {...d, updatedAt: Date.now()}; changed(); }
-};
-
-/* ---------- Actions ---------- */
+/* ---------- Liste : données ---------- */
+const L = () => listFile.doc;
+const items = () => Object.fromEntries(Object.entries(L().items).filter(([,i]) => !i.deleted));
 const active = () => Object.entries(items()).filter(([,i]) => !i.done);
-const visibleIn = (i, store) => store === 'all' || !i.stores || !i.stores.length || i.stores.includes(store);
-function orderFor(store){
-  const orders = (state.doc.config && state.doc.config.orders) || {};
-  const o = orders[store] || DEFAULT_ORDER[store === 'marche' ? 'marche' : 'default'];
+const putItem = (id,d) => { L().items[id] = {...d, updatedAt: Date.now()}; listFile.changed(); };
+const delItem = id => { L().items[id] = {deleted:true, updatedAt: Date.now()}; listFile.changed(); };
+const putCat = (k,d) => { L().catalog[k] = {...d, last: d.last || Date.now()}; listFile.dirty = true; listFile.save(); listFile.schedule(); };
+function aisleOrder(){
+  const o = (L().config && L().config.orders && L().config.orders.default) || DEFAULT_ORDER.default;
   return [...o.filter(c => CAT[c]), ...CATS.map(c=>c[0]).filter(c => !o.includes(c))];
 }
 function bumpCatalog(it){
-  const k = slug(it.key), prev = state.doc.catalog[k] || {};
-  backend.putCat(k, {name: it.name, cat: it.cat, qty: it.qty, unit: it.unit, count: (prev.count||0)+1, last: Date.now()});
+  const k = slug(it.key), prev = L().catalog[k] || {};
+  putCat(k, {name: it.name, cat: it.cat, unit: it.unit, count: (prev.count||0)+1, last: Date.now()});
 }
 function addItem({name, qty=null, unit='', cat, from}, opts={}){
   const key = keyOf(name);
   const existing = Object.entries(items()).find(([,i]) => i.key === key);
   if (existing){
-    const [id, i] = existing, d = {...i, stores:[...(i.stores||[])], from:[...(i.from||[])]};
+    const [id, i] = existing, d = {...i, from:[...(i.from||[])]};
     let result = 'same';
     if (d.done) { d.done = false; d.doneAt = null; d.qty = qty; d.unit = unit || d.unit; d.from = []; result = 'back'; }
-    else if (qty != null && d.qty != null && d.unit === unit) { d.qty = d.qty + qty; result = 'merged'; }
+    else if (qty != null && d.qty != null && sameUnit(d.unit, unit)) { d.qty = d.qty + toBase(qty, unit, d.unit); result = 'merged'; }
     else if (qty != null && d.qty == null) { d.qty = qty; d.unit = unit; result = 'merged'; }
     if (from && !d.from.includes(from)) d.from.push(from);
-    backend.putItem(id, d); bumpCatalog(d);
+    putItem(id, d); bumpCatalog(d);
     if (!opts.quiet) toast(result === 'merged' ? `${d.name} : ${fmtQty(d.qty,d.unit)} au total` : result === 'back' ? `${d.name} remis dans la liste` : `${d.name} est déjà dans la liste`);
     return result;
   }
-  const d = {name, key, qty, unit: qty!=null ? (unit||'pce') : (unit||''), cat: cat || guessCat(name), stores: [], note:'', done:false, doneAt:null, by: cfg.name || '', at: Date.now(), from: from?[from]:[]};
-  backend.putItem(uid(), d); bumpCatalog(d);
+  const d = {name, key, qty, unit: qty!=null ? (unit||'pce') : (unit||''), cat: cat || guessCat(name), note:'', done:false, doneAt:null, by: cfg.name || '', at: Date.now(), from: from?[from]:[]};
+  putItem(uid(), d); bumpCatalog(d);
   return 'new';
 }
+// unités compatibles pour additionner (g/kg, ml/dl/l)
+const baseOf = u => { const m = UNITS[norm(u)]; return m ? m : [u||'pce', 1]; };
+const sameUnit = (a,b) => baseOf(a)[0] === baseOf(b)[0];
+const toBase = (q, from, to) => q * baseOf(from)[1] / baseOf(to)[1];
 function toggle(id){
-  const i = state.doc.items[id]; if (!i || i.deleted) return;
+  const i = L().items[id]; if (!i || i.deleted) return;
   const before = {...i};
-  backend.putItem(id, {...i, done: !i.done, doneAt: !i.done ? Date.now() : null});
-  if (!before.done) toast(`${i.name} dans le caddie`, () => backend.putItem(id, before));
+  putItem(id, {...i, done: !i.done, doneAt: !i.done ? Date.now() : null});
+  if (!before.done) toast(`${i.name} dans le caddie`, () => putItem(id, before));
 }
 function clearDone(){
-  const done = Object.entries(items()).filter(([,i]) => i.done && visibleIn(i, state.store));
+  const done = Object.entries(items()).filter(([,i]) => i.done);
   if (!done.length) return;
-  done.forEach(([id]) => { state.doc.items[id] = {deleted:true, updatedAt:Date.now()}; });
-  changed();
-  toast(`${done.length} article${done.length>1?'s':''} retiré${done.length>1?'s':''}`, () => { done.forEach(([id,i]) => { state.doc.items[id] = {...i, updatedAt:Date.now()}; }); changed(); });
+  done.forEach(([id]) => { L().items[id] = {deleted:true, updatedAt:Date.now()}; });
+  listFile.changed();
+  toast(`${done.length} article${done.length>1?'s':''} retiré${done.length>1?'s':''}`, () => { done.forEach(([id,i]) => { L().items[id] = {...i, updatedAt:Date.now()}; }); listFile.changed(); });
+}
+
+/* ---------- Saisie avec propositions ---------- */
+function suggestions(text, limit=5){
+  const q = norm(text); if (q.length < 1) return [];
+  const seen = new Set(), out = [];
+  const push = (name, score) => { const k = keyOf(name); if (seen.has(k)) return; seen.add(k); out.push({name, score}); };
+  const hist = Object.values(L().catalog).sort((a,b) => (b.count||0)-(a.count||0));
+  const score = name => { const n = norm(name); if (n.startsWith(q)) return 0; if (n.split(' ').some(w => w.startsWith(q))) return 1; return -1; };
+  for (const c of hist) { const s = score(c.name); if (s >= 0) push(c.name, s - 0.5); }
+  for (const w of DICTIONARY) { const s = score(w); if (s >= 0) push(w, s); }
+  return out.sort((a,b) => a.score - b.score || a.name.length - b.name.length).slice(0, limit).map(x => x.name);
+}
+function attachSuggest(input, box, onPick){
+  const draw = () => {
+    const p = parseLine(input.value);
+    const words = p ? suggestions(p.name) : [];
+    if (!words.length) { box.hidden = true; box.innerHTML = ''; return; }
+    box.innerHTML = words.map(w => { const d = withDefaults({...p, name:w}); const q = p.qty != null ? fmtQty(d.qty, d.unit) : (d.unit && d.unit !== 'pce' ? d.unit : '');
+      return `<button type="button" data-w="${esc(w)}"><span class="em" aria-hidden="true">${iconFor({name:w, cat:guessCat(w)})}</span>${esc(w)}<small>${esc(q)}</small></button>`; }).join('');
+    box.hidden = false;
+  };
+  input.addEventListener('input', draw);
+  input.addEventListener('focus', draw);
+  input.addEventListener('blur', () => setTimeout(() => { box.hidden = true; }, 180));
+  box.addEventListener('pointerdown', e => e.preventDefault()); // garde le clavier ouvert
+  box.addEventListener('click', e => { const b = e.target.closest('[data-w]'); if (!b) return; const p = parseLine(input.value) || {}; onPick({...p, name:b.dataset.w}); input.value = ''; box.hidden = true; input.focus(); });
+}
+
+/* ---------- Recettes : données ---------- */
+const R = () => recFile.doc;
+const recipes = () => Object.entries(R().recipes).filter(([,r]) => !r.deleted);
+const putRecipe = (id, r) => { R().recipes[id] = {...r, updatedAt: Date.now()}; recFile.changed(); };
+const STAPLES = new Set(['sel','poivre','huile','eau','sucre','farine','beurre','vinaigre','herbes de provence'].map(keyOf));
+const rootOf = name => { const p = findProduct(name); if (p) { const n = ' '+norm(name).split(' ').map(sing).join(' ')+' '; const k = p.kws.find(k => n.includes(' '+k)) || p.kws[0]; return k; } return keyOf(name); };
+function matchRecipe(r, haveRoots){
+  const ings = (r.ingredients||[]).filter(i => i.name);
+  const counted = ings.filter(i => !STAPLES.has(keyOf(i.name)) && !STAPLES.has(rootOf(i.name)));
+  const have = counted.filter(i => haveRoots.some(h => rootOf(i.name) === h || keyOf(i.name).includes(h) || h.includes(rootOf(i.name))));
+  const missing = counted.filter(i => !have.includes(i));
+  return {have: have.length, total: counted.length, missing};
+}
+function recipeIcon(r){
+  const main = (r.ingredients||[]).find(i => { const p = findProduct(i.name); return p && ['via','fec','fl','lai'].includes(p.cat); });
+  return main ? iconFor({name:main.name, cat:guessCat(main.name)}) : '🍽️';
+}
+const COUNT_UNITS = new Set(['', 'pce', 'gousse', 'botte', 'boîte', 'tranche', 'pot', 'sachet', 'paquet', 'bouteille', 'barquette']);
+function scaleQty(q, u, f){ if (q == null) return null; const v = q * f; return COUNT_UNITS.has(u||'') ? Math.max(0.5, Math.round(v*2)/2) : u === 'g' ? (v >= 100 ? Math.round(v/10)*10 : Math.max(1, Math.round(v))) : u === 'ml' ? Math.max(5, Math.round(v/5)*5) : Math.max(0.25, Math.round(v*4)/4); }
+
+/* ---------- Photos (dépôt privé) ---------- */
+const photoUrls = new Map();
+async function photoURL(path){
+  if (!path) return null;
+  if (photoUrls.has(path)) return photoUrls.get(path);
+  let blob = null;
+  try { const c = await caches.open('rc-photos'); const hit = await c.match('/' + path); if (hit) blob = await hit.blob(); } catch(e){}
+  if (!blob) {
+    try {
+      const r = await fetch(API_BASE + path + '?ref=' + GH.branch, {headers:{...headers(), 'Accept':'application/vnd.github.raw'}, cache:'no-store'});
+      if (!r.ok) return null;
+      blob = await r.blob();
+      try { const c = await caches.open('rc-photos'); await c.put('/' + path, new Response(blob)); } catch(e){}
+    } catch(e) { return null; }
+  }
+  const url = URL.createObjectURL(blob); photoUrls.set(path, url); return url;
+}
+function hydratePhotos(root){
+  root.querySelectorAll('[data-photo]').forEach(async el => { const u = await photoURL(el.dataset.photo); if (u) { el.style.backgroundImage = `url("${u}")`; el.classList.add('has'); } });
+}
+function shrink(file, max=1280, quality=0.82){
+  return new Promise((res, rej) => {
+    const img = new Image(); const u = URL.createObjectURL(file);
+    img.onload = () => { const s = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.round(img.width*s); c.height = Math.round(img.height*s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(new Error('image')), 'image/jpeg', quality); };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('image')); };
+    img.src = u;
+  });
+}
+async function uploadPhoto(blob, id){
+  const path = `photos/${id}-${Date.now().toString(36)}.jpg`;
+  const buf = new Uint8Array(await blob.arrayBuffer()); let bin = '';
+  for (let i=0;i<buf.length;i+=8192) bin += String.fromCharCode.apply(null, buf.subarray(i,i+8192));
+  const r = await fetch(API_BASE + path, {method:'PUT', headers:{...headers(), 'Content-Type':'application/json'}, body: JSON.stringify({message:'Photo de recette', content: btoa(bin), branch: GH.branch})});
+  if (!r.ok) throw new Error('upload ' + r.status);
+  try { const c = await caches.open('rc-photos'); await c.put('/' + path, new Response(blob)); } catch(e){}
+  photoUrls.set(path, URL.createObjectURL(blob));
+  return path;
+}
+
+/* ---------- Lecture d'une recette sur photo (OCR) ---------- */
+let tessLoading = null;
+function loadTesseract(){
+  if (window.Tesseract) return Promise.resolve();
+  if (!tessLoading) tessLoading = new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'; s.onload = res; s.onerror = () => { tessLoading = null; rej(new Error('script')); }; document.head.appendChild(s); });
+  return tessLoading;
+}
+async function ocrImage(file, onProgress){
+  await loadTesseract();
+  const img = await shrink(file, 2200, 0.92);
+  const res = await window.Tesseract.recognize(img, 'fra', { logger: m => { if (m.status === 'recognizing text' && onProgress) onProgress(m.progress); } });
+  return res.data.text || '';
+}
+const FRACTIONS = {'½':0.5,'¼':0.25,'¾':0.75,'⅓':1/3,'⅔':2/3};
+function parseRecipeText(text){
+  let t = text.replace(/\r/g,'').replace(/[½¼¾⅓⅔]/g, m => ' ' + FRACTIONS[m]).replace(/(\d)\s+0\.(\d+)/g, (a,b,c) => String(+b + +('0.'+c)));
+  t = t.replace(/c(?:uill[eè]res?)?\.?\s*(?:à|a)\s*s(?:oupe)?\.?/gi, 'cs ').replace(/c(?:uill[eè]res?)?\.?\s*(?:à|a)\s*c(?:af[eé])?\.?/gi, 'cc ');
+  const lines = t.split('\n').map(l => l.replace(/^[\s•\-–*·]+/,'').trim()).filter(l => l.length > 1);
+  const out = {title:'', persons:4, ingredients:[], steps:[]};
+  const ingRe = /^(\d+(?:[.,]\d+)?(?:\s*[-à]\s*\d+)?)\s*(kg|g|gr|ml|cl|dl|l|cs|cc|pinc[ée]es?|gousses?|tranches?|bottes?|sachets?|paquets?|bo[iî]tes?|pots?|pi[eè]ces?|pce)?\.?\s+(?:de\s+|d['’]\s*)?(.+)$/i;
+  let stepBuf = [], inSteps = false;
+  for (const l of lines){
+    if (/^(pr[ée]paration|instructions?|[ée]tapes?|recette)\s*:?$/i.test(l)) { inSteps = true; continue; }
+    if (/^ingr[ée]dients?\s*:?$/i.test(l)) { inSteps = false; continue; }
+    const numbered = /^\d+\s*[.)]\s+\D/.test(l);
+    const pm = l.match(/(?:pour\s+)?(\d+)\s*(?:personnes?|pers\.?|portions?)/i);
+    if (pm && l.length < 40) { out.persons = +pm[1]; continue; }
+    const m = (!inSteps && !numbered) ? l.match(ingRe) : null;
+    if (m && l.length < 70) {
+      const q = parseFloat(m[1].replace(',', '.').split(/[-à]/)[0]);
+      let unit = m[2] ? norm(m[2]) : '';
+      const U = {kg:['g',1000],g:['g',1],gr:['g',1],ml:['ml',1],cl:['ml',10],dl:['ml',100],l:['ml',1000],cs:['c. à s.',1],cc:['c. à c.',1],pincee:['pincée',1],gousse:['gousse',1],tranche:['tranche',1],botte:['botte',1],sachet:['sachet',1],paquet:['paquet',1],boite:['boîte',1],pot:['pot',1],piece:['pce',1],pce:['pce',1]};
+      const u = U[unit] || U[unit.replace(/s$/,'')] || ['pce',1];
+      out.ingredients.push({name: cap(m[3].replace(/[.,;]+$/,'').trim()), qty: Math.round(q*u[1]*100)/100, unit: u[0]});
+      continue;
+    }
+    if (!out.title && !inSteps && !numbered && /[a-zà-ü]/i.test(l) && l.length < 70 && !/ingr[ée]dients?|pr[ée]paration/i.test(l)) { out.title = cap(l.replace(/[.:]+$/,'')); continue; }
+    if (/^(ingr[ée]dients?|pr[ée]paration|instructions?|[ée]tapes?)\s*:?$/i.test(l)) continue;
+    if (/^\d+[.)]\s+/.test(l) && stepBuf.length) { out.steps.push(stepBuf.join(' ')); stepBuf = []; }
+    stepBuf.push(l.replace(/^\d+[.)]\s+/,''));
+    if (/[.!]$/.test(l) && stepBuf.join(' ').length > 80) { out.steps.push(stepBuf.join(' ')); stepBuf = []; }
+  }
+  if (stepBuf.length) out.steps.push(stepBuf.join(' '));
+  return out;
 }
 
 /* ---------- Rendu ---------- */
 function renderStatus(){
-  const map = {
-    idle:['','Connexion…'], ok:['ok', 'Synchronisé'], saving:['','Envoi…'],
-    offline:['warn','Hors ligne'], auth:['warn','Jeton refusé']
-  };
+  const map = { idle:['','Connexion…'], ok:['ok','Synchronisé'], saving:['','Envoi…'], offline:['warn','Hors ligne'], auth:['warn','Jeton refusé'] };
   const [cls, txt] = map[state.status] || map.idle;
   $('#status').innerHTML = `<i class="dot ${cls}"></i><span>${txt}</span>`;
 }
 function render(){
   renderStatus();
+  document.body.dataset.tab = state.tab;
+  $('#tabList').setAttribute('aria-current', state.tab === 'list' ? 'page' : 'false');
+  $('#tabRec').setAttribute('aria-current', state.tab === 'rec' ? 'page' : 'false');
+  $('#tabList .n').textContent = active().length || '';
+  if (state.tab === 'list') renderList(); else renderRecipes();
+}
+function renderList(){
   const act = active();
-  $('#stores').innerHTML = [{id:'all', name:'Tous'}, ...STORES].map(s => {
-    const n = act.filter(([,i]) => visibleIn(i, s.id)).length;
-    return `<button class="chip" type="button" data-store="${s.id}" aria-pressed="${state.store===s.id}">${esc(s.name)}<span class="n">${n}</span></button>`;
-  }).join('');
-
   const inList = new Set(act.map(([,i]) => slug(i.key)));
-  const usual = Object.entries(state.doc.catalog).filter(([k,c]) => !inList.has(k) && (c.count||0) >= 1)
+  const usual = Object.entries(L().catalog).filter(([k,c]) => !inList.has(k) && (c.count||0) >= 1)
     .sort((a,b) => (b[1].count||0)-(a[1].count||0) || (b[1].last||0)-(a[1].last||0)).slice(0,12);
   $('#usual').innerHTML = usual.length ? `<span class="lbl">Habituels</span>` + usual.map(([k,c]) =>
     `<button class="pill" type="button" data-usual="${esc(k)}"><span class="em" aria-hidden="true">${iconFor(c)}</span>${esc(c.name)}</button>`).join('') : '';
-
-  const store = state.store;
-  const vis = act.filter(([,i]) => visibleIn(i, store));
   let html = '';
-  if (!vis.length) html += `<div class="empty"><b aria-hidden="true">🧺</b>Rien à acheter ${store==='all' ? 'pour l’instant' : 'ici'}. Ajoute un article en haut.</div>`;
-  for (const c of orderFor(store)){
-    const rows = vis.filter(([,i]) => (CAT[i.cat]?i.cat:'aut') === c).sort((a,b) => (a[1].at||0)-(b[1].at||0));
+  if (!act.length) html += `<div class="empty"><b aria-hidden="true">🧺</b>Rien à acheter pour l’instant. Ajoute un article en haut, ou depuis une recette.</div>`;
+  for (const c of aisleOrder()){
+    const rows = act.filter(([,i]) => (CAT[i.cat]?i.cat:'aut') === c).sort((a,b) => (a[1].at||0)-(b[1].at||0));
     if (!rows.length) continue;
-    html += `<section class="aisle"><h2 style="color:${CAT[c].color}"><span class="em" aria-hidden="true">${CAT_ICON[c]}</span>${esc(CAT[c].name)}<span class="n" style="background:${CAT[c].color}">${rows.length}</span></h2><ul>${rows.map(rowHtml).join('')}</ul></section>`;
+    html += `<section class="aisle"><h2 style="color:${CAT[c].color}"><span class="em" aria-hidden="true">${CAT_ICON[c]}</span>${esc(CAT[c].name)}<span class="n" style="background:${CAT[c].color}">${rows.length}</span></h2><ul class="rows">${rows.map(rowHtml).join('')}</ul></section>`;
   }
-  const done = Object.entries(items()).filter(([,i]) => i.done && visibleIn(i, store)).sort((a,b) => (b[1].doneAt||0)-(a[1].doneAt||0));
-  if (done.length){
-    html += `<section class="cart"><div class="cartbar"><h2>Dans le caddie · ${done.length}</h2><button class="link" type="button" id="clearDone">Retirer les cochés</button></div><ul>${done.map(rowHtml).join('')}</ul></section>`;
-  }
+  const done = Object.entries(items()).filter(([,i]) => i.done).sort((a,b) => (b[1].doneAt||0)-(a[1].doneAt||0));
+  if (done.length) html += `<section class="cart"><div class="cartbar"><h2>Dans le caddie · ${done.length}</h2><button class="link" type="button" id="clearDone">Retirer les cochés</button></div><ul class="rows">${done.map(rowHtml).join('')}</ul></section>`;
   $('#list').innerHTML = html;
 }
 function rowHtml([id, i]){
@@ -661,25 +919,33 @@ function rowHtml([id, i]){
   const meta = [];
   if (q) meta.push(`<span class="qty">${esc(q)}</span>`);
   if (i.note) meta.push(`<span>${esc(i.note)}</span>`);
-  if (state.store === 'all' && i.stores && i.stores.length) meta.push(...i.stores.map(s => `<span class="tag">${esc((STORES.find(x=>x.id===s)||{}).name||s)}</span>`));
   if (i.from && i.from.length) meta.push(`<span>pour ${esc(i.from.join(', '))}</span>`);
   const who = i.by ? `<span class="who" title="Ajouté par ${esc(i.by)}">${esc(i.by.trim().charAt(0).toUpperCase())}</span>` : '';
   const col = (CAT[i.cat]||CAT.aut).color;
   return `<li class="${i.done?'done':''}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
     <span class="icon" style="background:${col}1f" aria-hidden="true">${iconFor(i)}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
 }
-
-/* ---------- Suggestions ---------- */
-function showSugg(){
-  const v = $('#addInput').value, box = $('#sugg');
-  const p = parseLine(v);
-  if (!p || norm(p.name).length < 2) { box.hidden = true; return; }
-  const k = keyOf(p.name);
-  const hits = Object.entries(state.doc.catalog).filter(([key,c]) => key.replace(/-/g,' ').includes(k) || norm(c.name).includes(norm(p.name)))
-    .sort((a,b)=>(b[1].count||0)-(a[1].count||0)).slice(0,5);
-  if (!hits.length) { box.hidden = true; return; }
-  box.innerHTML = hits.map(([key,c]) => `<button type="button" data-sugg="${esc(key)}"><span class="em" aria-hidden="true">${iconFor(c)}</span>${esc(c.name)}<small>${esc(p.qty!=null ? fmtQty(withDefaults({...p, name:c.name}).qty, withDefaults({...p, name:c.name}).unit) : '')}</small></button>`).join('');
-  box.hidden = false;
+function renderRecipes(){
+  $('#haveChips').innerHTML = state.have.map((h,ix) => `<button type="button" class="hchip" data-rmhave="${ix}"><span aria-hidden="true">${iconFor({name:h, cat:guessCat(h)})}</span>${esc(h)}<b aria-label="retirer">×</b></button>`).join('');
+  $('#favOnly').setAttribute('aria-pressed', state.favOnly);
+  const roots = state.have.map(rootOf);
+  const q = norm(state.recQuery);
+  let list = recipes().map(([id,r]) => ({id, r, m: matchRecipe(r, roots)}));
+  if (state.favOnly) list = list.filter(x => x.r.fav);
+  if (q) list = list.filter(x => norm(x.r.title).includes(q) || (x.r.ingredients||[]).some(i => norm(i.name).includes(q)));
+  if (roots.length) list = list.filter(x => x.m.have > 0).sort((a,b) => (b.m.have - a.m.have) || (a.m.missing.length - b.m.missing.length));
+  else list.sort((a,b) => (b.r.fav?1:0) - (a.r.fav?1:0) || a.r.title.localeCompare(b.r.title, 'fr'));
+  let html = '';
+  if (!recipes().length) html = `<div class="empty"><b aria-hidden="true">📖</b>Aucune recette pour l’instant.</div>`;
+  else if (!list.length) html = `<div class="empty"><b aria-hidden="true">🤔</b>Aucune recette ne correspond. Retire un ingrédient ou un filtre.</div>`;
+  html += `<div class="cards">` + list.map(({id, r, m}) => `<button class="rcard" type="button" data-rec="${id}">
+      <span class="rphoto" ${r.photo ? `data-photo="${esc(r.photo)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></span>
+      <span class="rbody"><span class="rtitle">${esc(r.title)}</span>
+      <span class="rmeta">${r.time ? `<span>⏱ ${esc(r.time)} min</span>` : ''}<span>👥 ${r.persons||4}</span>${r.fav ? '<span class="fav">❤</span>' : ''}</span>
+      ${roots.length ? `<span class="rmatch ${m.missing.length===0?'full':''}">${m.missing.length===0 ? 'Tu as tout ✓' : `Tu as ${m.have}/${m.total} · manque ${esc(m.missing.slice(0,3).map(i=>i.name.toLowerCase()).join(', '))}${m.missing.length>3?'…':''}`}</span>` : ''}
+      </span></button>`).join('') + `</div>`;
+  $('#recList').innerHTML = html;
+  hydratePhotos($('#recList'));
 }
 
 /* ---------- Toast ---------- */
@@ -691,64 +957,188 @@ function toast(msg, undo){
 }
 
 /* ---------- Panneaux ---------- */
-function openSheet(html){ $('#sheet').innerHTML = html; $('#scrim').hidden = false; $('#sheet').onclick = null; $('#sheet').onchange = null; }
+function openSheet(html, full){ const sh = $('#sheet'); sh.innerHTML = html; sh.classList.toggle('full', !!full); sh.scrollTop = 0; $('#scrim').hidden = false; sh.onclick = null; sh.onchange = null; sh.oninput = null; }
 function closeSheet(){ $('#scrim').hidden = true; $('#sheet').innerHTML = ''; }
+const unitOptions = sel => EDIT_UNITS.map(x=>`<option value="${esc(x)}" ${x===sel?'selected':''}>${esc(x||'—')}</option>`).join('');
 
 function openEdit(id){
-  const i = state.doc.items[id]; if (!i || i.deleted) return;
+  const i = L().items[id]; if (!i || i.deleted) return;
   let [v,u] = toEdit(i.qty, i.unit);
-  if (i.qty == null) { const pr = findProduct(i.name); if (pr) u = pr.u; }
+  if (i.qty == null && !u) { const pr = findProduct(i.name); if (pr) u = pr.u; }
   openSheet(`<h3><span aria-hidden="true">${iconFor(i)}</span>${esc(i.name)}</h3>
   <div class="field"><label for="eName">Article</label><input id="eName" value="${esc(i.name)}"></div>
   <div class="row"><div class="field"><label for="eQty">Quantité</label><input id="eQty" inputmode="decimal" value="${v===''?'':esc(String(Math.round(v*100)/100))}"></div>
-  <div class="field"><label for="eUnit">Unité</label><select id="eUnit">${EDIT_UNITS.map(x=>`<option value="${x}" ${x===u?'selected':''}>${x||'—'}</option>`).join('')}</select></div></div>
+  <div class="field"><label for="eUnit">Unité</label><select id="eUnit">${unitOptions(u)}</select></div></div>
   <div class="field"><label for="eCat">Rayon</label><select id="eCat">${CATS.map(([c,n])=>`<option value="${c}" ${c===i.cat?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
-  <div class="field"><span class="lab">Où l’acheter (aucun = n’importe où)</span><div class="toggles" id="eStores">${STORES.map(s=>`<button type="button" class="chip" data-tg="${s.id}" aria-pressed="${(i.stores||[]).includes(s.id)}">${esc(s.name)}</button>`).join('')}</div></div>
   <div class="field"><label for="eNote">Note</label><input id="eNote" value="${esc(i.note||'')}" placeholder="ex. bio si possible"></div>
   ${i.by ? `<p class="hint">Ajouté par ${esc(i.by)}</p>` : ''}
   <div class="actions"><button class="btn danger" type="button" id="eDel">Supprimer</button><button class="btn" type="button" id="eSave">Enregistrer</button></div>`);
-  $('#eStores').onclick = e => { const b = e.target.closest('[data-tg]'); if (b) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); };
-  $('#eDel').onclick = () => { const before = {...state.doc.items[id]}; backend.delItem(id); closeSheet(); toast(`${before.name} supprimé`, () => backend.putItem(id, before)); };
+  $('#eDel').onclick = () => { const before = {...L().items[id]}; delItem(id); closeSheet(); toast(`${before.name} supprimé`, () => putItem(id, before)); };
   $('#eSave').onclick = () => {
     const name = cap($('#eName').value.trim()) || i.name;
     const {qty, unit} = fromEdit($('#eQty').value.trim(), $('#eUnit').value);
     const cat = $('#eCat').value;
-    const stores = [...document.querySelectorAll('#eStores [aria-pressed="true"]')].map(b => b.dataset.tg);
-    const d = {...i, name, key:keyOf(name), qty, unit, cat, stores, note: $('#eNote').value.trim()};
-    backend.putItem(id, d);
-    if (cat !== i.cat || name !== i.name) { const k = slug(d.key), prev = state.doc.catalog[k] || {}; backend.putCat(k, {...prev, name, cat, qty, unit, count: prev.count||1, last: Date.now()}); }
+    const d = {...i, name, key:keyOf(name), qty, unit, cat, note: $('#eNote').value.trim()};
+    putItem(id, d);
+    if (cat !== i.cat || name !== i.name) { const k = slug(d.key), prev = L().catalog[k] || {}; putCat(k, {...prev, name, cat, unit, count: prev.count||1, last: Date.now()}); }
     closeSheet();
   };
 }
 
 function openOrder(){
-  let sel = state.store === 'all' ? 'migros-sallaz' : state.store, order = orderFor(sel);
+  let order = aisleOrder();
   const draw = () => {
     openSheet(`<h3>Ordre des rayons</h3>
     <p class="hint">Range les rayons dans l’ordre où tu les parcours. La liste suit cet ordre.</p>
-    <div class="field"><label for="oStore">Magasin</label><select id="oStore">${STORES.map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
-    <ul class="order">${order.map((c,ix)=>`<li><i style="background:${CAT[c].color}"></i><span>${esc(CAT[c].name)}</span><button type="button" data-mv="${ix}" data-d="-1" aria-label="Monter ${esc(CAT[c].name)}">↑</button><button type="button" data-mv="${ix}" data-d="1" aria-label="Descendre ${esc(CAT[c].name)}">↓</button></li>`).join('')}</ul>
+    <ul class="order">${order.map((c,ix)=>`<li><span class="em" aria-hidden="true">${CAT_ICON[c]}</span><span>${esc(CAT[c].name)}</span><button type="button" data-mv="${ix}" data-d="-1" aria-label="Monter ${esc(CAT[c].name)}">↑</button><button type="button" data-mv="${ix}" data-d="1" aria-label="Descendre ${esc(CAT[c].name)}">↓</button></li>`).join('')}</ul>
     <div class="actions"><button class="btn ghost" type="button" data-close>Annuler</button><button class="btn" type="button" id="oSave">Enregistrer</button></div>`);
-    $('#sheet').onchange = e => { if (e.target.id === 'oStore') { sel = e.target.value; order = orderFor(sel); draw(); } };
     $('#sheet').onclick = e => {
       const m = e.target.closest('[data-mv]');
       if (m) { const ix = +m.dataset.mv, j = ix + (+m.dataset.d); if (j>=0 && j<order.length) { [order[ix], order[j]] = [order[j], order[ix]]; draw(); } return; }
-      if (e.target.id === 'oSave') { const c = state.doc.config || {}; backend.putConfig({...c, orders:{...(c.orders||{}), [sel]: order}}); closeSheet(); toast('Ordre enregistré pour ' + (STORES.find(s=>s.id===sel)||{}).name); return; }
+      if (e.target.id === 'oSave') { const c = L().config || {}; L().config = {...c, orders:{...(c.orders||{}), default: order}, updatedAt: Date.now()}; listFile.changed(); closeSheet(); toast('Ordre des rayons enregistré'); return; }
       if (e.target.closest('[data-close]')) closeSheet();
     };
   };
   draw();
 }
 
+/* ---------- Fiche recette (modèle unique) ---------- */
+function openRecipe(id){
+  const r = R().recipes[id]; if (!r || r.deleted) return;
+  const base = r.persons || 4;
+  let factor = 1, byIng = -1, haveQty = '';
+  const draw = () => {
+    const persons = Math.round(base * factor * 10) / 10;
+    openSheet(`<div class="rhead">
+        <div class="rhero" ${r.photo ? `data-photo="${esc(r.photo)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></div>
+        <button class="close" type="button" data-close aria-label="Fermer">✕</button>
+      </div>
+      <h3 class="rtitle-big">${esc(r.title)}</h3>
+      <div class="rmeta big">${r.time ? `<span>⏱ ${esc(r.time)} min</span>` : ''}${r.source && r.source.name ? `<span>📖 ${r.source.url ? `<a href="${esc(r.source.url)}">${esc(r.source.name)}</a>` : esc(r.source.name)}</span>` : ''}</div>
+      <div class="scale card soft">
+        <div class="stepper"><button type="button" data-p="-1" aria-label="Une personne de moins">−</button><output>${num(persons)} pers.</output><button type="button" data-p="1" aria-label="Une personne de plus">+</button></div>
+        <div class="field"><label for="rIng">Ou adapter selon ce que j’ai</label>
+          <div class="row"><select id="rIng"><option value="-1">Choisir un ingrédient…</option>${(r.ingredients||[]).map((i,ix)=> i.qty!=null ? `<option value="${ix}" ${ix===byIng?'selected':''}>${esc(i.name)}</option>` : '').join('')}</select>
+          <input id="rHave" inputmode="decimal" placeholder="${byIng>=0 ? esc(toEdit(r.ingredients[byIng].qty, r.ingredients[byIng].unit)[1]||'qté') : 'qté'}" value="${esc(haveQty)}"></div></div>
+      </div>
+      <h4>Ingrédients</h4>
+      <ul class="ings">${(r.ingredients||[]).map(i => { const q = scaleQty(i.qty, i.unit, factor); return `<li><span class="em" aria-hidden="true">${iconFor({name:i.name, cat:guessCat(i.name)})}</span><b>${esc(fmtQty(q, i.unit).replace(/^× /,''))}</b><span>${esc(i.name)}</span></li>`; }).join('')}</ul>
+      <button class="btn" type="button" id="rToList">🛒 Ajouter à la liste de courses</button>
+      <h4>Préparation</h4>
+      <ol class="steps">${(r.steps||[]).map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+      ${r.note ? `<p class="hint">📝 ${esc(r.note)}</p>` : ''}
+      <div class="actions"><button class="btn ghost" type="button" id="rFav">${r.fav ? '❤ Favori' : '♡ Ajouter aux favoris'}</button><button class="btn ghost" type="button" id="rEdit">✏️ Modifier</button></div>`, true);
+    hydratePhotos($('#sheet'));
+    $('#sheet').onclick = e => {
+      const p = e.target.closest('[data-p]');
+      if (p) { const np = Math.max(1, Math.round(base*factor) + (+p.dataset.p)); factor = np / base; byIng = -1; haveQty = ''; draw(); return; }
+      if (e.target.closest('[data-close]')) return closeSheet();
+      if (e.target.id === 'rFav') { putRecipe(id, {...r, fav: !r.fav}); r.fav = !r.fav; draw(); return; }
+      if (e.target.id === 'rEdit') return openRecipeForm(id);
+      if (e.target.id === 'rToList') {
+        let added = 0, merged = 0;
+        for (const i of r.ingredients||[]) { if (!i.name || STAPLES.has(keyOf(i.name))) continue; let q = scaleQty(i.qty, i.unit, factor); if (q != null && COUNT_UNITS.has(i.unit||'')) q = Math.ceil(q); const res = addItem({name:i.name, qty: q, unit: i.unit || '', from: r.title}, {quiet:true}); if (res==='new'||res==='back') added++; else merged++; }
+        closeSheet(); toast(`${added} ajouté${added>1?'s':''}${merged?`, ${merged} déjà dans la liste`:''} (sel, poivre, huile… non ajoutés)`);
+      }
+    };
+    $('#sheet').onchange = e => { if (e.target.id === 'rIng') { byIng = +e.target.value; haveQty = ''; draw(); } };
+    $('#sheet').oninput = e => {
+      if (e.target.id !== 'rHave' || byIng < 0) return;
+      haveQty = e.target.value; const ing = r.ingredients[byIng];
+      const unitShown = toEdit(ing.qty, ing.unit)[1];
+      const have = fromEdit(haveQty, unitShown).qty;
+      if (have && ing.qty) { factor = have / ing.qty; const pos = e.target.selectionStart; draw(); const el = $('#rHave'); el.focus(); try{ el.setSelectionRange(pos,pos); }catch(_){} }
+    };
+  };
+  draw();
+}
+
+function openRecipeForm(id, prefill){
+  const isNew = !id;
+  const r = isNew ? {title:'', persons:4, time:'', ingredients:[], steps:[], photo:null, fav:false, note:'', source:null, ...(prefill||{})} : JSON.parse(JSON.stringify(R().recipes[id]));
+  if (!r.ingredients.length) r.ingredients.push({name:'', qty:null, unit:''});
+  let photoBlob = null;
+  const ingRow = (i, ix) => { const [v,u] = toEdit(i.qty, i.unit); return `<div class="ingrow" data-ix="${ix}">
+      <input class="iq" inputmode="decimal" placeholder="Qté" value="${v===''?'':esc(String(Math.round(v*100)/100))}" aria-label="Quantité">
+      <select class="iu" aria-label="Unité">${unitOptions(u)}</select>
+      <input class="in" placeholder="Ingrédient" value="${esc(i.name)}" aria-label="Ingrédient">
+      <button type="button" class="rm" data-rmi="${ix}" aria-label="Retirer">✕</button></div>`; };
+  const collect = () => {
+    r.title = $('#fTitle').value.trim(); r.persons = Math.max(1, parseInt($('#fPers').value)||4); r.time = $('#fTime').value.trim();
+    r.ingredients = [...document.querySelectorAll('.ingrow')].map(row => { const name = cap(row.querySelector('.in').value.trim()); const {qty, unit} = fromEdit(row.querySelector('.iq').value.trim(), row.querySelector('.iu').value); return {name, qty, unit}; }).filter(i => i.name);
+    r.steps = $('#fSteps').value.split(/\n+/).map(s => s.replace(/^\d+[.)]\s*/,'').trim()).filter(Boolean);
+    r.note = $('#fNote').value.trim();
+  };
+  const draw = () => {
+    openSheet(`<h3>${isNew ? 'Nouvelle recette' : 'Modifier la recette'}</h3>
+      <div class="rhero small" ${r.photo && !photoBlob ? `data-photo="${esc(r.photo)}"` : ''} id="fHero" ${photoBlob ? `style="background-image:url('${URL.createObjectURL(photoBlob)}')"` : ''}><span class="remoji" aria-hidden="true">📷</span></div>
+      <label class="btn ghost filebtn">Photo du plat (facultatif)<input type="file" accept="image/*" id="fPhoto" hidden></label>
+      <div class="field"><label for="fTitle">Nom de la recette</label><input id="fTitle" value="${esc(r.title)}" placeholder="ex. Papet vaudois"></div>
+      <div class="row"><div class="field"><label for="fPers">Personnes</label><input id="fPers" inputmode="numeric" value="${esc(String(r.persons||4))}"></div>
+      <div class="field"><label for="fTime">Temps (min)</label><input id="fTime" inputmode="numeric" value="${esc(String(r.time||''))}"></div></div>
+      <div class="field"><span class="lab">Ingrédients</span><div id="fIngs">${r.ingredients.map(ingRow).join('')}</div>
+      <button type="button" class="link" id="fAddIng">+ Ajouter un ingrédient</button></div>
+      <div class="field"><label for="fSteps">Préparation (une étape par ligne)</label><textarea id="fSteps" rows="7">${esc((r.steps||[]).join('\n'))}</textarea></div>
+      <div class="field"><label for="fNote">Note perso</label><input id="fNote" value="${esc(r.note||'')}" placeholder="ex. un peu moins de sel"></div>
+      <div class="actions">${isNew ? '<button class="btn ghost" type="button" data-close>Annuler</button>' : '<button class="btn danger" type="button" id="fDel">Supprimer</button>'}<button class="btn" type="button" id="fSave">Enregistrer</button></div>`, true);
+    hydratePhotos($('#sheet'));
+    $('#fPhoto').onchange = async e => { const f = e.target.files[0]; if (!f) return; collect(); try { photoBlob = await shrink(f); draw(); } catch(_) { toast('Cette image ne peut pas être lue.'); } };
+    $('#sheet').onclick = async e => {
+      if (e.target.id === 'fAddIng') { collect(); r.ingredients.push({name:'', qty:null, unit:''}); draw(); const rows = document.querySelectorAll('.ingrow .iq'); rows[rows.length-1].focus(); return; }
+      const rm = e.target.closest('[data-rmi]'); if (rm) { collect(); r.ingredients.splice(+rm.dataset.rmi, 1); if (!r.ingredients.length) r.ingredients.push({name:'',qty:null,unit:''}); draw(); return; }
+      if (e.target.closest('[data-close]')) return closeSheet();
+      if (e.target.id === 'fDel') { const rid = id; const before = R().recipes[rid]; R().recipes[rid] = {deleted:true, updatedAt:Date.now()}; recFile.changed(); closeSheet(); toast('Recette supprimée', () => putRecipe(rid, before)); return; }
+      if (e.target.id === 'fSave') {
+        collect();
+        if (!r.title) { toast('Donne un nom à la recette.'); return; }
+        const rid = id || uid();
+        if (photoBlob) { e.target.disabled = true; e.target.textContent = 'Envoi de la photo…'; try { r.photo = await uploadPhoto(photoBlob, rid); } catch(_) { toast('La photo n’a pas pu être envoyée. La recette est enregistrée sans photo.'); } }
+        putRecipe(rid, r); closeSheet(); toast(isNew ? 'Recette ajoutée' : 'Recette modifiée');
+      }
+    };
+    $('#sheet').oninput = e => { if (e.target.classList.contains('in') && !e.target.value.match(/\d/)) { const row = e.target.closest('.ingrow'); const us = row.querySelector('.iu'); const q = row.querySelector('.iq'); if (!q.value && !us.dataset.touched) { const pr = findProduct(e.target.value); if (pr) us.value = toEdit(1, pr.u)[1] || pr.u; } } };
+    $('#sheet').onchange = e => { if (e.target.classList && e.target.classList.contains('iu')) e.target.dataset.touched = '1'; };
+  };
+  draw();
+}
+
+function openAddRecipe(){
+  openSheet(`<h3>Ajouter une recette</h3>
+    <label class="choice"><span class="em" aria-hidden="true">📸</span><span><b>Prendre une photo</b><small>D’un livre, d’une fiche ou d’un écran</small></span><input type="file" accept="image/*" capture="environment" id="imCam" hidden></label>
+    <label class="choice"><span class="em" aria-hidden="true">🖼️</span><span><b>Choisir une image</b><small>Une capture d’écran ou une photo de ta galerie</small></span><input type="file" accept="image/*" id="imGal" hidden></label>
+    <button class="choice" type="button" id="imManual"><span class="em" aria-hidden="true">✍️</span><span><b>Saisir à la main</b><small>Remplir la fiche toi-même</small></span></button>
+    <p class="hint">Avec une photo, l’app lit le texte et pré-remplit la fiche. Vérifie-la toujours avant d’enregistrer : la lecture n’est pas parfaite.</p>
+    <button class="btn ghost" type="button" data-close>Annuler</button>`);
+  const fromImage = async f => {
+    if (!f) return;
+    openSheet(`<h3>Lecture de la recette…</h3><div class="progress"><i id="ocrBar"></i></div><p class="hint" id="ocrMsg">Préparation de la lecture (la première fois, environ 10 secondes de téléchargement).</p>`);
+    try {
+      const text = await ocrImage(f, p => { const b = $('#ocrBar'); if (b) b.style.width = Math.round(p*100) + '%'; const m = $('#ocrMsg'); if (m) m.textContent = 'Lecture du texte… ' + Math.round(p*100) + ' %'; });
+      const pre = parseRecipeText(text);
+      if (!pre.title && !pre.ingredients.length) { openSheet(`<h3>Texte introuvable</h3><p class="hint">Je n’ai pas réussi à lire de recette sur cette image. Essaie une photo plus nette, bien droite et éclairée, ou saisis-la à la main.</p><button class="btn" type="button" data-close>OK</button>`); $('#sheet').onclick = e => { if (e.target.closest('[data-close]')) closeSheet(); }; return; }
+      openRecipeForm(null, pre);
+      toast('Fiche pré-remplie : vérifie et corrige avant d’enregistrer.');
+    } catch(err) {
+      openSheet(`<h3>Lecture impossible</h3><p class="hint">La lecture de photo a besoin d’internet la première fois. Vérifie ta connexion et réessaie, ou saisis la recette à la main.</p><button class="btn" type="button" data-close>OK</button>`);
+      $('#sheet').onclick = e => { if (e.target.closest('[data-close]')) closeSheet(); };
+    }
+  };
+  $('#imCam').onchange = e => fromImage(e.target.files[0]);
+  $('#imGal').onchange = e => fromImage(e.target.files[0]);
+  $('#sheet').onclick = e => { if (e.target.closest('#imManual')) return openRecipeForm(null); if (e.target.closest('[data-close]')) closeSheet(); };
+}
+
 function openSettings(){
   const when = state.lastSync ? new Date(state.lastSync).toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'}) : 'jamais';
   openSheet(`<h3>Réglages</h3>
-    <div class="field"><label for="sName">Ton prénom (affiché sur tes ajouts)</label><input id="sName" value="${esc(cfg.name)}"></div>
     <p class="hint"><b>Version ${APP_VERSION}</b></p>
-    <p class="hint">Dernière synchronisation : ${esc(when)}. La liste est enregistrée dans le dépôt privé ${esc(GH.owner)}/${esc(GH.repo)}.</p>
-    <div class="actions"><button class="btn ghost" type="button" id="sSync">Synchroniser maintenant</button><button class="btn" type="button" id="sSave">Enregistrer</button></div>
+    <div class="field"><label for="sName">Ton prénom (affiché sur tes ajouts)</label><input id="sName" value="${esc(cfg.name)}"></div>
+    <p class="hint">Dernière synchronisation : ${esc(when)}. Les données sont dans le dépôt privé ${esc(GH.owner)}/${esc(GH.repo)}.</p>
+    <button class="btn ghost" type="button" id="sOrder">Ordre des rayons</button>
+    <div class="actions"><button class="btn ghost" type="button" id="sSync">Synchroniser</button><button class="btn" type="button" id="sSave">Enregistrer</button></div>
     <button class="btn danger" type="button" id="sOut">Changer de jeton d’accès</button>`);
-  $('#sSync').onclick = () => { etag = null; pull(); closeSheet(); };
+  $('#sOrder').onclick = openOrder;
+  $('#sSync').onclick = () => { FILES.forEach(f => f.etag = null); pullAll(true); closeSheet(); };
   $('#sSave').onclick = () => { cfg.name = $('#sName').value.trim(); saveCfg(); closeSheet(); toast('Réglages enregistrés'); };
   $('#sOut').onclick = () => { closeSheet(); showSetup(true); };
 }
@@ -768,50 +1158,55 @@ $('#setupForm').onsubmit = async e => {
   $('#suMsg').textContent = 'Vérification…';
   try {
     const r = await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}`, {headers:{'Authorization':'Bearer '+token, 'Accept':'application/vnd.github+json'}, cache:'no-store'});
-    if (!r.ok) { $('#suMsg').textContent = r.status === 401 ? 'Ce jeton est refusé par GitHub. Vérifie que tu l’as copié en entier.' : r.status === 404 ? 'GitHub ne trouve pas le dépôt recette-cuisine-data avec ce jeton. Vérifie que ce dépôt est bien choisi dans « Repository access » du jeton, puis réessaie.' : 'GitHub a répondu une erreur (' + r.status + '). Réessaie dans un instant.'; return; }
+    if (!r.ok) { $('#suMsg').textContent = r.status === 401 ? 'Ce jeton est refusé par GitHub. Vérifie que tu l’as copié en entier.' : r.status === 404 ? 'GitHub ne trouve pas le dépôt recette-cuisine-data avec ce jeton. Vérifie que ce dépôt est bien choisi dans « Repository access » du jeton.' : 'GitHub a répondu une erreur (' + r.status + '). Réessaie dans un instant.'; return; }
     const j = await r.json();
     if (!j.permissions || !j.permissions.push) { $('#suMsg').textContent = 'Le jeton peut lire mais pas écrire. Mets « Contents » sur « Read and write ».'; return; }
   } catch(err) { $('#suMsg').textContent = 'Pas de connexion internet. Réessaie quand tu as du réseau.'; return; }
-  cfg = {token, name}; saveCfg(); state.me = name;
-  sha = null; etag = null;
+  cfg = {token, name}; saveCfg();
+  FILES.forEach(f => { f.sha = null; f.etag = null; });
   $('#setup').hidden = true; $('#app').hidden = false;
-  render(); setStatus('idle'); await pull(); startPolling();
+  render(); setStatus('idle'); pullAll(true); startPolling();
 };
 
 /* ---------- Événements ---------- */
-$('#stores').onclick = e => { const b = e.target.closest('[data-store]'); if (b) { state.store = b.dataset.store; try{localStorage.setItem(KEY_STORE, state.store);}catch(_){} render(); } };
+function setTab(t){ state.tab = t; try{ localStorage.setItem(KEY_TAB, t); }catch(_){} window.scrollTo(0,0); render(); }
+$('#tabList').onclick = () => setTab('list');
+$('#tabRec').onclick = () => setTab('rec');
 $('#list').onclick = e => {
   const c = e.target.closest('[data-check]'); if (c) return toggle(c.dataset.check);
   const ed = e.target.closest('[data-edit]'); if (ed) return openEdit(ed.dataset.edit);
   if (e.target.id === 'clearDone') clearDone();
 };
-$('#usual').onclick = e => { const b = e.target.closest('[data-usual]'); if (!b) return; const c = state.doc.catalog[b.dataset.usual]; if (c) addItem({...withDefaults({name:c.name, qty:null, unit:''}), cat:c.cat}); };
-$('#addForm').onsubmit = e => {
-  e.preventDefault();
-  const p = parseLine($('#addInput').value); if (!p) return;
-  addItem(withDefaults(p)); $('#addInput').value = ''; $('#sugg').hidden = true;
-};
-$('#addInput').oninput = showSugg;
-$('#addInput').onblur = () => setTimeout(() => { $('#sugg').hidden = true; }, 150);
-$('#sugg').onclick = e => {
-  const b = e.target.closest('[data-sugg]'); if (!b) return;
-  const c = state.doc.catalog[b.dataset.sugg], p = parseLine($('#addInput').value) || {};
-  addItem({...withDefaults({name:c.name, qty: p.qty ?? null, unit: p.unit||'', unitGiven: p.unitGiven}), cat:c.cat});
-  $('#addInput').value = ''; $('#sugg').hidden = true;
-};
+$('#usual').onclick = e => { const b = e.target.closest('[data-usual]'); if (!b) return; const c = L().catalog[b.dataset.usual]; if (c) addItem({...withDefaults({name:c.name, qty:null, unit:''}), cat:c.cat}); };
+$('#addForm').onsubmit = e => { e.preventDefault(); const p = parseLine($('#addInput').value); if (!p) return; addItem(withDefaults(p)); $('#addInput').value = ''; $('#sugg').hidden = true; };
+attachSuggest($('#addInput'), $('#sugg'), p => addItem(withDefaults(p)));
+// Recettes
+attachSuggest($('#haveInput'), $('#haveSugg'), p => { if (!state.have.includes(p.name)) state.have.push(p.name); render(); });
+$('#haveForm').onsubmit = e => { e.preventDefault(); const v = $('#haveInput').value.trim(); if (!v) return; const p = parseLine(v); const n = p ? p.name : cap(v);
+  // un mot qui ne ressemble à aucun ingrédient : recherche dans les titres
+  if (!findProduct(n) && !DICTIONARY.some(w => norm(w) === norm(n))) { state.recQuery = n; } else if (!state.have.includes(n)) state.have.push(n);
+  $('#haveInput').value = ''; $('#haveSugg').hidden = true; render(); };
+$('#haveChips').onclick = e => { const b = e.target.closest('[data-rmhave]'); if (b) { state.have.splice(+b.dataset.rmhave, 1); render(); } };
+$('#favOnly').onclick = () => { state.favOnly = !state.favOnly; render(); };
+$('#recList').onclick = e => { const b = e.target.closest('[data-rec]'); if (b) openRecipe(b.dataset.rec); };
+$('#addRecipe').onclick = openAddRecipe;
+$('#clearQuery').onclick = () => { state.recQuery = ''; state.have = []; render(); };
 $('#toastUndo').onclick = () => { if (undoFn) undoFn(); undoFn = null; $('#toast').hidden = true; };
 $('#scrim').onclick = e => { if (e.target.id === 'scrim') closeSheet(); };
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#scrim').hidden) closeSheet(); });
-$('#openOrder').onclick = openOrder;
 $('#openSettings').onclick = openSettings;
-$('#status').onclick = () => { if (state.status === 'auth') showSetup(true); else { etag = null; pull(); } };
+$('#status').onclick = () => { if (state.status === 'auth') showSetup(true); else { FILES.forEach(f => f.etag = null); pullAll(true); } };
 
 /* ---------- Démarrage ---------- */
 if (window.Capacitor || location.hostname === 'localhost') document.documentElement.classList.add('apk');
-loadLocal();
+try{ const c = JSON.parse(localStorage.getItem(KEY_CFG)); if (c) cfg = c; }catch(e){}
+// reprise des données de la version précédente
+try{ const old = JSON.parse(localStorage.getItem('rc-doc')); if (old && old.doc && !localStorage.getItem('rc-file:data/liste.json')) { localStorage.setItem('rc-file:data/liste.json', JSON.stringify(old)); } }catch(e){}
+FILES.forEach(f => f.load());
+try{ const t = localStorage.getItem(KEY_TAB); if (t === 'rec' || t === 'list') state.tab = t; }catch(e){}
 $('#ver').textContent = 'Nos courses · version ' + APP_VERSION;
 if (!cfg.token) showSetup(false);
-else { $('#app').hidden = false; render(); pull(); startPolling(); }
+else { $('#app').hidden = false; render(); pullAll(true); startPolling(); }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 </script>
