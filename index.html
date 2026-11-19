@@ -17,6 +17,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>/* Layout: bandeau orange en haut (titre, magasins, ajout), rayons en cartes blanches, panneaux qui montent du bas */
 :root{
+  --top-inset:0px;
+  --bottom-inset:0px;
   --bg:#F4F9F5;
   --surface:#FFFFFF;
   --ink:#1E2B24;
@@ -34,14 +36,14 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
-html{overflow-x:hidden}
-body{overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+html{overflow-x:clip}
+body{overflow-x:clip;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 
 header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,#FF8A3D 0%,#FF6B35 55%,#F2542D 100%);color:#fff;padding:max(14px, calc(env(safe-area-inset-top) + 10px)) 16px 14px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr);border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(242,84,45,.25)}
-html.apk header{padding-top:40px}
+html.edge header{padding-top:calc(var(--top-inset) + 10px)}
 .hwrap{max-width:560px;margin:0 auto;width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .hwrap>*{min-width:0}
 .add form>*{min-width:0}
@@ -135,7 +137,7 @@ li.done .icon{filter:grayscale(.7);opacity:.6}
 .sheet li button{width:38px;height:38px;border:0;background:none;font-size:18px;color:var(--muted)}
 
 .setup{max-width:560px;margin:0 auto;padding:max(28px, calc(env(safe-area-inset-top) + 16px)) 16px 60px;display:grid;gap:16px;overflow-wrap:anywhere}
-html.apk .setup{padding-top:56px}
+html.edge .setup{padding-top:calc(var(--top-inset) + 20px)}
 .setup[hidden],#app[hidden]{display:none}
 .setup h1{color:var(--accent)}
 .setup p{margin:0;color:var(--muted);font-weight:600}
@@ -148,7 +150,11 @@ html.apk .setup{padding-top:56px}
 /* Onglets */
 body[data-tab="list"] .only-rec, body[data-tab="rec"] .only-list{display:none!important}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);display:flex;justify-content:center;gap:8px;padding:8px 16px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(30,43,36,.08)}
-html.apk .tabbar{padding-bottom:14px}
+html.edge .tabbar{padding-bottom:calc(var(--bottom-inset) + 8px)}
+html.edge .toast{bottom:calc(var(--bottom-inset) + 86px)}
+html.edge .sheet{padding-bottom:calc(var(--bottom-inset) + 24px)}
+html.edge .wrap{padding-bottom:calc(var(--bottom-inset) + 130px)}
+html.edge .sheet.full{max-height:calc(100% - var(--top-inset))}
 .tabbar button{flex:1;max-width:260px;border:0;background:none;border-radius:14px;padding:8px 6px;font-weight:900;font-size:14px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
 .tabbar button .em{font-size:22px}
 .tabbar button[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
@@ -215,6 +221,17 @@ html.apk .tabbar{padding-bottom:14px}
 .progress{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
 .progress i{display:block;height:100%;width:2%;background:var(--accent);transition:width .3s}
 .fab{margin-left:auto}
+.lists{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.lists::-webkit-scrollbar{display:none}
+.lists .chip .n:empty{display:none}
+.lchip-add{border:1.5px dashed rgba(255,255,255,.7)!important;background:transparent!important}
+.iconpick{border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 12px;font-weight:800;display:flex;gap:10px;align-items:center;justify-content:center}
+.iconpick span{font-size:26px}
+.icongrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:4px;max-height:220px;overflow:auto;background:var(--bg);border-radius:12px;padding:6px}
+.icongrid button{border:0;background:var(--surface);border-radius:10px;height:44px;font-size:24px}
+.switch{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--bg)}
+.switch input{width:22px;height:22px;margin-top:2px;accent-color:var(--accent)}
+.switch small{display:block;color:var(--muted);font-weight:600}
 .count{color:var(--muted);font-weight:800;font-size:13px;margin:16px 4px 0}
 .cards{margin-top:8px}
 .more{width:100%;margin-top:14px}
@@ -248,12 +265,13 @@ html.apk .tabbar{padding-bottom:14px}
   <header>
    <div class="hwrap">
     <div class="top">
-      <h1><span class="only-list">Nos courses</span><span class="only-rec">Recettes</span></h1>
+      <h1><span class="only-list">Nos listes</span><span class="only-rec">Recettes</span></h1>
       <div class="topr">
         <button class="status" id="status" type="button"><i class="dot"></i><span>Connexion…</span></button>
         <button class="iconbtn" id="openSettings" type="button" aria-label="Réglages">⚙</button>
       </div>
     </div>
+    <div class="lists only-list" id="lists" role="toolbar" aria-label="Listes"></div>
     <div class="add only-list">
       <form id="addForm" autocomplete="off">
         <input id="addInput" type="text" placeholder="Ajouter… ex. lait, 2 kg pommes" aria-label="Ajouter un article" enterkeyhint="done" autocapitalize="sentences">
@@ -353,7 +371,7 @@ const num = n => Number(n).toLocaleString('fr-CH',{maximumFractionDigits:2});
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 function guessCat(name){
-  const learned = (typeof listFile !== 'undefined') && L().catalog[slug(keyOf(name))];
+  const learned = (typeof listFile !== 'undefined') && catalogs()[slug(keyOf(name))];
   if (learned && learned.cat) return learned.cat;
   const prod = findProduct(name); if (prod) return prod.cat;
   const n = ' ' + norm(name).split(' ').map(sing).join(' ') + ' ';
@@ -590,7 +608,11 @@ function findProduct(name){
   prodCache.set(n0, hit);
   return hit;
 }
-const iconFor = i => { const p = findProduct(i.name); return p ? p.icon : (CAT_ICON[i.cat] || '🛒'); };
+const iconFor = i => {
+  try { const c = (typeof listFile !== 'undefined') && catalogs()[slug(keyOf(i.name))]; if (c && c.icon) return c.icon; } catch(e){}
+  const p = findProduct(i.name); return p ? p.icon : (CAT_ICON[i.cat] || '🛒');
+};
+const ICON_CHOICES = [...new Set([...PRODUCT_LINES.map(p => p.icon), ...Object.values(CAT_ICON), '🍽️','🥘','🍲','🥙','🌮','🍱','🥮','🧆','🫓','🥠','🍤','🍢','🍡','🍧','🍮','🍭','🎂','🥧','🧋','🍸','🥂','🧉','🫖','🧃','🪴','🎁','🎈','🧸','📚','✏️','🧷','🧵','🪡','🔧','🪛','🔩','🧯','🚲','👕','🧦','👟','💊','🐶','🐱','🍼','📦','🛒'])];
 // Unité logique : sans quantité on garde juste l'unité ; un nombre seul prend cette unité
 function withDefaults(p){
   const prod = findProduct(p.name);
@@ -601,7 +623,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.10';
+const APP_VERSION = '1.0.11';
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
 const API_BASE = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
@@ -610,7 +632,7 @@ const KEY_CFG = 'rc-config', KEY_TAB = 'rc-tab';
 
 /* ---------- État ---------- */
 let cfg = {token:'', name:''};
-const state = { tab:'list', status:'idle', lastSync:0, have:[], recQuery:'', favOnly:false, shown:40 };
+const state = { tab:'list', status:'idle', lastSync:0, have:[], recQuery:'', favOnly:false, shown:40, listId:'main' };
 const headers = () => ({ 'Authorization':'Bearer '+cfg.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' });
 const enc = str => { const b = new TextEncoder().encode(str); let bin=''; for (let i=0;i<b.length;i+=8192) bin += String.fromCharCode.apply(null, b.subarray(i,i+8192)); return btoa(bin); };
 const dec = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g,'')), c => c.charCodeAt(0)));
@@ -688,7 +710,18 @@ const recFile = syncFile('data/recettes.json',
   () => ({version:1, recipes:{}}),
   (l, r={}) => ({ version:1, recipes: mergeMaps(l.recipes, r.recipes, x => x.updatedAt) }),
   () => render(), 3);
-const FILES = [listFile, recFile];
+let FILES = [listFile, recFile];
+let privFile = null;
+function setupPrivate(){
+  if (!cfg.name) { privFile = null; FILES = [listFile, recFile]; return; }
+  const path = 'data/prive-' + slug(keyOf(cfg.name)) + '.json';
+  if (privFile && privFile.path === path) return;
+  privFile = syncFile(path, () => ({version:1, lists:{}, items:{}, catalog:{}}),
+    (l, r={}) => ({ version:1, lists: mergeMaps(l.lists, r.lists, x => x.updatedAt), items: mergeMaps(l.items, r.items, x => x.updatedAt), catalog: mergeMaps(l.catalog, r.catalog, x => x.last) }),
+    () => render(), 2);
+  privFile.load();
+  FILES = [listFile, recFile, privFile];
+}
 
 function setStatus(s){ if (state.status !== s) { state.status = s; renderStatus(); } }
 function refreshStatus(){
@@ -706,18 +739,31 @@ window.addEventListener('online', () => { pullAll(true); FILES.forEach(f => f.di
 
 /* ---------- Liste : données ---------- */
 const L = () => listFile.doc;
-const items = () => Object.fromEntries(Object.entries(L().items).filter(([,i]) => !i.deleted));
+const P = () => privFile ? privFile.doc : null;
+function allLists(){
+  const shared = (L().config && L().config.lists) || [];
+  const out = [{id:'main', name:(L().config && L().config.mainName) || 'Courses', priv:false}, ...shared.filter(l => !l.deleted && l.id !== 'main').map(l => ({...l, priv:false}))];
+  if (P()) for (const [id,l] of Object.entries(P().lists||{})) if (!l.deleted) out.push({id, name:l.name, priv:true});
+  return out;
+}
+const curList = () => allLists().find(l => l.id === state.listId) || allLists()[0];
+const isPriv = id => !!(P() && P().lists && P().lists[id] && !P().lists[id].deleted);
+const curFile = () => isPriv(curList().id) ? privFile : listFile;
+const CUR = () => curFile().doc;
+const itemsOf = listId => { const f = isPriv(listId) ? privFile : listFile; return Object.fromEntries(Object.entries(f.doc.items||{}).filter(([,i]) => !i.deleted && (i.list||'main') === listId)); };
+const items = () => itemsOf(curList().id);
 const active = () => Object.entries(items()).filter(([,i]) => !i.done);
-const putItem = (id,d) => { L().items[id] = {...d, updatedAt: Date.now()}; listFile.changed(); };
-const delItem = id => { L().items[id] = {deleted:true, updatedAt: Date.now()}; listFile.changed(); };
-const putCat = (k,d) => { L().catalog[k] = {...d, last: d.last || Date.now()}; listFile.dirty = true; listFile.save(); listFile.schedule(); };
+const putItem = (id,d) => { const f = curFile(); f.doc.items[id] = {...d, list: d.list || curList().id, updatedAt: Date.now()}; f.changed(); };
+const delItem = id => { const f = curFile(); f.doc.items[id] = {deleted:true, updatedAt: Date.now()}; f.changed(); };
+const putCat = (k,d) => { const f = curFile(); f.doc.catalog = f.doc.catalog || {}; f.doc.catalog[k] = {...d, last: d.last || Date.now()}; f.dirty = true; f.save(); f.schedule(); };
+const catalogs = () => ({...(L().catalog||{}), ...((P() && P().catalog) || {})});
 function aisleOrder(){
   const o = (L().config && L().config.orders && L().config.orders.default) || DEFAULT_ORDER.default;
   return [...o.filter(c => CAT[c]), ...CATS.map(c=>c[0]).filter(c => !o.includes(c))];
 }
 function bumpCatalog(it){
-  const k = slug(it.key), prev = L().catalog[k] || {};
-  putCat(k, {name: it.name, cat: it.cat, unit: it.unit, count: (prev.count||0)+1, last: Date.now()});
+  const k = slug(it.key), prev = (CUR().catalog||{})[k] || catalogs()[k] || {};
+  putCat(k, {...prev, name: it.name, cat: it.cat, unit: it.unit, count: (prev.count||0)+1, last: Date.now()});
 }
 function addItem({name, qty=null, unit='', cat, from}, opts={}){
   const key = keyOf(name);
@@ -733,7 +779,7 @@ function addItem({name, qty=null, unit='', cat, from}, opts={}){
     if (!opts.quiet) toast(result === 'merged' ? `${d.name} : ${fmtQty(d.qty,d.unit)} au total` : result === 'back' ? `${d.name} remis dans la liste` : `${d.name} est déjà dans la liste`);
     return result;
   }
-  const d = {name, key, qty, unit: qty!=null ? (unit||'pce') : (unit||''), cat: cat || guessCat(name), note:'', done:false, doneAt:null, by: cfg.name || '', at: Date.now(), from: from?[from]:[]};
+  const d = {name, key, list: curList().id, qty, unit: qty!=null ? (unit||'pce') : (unit||''), cat: cat || guessCat(name), note:'', done:false, doneAt:null, by: cfg.name || '', at: Date.now(), from: from?[from]:[]};
   putItem(uid(), d); bumpCatalog(d);
   return 'new';
 }
@@ -742,7 +788,7 @@ const baseOf = u => { const m = UNITS[norm(u)]; return m ? m : [u||'pce', 1]; };
 const sameUnit = (a,b) => baseOf(a)[0] === baseOf(b)[0];
 const toBase = (q, from, to) => q * baseOf(from)[1] / baseOf(to)[1];
 function toggle(id){
-  const i = L().items[id]; if (!i || i.deleted) return;
+  const i = CUR().items[id]; if (!i || i.deleted) return;
   const before = {...i};
   putItem(id, {...i, done: !i.done, doneAt: !i.done ? Date.now() : null});
   if (!before.done) toast(`${i.name} dans le caddie`, () => putItem(id, before));
@@ -750,9 +796,9 @@ function toggle(id){
 function clearDone(){
   const done = Object.entries(items()).filter(([,i]) => i.done);
   if (!done.length) return;
-  done.forEach(([id]) => { L().items[id] = {deleted:true, updatedAt:Date.now()}; });
-  listFile.changed();
-  toast(`${done.length} article${done.length>1?'s':''} retiré${done.length>1?'s':''}`, () => { done.forEach(([id,i]) => { L().items[id] = {...i, updatedAt:Date.now()}; }); listFile.changed(); });
+  const f = curFile(); done.forEach(([id]) => { f.doc.items[id] = {deleted:true, updatedAt:Date.now()}; });
+  f.changed();
+  toast(`${done.length} article${done.length>1?'s':''} retiré${done.length>1?'s':''}`, () => { done.forEach(([id,i]) => { f.doc.items[id] = {...i, updatedAt:Date.now()}; }); f.changed(); });
 }
 
 /* ---------- Saisie avec propositions ---------- */
@@ -760,7 +806,7 @@ function suggestions(text, limit=5){
   const q = norm(text); if (q.length < 1) return [];
   const seen = new Set(), out = [];
   const push = (name, score) => { const k = keyOf(name); if (seen.has(k)) return; seen.add(k); out.push({name, score}); };
-  const hist = Object.values(L().catalog).sort((a,b) => (b.count||0)-(a.count||0));
+  const hist = Object.values(catalogs()).sort((a,b) => (b.count||0)-(a.count||0));
   const score = name => { const n = norm(name); if (n.startsWith(q)) return 0; if (n.split(' ').some(w => w.startsWith(q))) return 1; return -1; };
   for (const c of hist) { const s = score(c.name); if (s >= 0) push(c.name, s - 0.5); }
   for (const w of DICTIONARY) { const s = score(w); if (s >= 0) push(w, s); }
@@ -902,10 +948,17 @@ function render(){
   $('#tabList .n').textContent = active().length || '';
   if (state.tab === 'list') renderList(); else renderRecipes();
 }
+function renderLists(){
+  if (!allLists().some(l => l.id === state.listId)) state.listId = 'main';
+  $('#lists').innerHTML = allLists().map(l => { const n = Object.values(itemsOf(l.id)).filter(i => !i.done).length;
+    return `<button class="chip" type="button" data-list="${esc(l.id)}" aria-pressed="${l.id === state.listId}">${l.priv ? '🔒 ' : ''}${esc(l.name)}<span class="n">${n || ''}</span></button>`; }).join('')
+    + `<button class="chip lchip-add" type="button" id="addList">+ Liste</button>`;
+}
 function renderList(){
+  renderLists();
   const act = active();
   const inList = new Set(act.map(([,i]) => slug(i.key)));
-  const usual = Object.entries(L().catalog).filter(([k,c]) => !inList.has(k) && (c.count||0) >= 1)
+  const usual = Object.entries(CUR().catalog||{}).filter(([k,c]) => !inList.has(k) && (c.count||0) >= 1)
     .sort((a,b) => (b[1].count||0)-(a[1].count||0) || (b[1].last||0)-(a[1].last||0)).slice(0,12);
   $('#usual').innerHTML = usual.length ? `<span class="lbl">Habituels</span>` + usual.map(([k,c]) =>
     `<button class="pill" type="button" data-usual="${esc(k)}"><span class="em" aria-hidden="true">${iconFor(c)}</span>${esc(c.name)}</button>`).join('') : '';
@@ -972,7 +1025,7 @@ function closeSheet(){ $('#scrim').hidden = true; $('#sheet').innerHTML = ''; }
 const unitOptions = sel => EDIT_UNITS.map(x=>`<option value="${esc(x)}" ${x===sel?'selected':''}>${esc(x||'—')}</option>`).join('');
 
 function openEdit(id){
-  const i = L().items[id]; if (!i || i.deleted) return;
+  const i = CUR().items[id]; if (!i || i.deleted) return;
   let [v,u] = toEdit(i.qty, i.unit);
   if (i.qty == null && !u) { const pr = findProduct(i.name); if (pr) u = pr.u; }
   openSheet(`<h3><span aria-hidden="true">${iconFor(i)}</span>${esc(i.name)}</h3>
@@ -981,17 +1034,57 @@ function openEdit(id){
   <div class="field"><label for="eUnit">Unité</label><select id="eUnit">${unitOptions(u)}</select></div></div>
   <div class="field"><label for="eCat">Rayon</label><select id="eCat">${CATS.map(([c,n])=>`<option value="${c}" ${c===i.cat?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
   <div class="field"><label for="eNote">Note</label><input id="eNote" value="${esc(i.note||'')}" placeholder="ex. bio si possible"></div>
+  <div class="field"><span class="lab">Icône (gardée pour les prochaines fois)</span><button type="button" class="iconpick" id="eIconBtn"><span id="eIcon">${iconFor(i)}</span> Changer l’icône</button>
+  <div class="icongrid" id="eIcons" hidden>${ICON_CHOICES.map(e => `<button type="button" data-ic="${e}" aria-label="Icône ${e}">${e}</button>`).join('')}</div></div>
   ${i.by ? `<p class="hint">Ajouté par ${esc(i.by)}</p>` : ''}
   <div class="actions"><button class="btn danger" type="button" id="eDel">Supprimer</button><button class="btn" type="button" id="eSave">Enregistrer</button></div>`);
-  $('#eDel').onclick = () => { const before = {...L().items[id]}; delItem(id); closeSheet(); toast(`${before.name} supprimé`, () => putItem(id, before)); };
+  let pickedIcon = null;
+  $('#eIconBtn').onclick = () => { $('#eIcons').hidden = !$('#eIcons').hidden; };
+  $('#eIcons').onclick = e => { const b = e.target.closest('[data-ic]'); if (!b) return; pickedIcon = b.dataset.ic; $('#eIcon').textContent = pickedIcon; $('#eIcons').hidden = true; };
+  $('#eDel').onclick = () => { const before = {...CUR().items[id]}; delItem(id); closeSheet(); toast(`${before.name} supprimé`, () => putItem(id, before)); };
   $('#eSave').onclick = () => {
     const name = cap($('#eName').value.trim()) || i.name;
     const {qty, unit} = fromEdit($('#eQty').value.trim(), $('#eUnit').value);
     const cat = $('#eCat').value;
     const d = {...i, name, key:keyOf(name), qty, unit, cat, note: $('#eNote').value.trim()};
     putItem(id, d);
-    if (cat !== i.cat || name !== i.name) { const k = slug(d.key), prev = L().catalog[k] || {}; putCat(k, {...prev, name, cat, unit, count: prev.count||1, last: Date.now()}); }
-    closeSheet();
+    if (cat !== i.cat || name !== i.name || pickedIcon) { const k = slug(d.key), prev = (CUR().catalog||{})[k] || catalogs()[k] || {}; putCat(k, {...prev, name, cat, unit, ...(pickedIcon ? {icon: pickedIcon} : {}), count: prev.count||1, last: Date.now()}); }
+    closeSheet(); render();
+  };
+}
+
+function openListForm(id){
+  const l = id ? allLists().find(x => x.id === id) : null;
+  const canPriv = !!privFile;
+  openSheet(`<h3>${l ? 'Modifier la liste' : 'Nouvelle liste'}</h3>
+    <div class="field"><label for="lName">Nom</label><input id="lName" value="${esc(l ? l.name : '')}" placeholder="ex. Marché, Bricolage, Pharmacie"></div>
+    ${l ? `<p class="hint">${l.priv ? '🔒 Liste privée : elle n’apparaît que dans ton app.' : 'Liste partagée : visible dans les deux apps.'}</p>` :
+      `<label class="switch"><input type="checkbox" id="lPriv" ${canPriv ? '' : 'disabled'}><span><b>Liste privée</b><small>${canPriv ? 'Elle n’apparaît que dans ton app, pas chez l’autre personne.' : 'Indique d’abord ton prénom dans les réglages ⚙.'}</small></span></label>`}
+    <div class="actions">${l && l.id !== 'main' ? '<button class="btn danger" type="button" id="lDel">Supprimer</button>' : '<button class="btn ghost" type="button" data-close>Annuler</button>'}<button class="btn" type="button" id="lSave">Enregistrer</button></div>`);
+  $('#sheet').onclick = e => {
+    if (e.target.closest('[data-close]')) return closeSheet();
+    if (e.target.id === 'lSave') {
+      const name = cap($('#lName').value.trim()); if (!name) { toast('Donne un nom à la liste.'); return; }
+      if (l) {
+        if (l.priv) { P().lists[l.id] = {...P().lists[l.id], name, updatedAt: Date.now()}; privFile.changed(); }
+        else if (l.id === 'main') { const c = L().config || {}; L().config = {...c, mainName: name, updatedAt: Date.now()}; listFile.changed(); }
+        else { const c = L().config || {}; L().config = {...c, lists: (c.lists||[]).map(x => x.id === l.id ? {...x, name} : x), updatedAt: Date.now()}; listFile.changed(); }
+      } else {
+        const nid = 'l' + uid();
+        if ($('#lPriv') && $('#lPriv').checked && privFile) { P().lists = P().lists || {}; P().lists[nid] = {name, updatedAt: Date.now()}; privFile.changed(); }
+        else { const c = L().config || {}; L().config = {...c, lists: [...(c.lists||[]), {id:nid, name}], updatedAt: Date.now()}; listFile.changed(); }
+        state.listId = nid;
+      }
+      closeSheet(); render(); return;
+    }
+    if (e.target.id === 'lDel') {
+      const f = l.priv ? privFile : listFile;
+      for (const [iid, it] of Object.entries(f.doc.items)) if ((it.list||'main') === l.id) f.doc.items[iid] = {deleted:true, updatedAt: Date.now()};
+      if (l.priv) P().lists[l.id] = {deleted:true, updatedAt: Date.now()};
+      else { const c = L().config || {}; L().config = {...c, lists: (c.lists||[]).map(x => x.id === l.id ? {...x, deleted:true} : x), updatedAt: Date.now()}; }
+      f.changed(); if (!l.priv) listFile.changed();
+      state.listId = 'main'; closeSheet(); render(); toast('Liste supprimée');
+    }
   };
 }
 
@@ -1048,7 +1141,7 @@ function openRecipe(id){
       if (e.target.id === 'rToList') {
         let added = 0, merged = 0;
         for (const i of r.ingredients||[]) { if (!i.name || STAPLES.has(keyOf(i.name))) continue; let q = scaleQty(i.qty, i.unit, factor); if (q != null && COUNT_UNITS.has(i.unit||'')) q = Math.ceil(q); const res = addItem({name:i.name, qty: q, unit: i.unit || '', from: r.title}, {quiet:true}); if (res==='new'||res==='back') added++; else merged++; }
-        closeSheet(); toast(`${added} ajouté${added>1?'s':''}${merged?`, ${merged} déjà dans la liste`:''} (sel, poivre, huile… non ajoutés)`);
+        closeSheet(); toast(`${added} ajouté${added>1?'s':''} à « ${curList().name} »${merged?`, ${merged} déjà dedans`:''} (sel, poivre, huile… non ajoutés)`);
       }
     };
     $('#sheet').onchange = e => { if (e.target.id === 'rIng') { byIng = +e.target.value; haveQty = ''; draw(); } };
@@ -1149,7 +1242,7 @@ function openSettings(){
     <button class="btn danger" type="button" id="sOut">Changer de jeton d’accès</button>`);
   $('#sOrder').onclick = openOrder;
   $('#sSync').onclick = () => { FILES.forEach(f => f.etag = null); pullAll(true); closeSheet(); };
-  $('#sSave').onclick = () => { cfg.name = $('#sName').value.trim(); saveCfg(); closeSheet(); toast('Réglages enregistrés'); };
+  $('#sSave').onclick = () => { cfg.name = $('#sName').value.trim(); saveCfg(); setupPrivate(); if (privFile) privFile.pull(); closeSheet(); render(); toast('Réglages enregistrés'); };
   $('#sOut').onclick = () => { closeSheet(); showSetup(true); };
 }
 
@@ -1172,7 +1265,7 @@ $('#setupForm').onsubmit = async e => {
     const j = await r.json();
     if (!j.permissions || !j.permissions.push) { $('#suMsg').textContent = 'Le jeton peut lire mais pas écrire. Mets « Contents » sur « Read and write ».'; return; }
   } catch(err) { $('#suMsg').textContent = 'Pas de connexion internet. Réessaie quand tu as du réseau.'; return; }
-  cfg = {token, name}; saveCfg();
+  cfg = {token, name}; saveCfg(); setupPrivate();
   FILES.forEach(f => { f.sha = null; f.etag = null; });
   $('#setup').hidden = true; $('#app').hidden = false;
   render(); setStatus('idle'); pullAll(true); startPolling();
@@ -1181,13 +1274,19 @@ $('#setupForm').onsubmit = async e => {
 /* ---------- Événements ---------- */
 function setTab(t){ state.tab = t; try{ localStorage.setItem(KEY_TAB, t); }catch(_){} window.scrollTo(0,0); render(); }
 $('#tabList').onclick = () => setTab('list');
+$('#lists').onclick = e => {
+  if (e.target.closest('#addList')) return openListForm(null);
+  const b = e.target.closest('[data-list]'); if (!b) return;
+  if (b.dataset.list === state.listId) return openListForm(b.dataset.list); // 2e appui : renommer / supprimer
+  state.listId = b.dataset.list; try{ localStorage.setItem('rc-list', state.listId); }catch(_){} render();
+};
 $('#tabRec').onclick = () => setTab('rec');
 $('#list').onclick = e => {
   const c = e.target.closest('[data-check]'); if (c) return toggle(c.dataset.check);
   const ed = e.target.closest('[data-edit]'); if (ed) return openEdit(ed.dataset.edit);
   if (e.target.id === 'clearDone') clearDone();
 };
-$('#usual').onclick = e => { const b = e.target.closest('[data-usual]'); if (!b) return; const c = L().catalog[b.dataset.usual]; if (c) addItem({...withDefaults({name:c.name, qty:null, unit:''}), cat:c.cat}); };
+$('#usual').onclick = e => { const b = e.target.closest('[data-usual]'); if (!b) return; const c = catalogs()[b.dataset.usual]; if (c) addItem({...withDefaults({name:c.name, qty:null, unit:''}), cat:c.cat}); };
 $('#addForm').onsubmit = e => { e.preventDefault(); const p = parseLine($('#addInput').value); if (!p) return; addItem(withDefaults(p)); $('#addInput').value = ''; $('#sugg').hidden = true; };
 attachSuggest($('#addInput'), $('#sugg'), p => addItem(withDefaults(p)));
 // Recettes
@@ -1210,10 +1309,24 @@ $('#status').onclick = () => { if (state.status === 'auth') showSetup(true); els
 
 /* ---------- Démarrage ---------- */
 if (window.Capacitor || location.hostname === 'localhost') document.documentElement.classList.add('apk');
+// Sur Android, l'app peut s'afficher sous la barre d'état et la barre de navigation : on réserve leur place
+function fitInsets(){
+  const de = document.documentElement;
+  const probe = document.createElement('div'); probe.style.cssText = 'position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)';
+  document.body.appendChild(probe); const cs = getComputedStyle(probe);
+  const envTop = parseFloat(cs.paddingTop) || 0, envBot = parseFloat(cs.paddingBottom) || 0; probe.remove();
+  const fullBleed = de.classList.contains('apk') && Math.abs(screen.height - window.innerHeight) < 24;
+  const top = envTop || (fullBleed ? 32 : 0), bottom = envBot || (fullBleed ? 48 : 0);
+  de.style.setProperty('--top-inset', top + 'px'); de.style.setProperty('--bottom-inset', bottom + 'px');
+  de.classList.toggle('edge', top > 0 || bottom > 0);
+}
+fitInsets(); window.addEventListener('resize', fitInsets);
 try{ const c = JSON.parse(localStorage.getItem(KEY_CFG)); if (c) cfg = c; }catch(e){}
 // reprise des données de la version précédente
 try{ const old = JSON.parse(localStorage.getItem('rc-doc')); if (old && old.doc && !localStorage.getItem('rc-file:data/liste.json')) { localStorage.setItem('rc-file:data/liste.json', JSON.stringify(old)); } }catch(e){}
+setupPrivate();
 FILES.forEach(f => f.load());
+try{ const li = localStorage.getItem('rc-list'); if (li) state.listId = li; }catch(e){}
 try{ const t = localStorage.getItem(KEY_TAB); if (t === 'rec' || t === 'list') state.tab = t; }catch(e){}
 $('#ver').textContent = 'Nos courses · version ' + APP_VERSION;
 if (!cfg.token) showSetup(false);
