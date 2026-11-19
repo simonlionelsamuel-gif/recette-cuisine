@@ -3,7 +3,7 @@ name: APK Android
 on:
   push:
     branches: [main]
-    paths: ['index.html', 'sw.js', 'manifest.webmanifest', 'icons/**', '.github/workflows/android.yml']
+    paths: ['index.html', 'sw.js', 'manifest.webmanifest', 'icons/**', 'android-res/**', '.github/workflows/android.yml']
   workflow_dispatch:
 
 permissions:
@@ -42,12 +42,7 @@ jobs:
           npx cap init "Nos courses" ch.noscourses.app --web-dir www
           npx cap add android
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
-          command -v convert || (sudo apt-get update -q && sudo apt-get install -y -q imagemagick)
-          for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
-            dir=android/app/src/main/res/mipmap-${d%%:*}; mkdir -p $dir
-            convert icons/icon-512.png -resize ${d##*:}x${d##*:} $dir/ic_launcher.png
-            cp $dir/ic_launcher.png $dir/ic_launcher_round.png
-          done
+          cp -r android-res/* android/app/src/main/res/
           sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
           grep -n "versionCode\|versionName" android/app/build.gradle
           npx cap sync android
