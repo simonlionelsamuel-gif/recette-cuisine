@@ -108,6 +108,7 @@ li.done .icon{filter:grayscale(.7);opacity:.6}
 .empty{background:var(--surface);border-radius:18px;padding:26px 20px;text-align:center;color:var(--muted);margin-top:20px;font-weight:600}
 .empty b{display:block;font-size:34px;margin-bottom:6px}
 .tools{display:grid;gap:8px;margin-top:26px}
+.ver{text-align:center;color:var(--muted);font-size:13px;font-weight:700;margin:18px 0 0}
 
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:14px;padding:11px 15px;display:flex;gap:14px;align-items:center;font-size:14.5px;font-weight:700;z-index:20;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .toast button{border:0;background:none;color:var(--sun);font-weight:900;padding:0}
@@ -194,6 +195,7 @@ html.apk .setup{padding-top:56px}
     <div class="tools">
       <button class="btn ghost" id="openOrder" type="button">Ordre des rayons</button>
     </div>
+    <p class="ver" id="ver"></p>
   </div>
 </div>
 
@@ -459,6 +461,7 @@ function withDefaults(p){
   return p;
 }
 
+const APP_VERSION = '1.0.6';
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', path:'data/liste.json', branch:'main' };
 const API = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
@@ -741,6 +744,7 @@ function openSettings(){
   const when = state.lastSync ? new Date(state.lastSync).toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'}) : 'jamais';
   openSheet(`<h3>Réglages</h3>
     <div class="field"><label for="sName">Ton prénom (affiché sur tes ajouts)</label><input id="sName" value="${esc(cfg.name)}"></div>
+    <p class="hint"><b>Version ${APP_VERSION}</b></p>
     <p class="hint">Dernière synchronisation : ${esc(when)}. La liste est enregistrée dans le dépôt privé ${esc(GH.owner)}/${esc(GH.repo)}.</p>
     <div class="actions"><button class="btn ghost" type="button" id="sSync">Synchroniser maintenant</button><button class="btn" type="button" id="sSave">Enregistrer</button></div>
     <button class="btn danger" type="button" id="sOut">Changer de jeton d’accès</button>`);
@@ -805,6 +809,7 @@ $('#status').onclick = () => { if (state.status === 'auth') showSetup(true); els
 /* ---------- Démarrage ---------- */
 if (window.Capacitor || location.hostname === 'localhost') document.documentElement.classList.add('apk');
 loadLocal();
+$('#ver').textContent = 'Nos courses · version ' + APP_VERSION;
 if (!cfg.token) showSetup(false);
 else { $('#app').hidden = false; render(); pull(); startPolling(); }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
