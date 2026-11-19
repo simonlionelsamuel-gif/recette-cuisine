@@ -27,6 +27,11 @@
   --accent:#FF6B35;
   --accent-ink:#FFFFFF;
   --accent-soft:#FFEDE4;
+  --h1:#FF8A3D;
+  --h2:#FF6B35;
+  --h3:#F2542D;
+  --qty-ink:#8A3A12;
+  --fs:16px;
   --fresh:#21A366;
   --sun:#FFC83D;
   --warn:#D9452B;
@@ -37,12 +42,12 @@
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
 html{overflow-x:clip}
-body{overflow-x:clip;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+body{overflow-x:clip;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs);line-height:1.4;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 
-header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,#FF8A3D 0%,#FF6B35 55%,#F2542D 100%);color:#fff;padding:max(14px, calc(env(safe-area-inset-top) + 10px)) 16px 14px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr);border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(242,84,45,.25)}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,var(--h1) 0%,var(--h2) 55%,var(--h3) 100%);color:#fff;padding:max(14px, calc(env(safe-area-inset-top) + 10px)) 16px 14px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr);border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(242,84,45,.25)}
 html.edge header{padding-top:calc(var(--top-inset) + 10px)}
 .hwrap{max-width:560px;margin:0 auto;width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .hwrap>*{min-width:0}
@@ -100,7 +105,7 @@ li.done .check span::after{content:"";width:6px;height:11px;border:solid #fff;bo
 .body{flex:1;min-width:0;border:0;background:none;text-align:left;padding:10px 0;display:grid;gap:3px}
 .name{font-weight:800;font-size:16.5px;overflow-wrap:anywhere}
 .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-weight:600}
-.qty{color:#8A3A12;font-weight:800;font-variant-numeric:tabular-nums;background:var(--accent-soft);border-radius:8px;padding:1px 7px}
+.qty{color:var(--qty-ink);font-weight:800;font-variant-numeric:tabular-nums;background:var(--accent-soft);border-radius:8px;padding:1px 7px}
 .tag{border:1.5px solid var(--line);border-radius:8px;padding:0 6px;font-size:12px}
 .who{flex:none;width:28px;height:28px;border-radius:50%;background:#E6F6EE;color:var(--fresh);font-size:12px;font-weight:900;display:grid;place-items:center;margin-right:12px}
 li.done .name{text-decoration:line-through;color:var(--muted)}
@@ -145,6 +150,39 @@ html.edge .setup{padding-top:calc(var(--top-inset) + 20px)}
 .setup code{background:var(--accent-soft);border-radius:5px;padding:0 4px;font-size:14px}
 .card{background:var(--surface);border-radius:18px;padding:16px;display:grid;gap:12px;box-shadow:0 1px 3px rgba(30,43,36,.06)}
 #suMsg{color:var(--warn);font-weight:800;min-height:1.2em}
+/* Thèmes de couleur (réglages) */
+:root[data-accent="vert"]{--accent:#1FA35F;--accent-soft:#DDF4E7;--h1:#3CC07A;--h2:#21A366;--h3:#178A55;--qty-ink:#0E6B3F}
+:root[data-accent="bleu"]{--accent:#2F80ED;--accent-soft:#E2EEFD;--h1:#4FA3FF;--h2:#2F80ED;--h3:#1F66C9;--qty-ink:#174C94}
+:root[data-accent="violet"]{--accent:#8A5CF6;--accent-soft:#EEE7FE;--h1:#A57BFF;--h2:#8A5CF6;--h3:#7041E0;--qty-ink:#5230A8}
+:root[data-accent="rose"]{--accent:#E8467F;--accent-soft:#FDE6EF;--h1:#FF7AA8;--h2:#F0508A;--h3:#D93A74;--qty-ink:#9C1F4E}
+:root[data-accent="ardoise"]{--accent:#4A6378;--accent-soft:#E4EAF0;--h1:#6B8499;--h2:#4A6378;--h3:#3A4F61;--qty-ink:#2E4050}
+/* Mode sombre */
+:root[data-mode="dark"]{--bg:#111714;--surface:#1B2320;--ink:#E7EEE9;--muted:#9AAAA1;--line:#2B3732;--accent-soft:#3A2A22;--qty-ink:#FFB48F;color-scheme:dark}
+:root[data-mode="dark"][data-accent="vert"]{--accent-soft:#163626;--qty-ink:#8EE2B4}
+:root[data-mode="dark"][data-accent="bleu"]{--accent-soft:#16304F;--qty-ink:#9CC6FF}
+:root[data-mode="dark"][data-accent="violet"]{--accent-soft:#2C2150;--qty-ink:#C9B5FF}
+:root[data-mode="dark"][data-accent="rose"]{--accent-soft:#45182B;--qty-ink:#FFA8C6}
+:root[data-mode="dark"][data-accent="ardoise"]{--accent-soft:#24313C;--qty-ink:#B6C9D9}
+:root[data-mode="dark"] .add input,:root[data-mode="dark"] .hchip,:root[data-mode="dark"] .chip[aria-pressed="true"]{background:var(--surface);color:var(--ink)}
+:root[data-mode="dark"] .close{background:rgba(27,35,32,.92);color:var(--ink)}
+:root[data-mode="dark"] .who{background:#173226}
+:root[data-mode="dark"] .rmatch.full{background:#163626;color:#8EE2B4}
+:root[data-size="grand"]{--fs:18px}
+:root[data-size="grand"] .name{font-size:18.5px}
+:root[data-size="grand"] .rtitle{font-size:18px}
+:root[data-size="grand"] .meta,:root[data-size="grand"] .rmeta{font-size:14.5px}
+:root[data-compact="1"] #app li{min-height:50px}
+:root[data-compact="1"] .icon{width:34px;height:34px;font-size:20px}
+:root[data-compact="1"] .body{padding:6px 0}
+:root[data-usual="0"] #usual{display:none}
+.opt{display:grid;gap:8px}
+.opt .lab{font-size:13px;font-weight:800;color:var(--muted)}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.swatches button{width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.swatches button[aria-pressed="true"]{border-color:var(--ink)}
+.segs{display:flex;gap:6px;flex-wrap:wrap}
+.segs button{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:7px 12px;font-weight:800;font-size:14px}
+.segs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 
 /* Onglets */
@@ -186,7 +224,7 @@ html.edge .sheet.full{max-height:100%}
 .rtitle{font-weight:900;font-size:16.5px;overflow-wrap:anywhere}
 .rmeta{display:flex;flex-wrap:wrap;gap:4px 10px;color:var(--muted);font-weight:700;font-size:13px}
 .rmeta .fav{color:var(--warn)}
-.rmatch{font-size:13px;font-weight:800;color:#8A3A12;background:var(--accent-soft);border-radius:8px;padding:2px 8px;justify-self:start}
+.rmatch{font-size:13px;font-weight:800;color:var(--qty-ink);background:var(--accent-soft);border-radius:8px;padding:2px 8px;justify-self:start}
 .rmatch.full{color:#0E6B3F;background:#DDF5E8}
 .sheet.full{max-height:96%;border-radius:20px 20px 0 0}
 .rhead{position:relative}
@@ -205,7 +243,7 @@ html.edge .sheet.full{max-height:100%}
 .stepper output{font-weight:900;font-size:18px;min-width:110px;text-align:center;font-variant-numeric:tabular-nums}
 .sheet h4{margin:4px 0 0;font-size:16px;font-weight:900}
 .sheet ul.ings li{min-height:44px;gap:10px}
-.sheet ul.ings li b{min-width:72px;font-variant-numeric:tabular-nums;color:#8A3A12}
+.sheet ul.ings li b{min-width:72px;font-variant-numeric:tabular-nums;color:var(--qty-ink)}
 .sheet ul.ings li .em{font-size:20px;flex:none}
 .sheet ul.ings li span:last-child{font-weight:700}
 .steps{margin:0;padding-left:22px;display:grid;gap:10px;font-weight:600;line-height:1.5}
@@ -235,7 +273,7 @@ body[data-tab="rec"] .hwrap{gap:10px}
 .pick li{gap:10px}
 .pick input{width:22px;height:22px;accent-color:var(--accent);flex:none}
 .pick label{display:flex;align-items:center;gap:10px;flex:1;min-height:46px;cursor:pointer}
-.pick label b{flex:none;min-width:64px;color:#8A3A12;font-variant-numeric:tabular-nums}
+.pick label b{flex:none;min-width:64px;color:var(--qty-ink);font-variant-numeric:tabular-nums}
 .sheet .pick li span.em{flex:none;font-size:20px}
 .sheet .pick li span:last-child{flex:1;font-weight:700}
 .sheet .pick li{padding-left:10px}
@@ -306,13 +344,12 @@ body[data-tab="rec"] .hwrap{gap:10px}
         <button type="button" id="modeSearch" aria-pressed="false">🔎 Recette</button>
       </div>
       <button class="toggle" type="button" id="favOnly" aria-pressed="false">❤</button>
-      <button class="toggle" type="button" id="basesOnly" aria-pressed="false">🥖 Bases</button>
       <button class="toggle" type="button" id="clearQuery">Tout</button>
     </div>
     <div class="add only-rec">
       <form id="haveForm" autocomplete="off">
         <input id="haveInput" type="text" placeholder="Un ingrédient que j’ai… ex. poulet" aria-label="Ingrédient que j’ai" enterkeyhint="done">
-        <button class="btn" type="submit" id="haveBtn" aria-label="Ajouter l’ingrédient">＋</button>
+        <button type="submit" id="haveBtn" hidden aria-hidden="true" tabindex="-1"></button>
       </form>
       <div class="sugg" id="haveSugg" hidden></div>
     </div>
@@ -647,7 +684,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.13';
+const APP_VERSION = '1.0.14';
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
 const API_BASE = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
@@ -815,7 +852,7 @@ function toggle(id){
   const i = CUR().items[id]; if (!i || i.deleted) return;
   const before = {...i};
   putItem(id, {...i, done: !i.done, doneAt: !i.done ? Date.now() : null});
-  if (!before.done) toast(`${i.name} dans le caddie`, () => putItem(id, before));
+  if (!before.done) { if (ui().vibrate) { try { navigator.vibrate && navigator.vibrate(25); } catch(e){} } toast(`${i.name} dans le caddie`, () => putItem(id, before)); }
 }
 function clearDone(){
   const done = Object.entries(items()).filter(([,i]) => i.done);
@@ -1099,7 +1136,6 @@ function renderRecipes(){
   $('#haveChips').hidden = state.recMode === 'search';
   $('#haveChips').innerHTML = (false ? `<button type="button" class="hchip" data-rmquery="1"><span aria-hidden="true">🔎</span>« ${esc(state.recQuery)} »<b aria-label="retirer">×</b></button>` : '') + state.have.map((h,ix) => `<button type="button" class="hchip" data-rmhave="${ix}"><span aria-hidden="true">${iconFor({name:h, cat:guessCat(h)})}</span>${esc(h)}<b aria-label="retirer">×</b></button>`).join('');
   $('#favOnly').setAttribute('aria-pressed', state.favOnly);
-  $('#basesOnly').setAttribute('aria-pressed', !!state.basesOnly);
   const searching = state.recMode === 'search';
   const roots = searching ? [] : state.have.map(rootOf);
   const q = searching ? norm(state.recQuery) : '';
@@ -1141,6 +1177,15 @@ function closeSheet(fromBack){
   if (!fromBack && history.state && history.state.sheet) { ignorePop = true; history.back(); }
 }
 let ignorePop = false;
+function handleBack(){
+  if (sheetOpen) { closeSheet(true); if (history.state && history.state.sheet) { ignorePop = true; history.back(); } return true; }
+  if (state.tab === 'rec') { setTab('list', true); if (history.state && history.state.tab) { ignorePop = true; history.back(); } return true; }
+  return false;
+}
+try {
+  const capApp = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if (capApp && capApp.addListener) capApp.addListener('backButton', () => { if (!handleBack()) { try { capApp.minimizeApp ? capApp.minimizeApp() : capApp.exitApp(); } catch(e){} } });
+} catch(e){}
 window.addEventListener('popstate', () => {
   if (ignorePop) { ignorePop = false; return; }
   if (sheetOpen) { closeSheet(true); return; }
@@ -1381,16 +1426,55 @@ function openAddRecipe(){
   $('#sheet').onclick = e => { if (e.target.closest('#imManual')) return openRecipeForm(null); if (e.target.closest('[data-close]')) closeSheet(); };
 }
 
+const UI_DEFAULT = {accent:'orange', mode:'clair', size:'normal', compact:false, usual:true, awake:false, vibrate:true};
+function ui(){ return {...UI_DEFAULT, ...(cfg.ui || {})}; }
+let wakeLock = null;
+async function applyAwake(){
+  try {
+    if (ui().awake && document.visibilityState === 'visible' && navigator.wakeLock && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); }
+    else if (!ui().awake && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch(e) { wakeLock = null; }
+}
+function applyUI(){
+  const u = ui(), de = document.documentElement;
+  if (u.accent === 'orange') delete de.dataset.accent; else de.dataset.accent = u.accent;
+  const dark = u.mode === 'sombre' || (u.mode === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  if (dark) de.dataset.mode = 'dark'; else delete de.dataset.mode;
+  if (u.size === 'grand') de.dataset.size = 'grand'; else delete de.dataset.size;
+  if (u.compact) de.dataset.compact = '1'; else delete de.dataset.compact;
+  if (!u.usual) de.dataset.usual = '0'; else delete de.dataset.usual;
+  const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = getComputedStyle(de).getPropertyValue('--h2').trim() || '#FF6B35';
+  applyAwake();
+}
+function setUI(patch){ cfg.ui = {...ui(), ...patch}; saveCfg(); applyUI(); }
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (ui().mode === 'auto') applyUI(); }); } catch(e){}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') applyAwake(); });
+const ACCENTS = [['orange','#FF6B35'],['vert','#21A366'],['bleu','#2F80ED'],['violet','#8A5CF6'],['rose','#F0508A'],['ardoise','#4A6378']];
+
 function openSettings(){
   const when = state.lastSync ? new Date(state.lastSync).toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'}) : 'jamais';
   openSheet(`<h3>Réglages</h3>
     <p class="hint"><b>Version ${APP_VERSION}</b></p>
     <div class="field"><label for="sName">Ton prénom (affiché sur tes ajouts)</label><input id="sName" value="${esc(cfg.name)}"></div>
+    <div class="opt"><span class="lab">Couleur</span><div class="swatches" id="uiAccent">${ACCENTS.map(([k,c]) => `<button type="button" data-v="${k}" style="background:${c}" aria-label="Couleur ${k}" aria-pressed="${ui().accent===k}"></button>`).join('')}</div></div>
+    <div class="opt"><span class="lab">Thème</span><div class="segs" id="uiMode">${[['clair','☀️ Clair'],['sombre','🌙 Sombre'],['auto','📱 Comme le téléphone']].map(([k,l]) => `<button type="button" data-v="${k}" aria-pressed="${ui().mode===k}">${l}</button>`).join('')}</div></div>
+    <div class="opt"><span class="lab">Taille du texte</span><div class="segs" id="uiSize">${[['normal','Normale'],['grand','Grande']].map(([k,l]) => `<button type="button" data-v="${k}" aria-pressed="${ui().size===k}">${l}</button>`).join('')}</div></div>
+    <label class="switch"><input type="checkbox" id="uiCompact" ${ui().compact?'checked':''}><span><b>Liste compacte</b><small>Plus d’articles visibles à l’écran.</small></span></label>
+    <label class="switch"><input type="checkbox" id="uiUsual" ${ui().usual?'checked':''}><span><b>Afficher les habituels</b><small>La rangée d’articles fréquents sous la saisie.</small></span></label>
+    <label class="switch"><input type="checkbox" id="uiAwake" ${ui().awake?'checked':''}><span><b>Garder l’écran allumé</b><small>Pratique en magasin. Consomme un peu plus de batterie.</small></span></label>
+    <label class="switch"><input type="checkbox" id="uiVibrate" ${ui().vibrate?'checked':''}><span><b>Vibration en cochant</b><small>Petite vibration quand un article va dans le caddie.</small></span></label>
+    <p class="hint">Ces réglages ne concernent que ce téléphone.</p>
     <p class="hint">Dernière synchronisation : ${esc(when)}. Les données sont dans le dépôt privé ${esc(GH.owner)}/${esc(GH.repo)}.</p>
     <button class="btn ghost" type="button" id="sOrder">Ordre des rayons</button>
     <div class="actions"><button class="btn ghost" type="button" id="sSync">Synchroniser</button><button class="btn" type="button" id="sSave">Enregistrer</button></div>
     <button class="btn danger" type="button" id="sOut">Changer de jeton d’accès</button>`);
   $('#sOrder').onclick = openOrder;
+  const segPick = (id, key) => { $(id).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; setUI({[key]: b.dataset.v}); $(id).querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', x === b)); }; };
+  segPick('#uiAccent', 'accent'); segPick('#uiMode', 'mode'); segPick('#uiSize', 'size');
+  $('#uiCompact').onchange = e => setUI({compact: e.target.checked});
+  $('#uiUsual').onchange = e => setUI({usual: e.target.checked});
+  $('#uiAwake').onchange = e => { setUI({awake: e.target.checked}); if (e.target.checked && !navigator.wakeLock) toast('Ce téléphone ne permet pas de garder l’écran allumé depuis l’app.'); };
+  $('#uiVibrate').onchange = e => setUI({vibrate: e.target.checked});
   $('#sSync').onclick = () => { FILES.forEach(f => f.etag = null); pullAll(true); closeSheet(); };
   $('#sSave').onclick = () => { cfg.name = $('#sName').value.trim(); saveCfg(); setupPrivate(); if (privFile) privFile.pull(); closeSheet(); render(); toast('Réglages enregistrés'); };
   $('#sOut').onclick = () => { closeSheet(); showSetup(true); };
@@ -1415,7 +1499,7 @@ $('#setupForm').onsubmit = async e => {
     const j = await r.json();
     if (!j.permissions || !j.permissions.push) { $('#suMsg').textContent = 'Le jeton peut lire mais pas écrire. Mets « Contents » sur « Read and write ».'; return; }
   } catch(err) { $('#suMsg').textContent = 'Pas de connexion internet. Réessaie quand tu as du réseau.'; return; }
-  cfg = {token, name}; saveCfg(); setupPrivate();
+  cfg = {...cfg, token, name}; saveCfg(); setupPrivate();
   FILES.forEach(f => { f.sha = null; f.etag = null; });
   $('#setup').hidden = true; $('#app').hidden = false;
   render(); setStatus('idle'); pullAll(true); startPolling();
@@ -1456,15 +1540,13 @@ function setRecMode(m){
   inp.placeholder = m === 'search' ? 'Nom de recette… ex. lasagne, soupe, papet' : 'Un ingrédient que j’ai… ex. poulet';
   inp.setAttribute('aria-label', m === 'search' ? 'Rechercher une recette' : 'Ingrédient que j’ai');
   inp.setAttribute('enterkeyhint', m === 'search' ? 'search' : 'done');
-  $('#haveBtn').textContent = m === 'search' ? '🔎' : '＋';
-  $('#haveBtn').setAttribute('aria-label', m === 'search' ? 'Rechercher' : 'Ajouter l’ingrédient');
   $('#haveSugg').hidden = true; render(); inp.focus();
 }
 $('#modeHave').onclick = () => setRecMode('have');
 $('#modeSearch').onclick = () => setRecMode('search');
 $('#haveChips').onclick = e => { if (e.target.closest('[data-rmquery]')) { state.recQuery = ''; state.shown = 40; render(); return; } const b = e.target.closest('[data-rmhave]'); if (b) { state.have.splice(+b.dataset.rmhave, 1); state.shown = 40; render(); } };
 $('#favOnly').onclick = () => { state.favOnly = !state.favOnly; state.shown = 40; render(); };
-$('#basesOnly').onclick = () => { state.basesOnly = !state.basesOnly; state.shown = 40; render(); };
+
 $('#recList').onclick = e => { if (e.target.id === 'moreRec') { state.shown += 40; render(); return; } const b = e.target.closest('[data-rec]'); if (b) openRecipe(b.dataset.rec); };
 $('#addRecipe').onclick = openAddRecipe;
 $('#clearQuery').onclick = () => { if (state.recMode === 'search') $('#haveInput').value = ''; state.recQuery = ''; state.have = []; state.favOnly = false; state.basesOnly = false; state.shown = 40; render(); };
@@ -1491,6 +1573,7 @@ fitInsets(); window.addEventListener('resize', fitInsets);
 try{ const c = JSON.parse(localStorage.getItem(KEY_CFG)); if (c) cfg = c; }catch(e){}
 // reprise des données de la version précédente
 try{ const old = JSON.parse(localStorage.getItem('rc-doc')); if (old && old.doc && !localStorage.getItem('rc-file:data/liste.json')) { localStorage.setItem('rc-file:data/liste.json', JSON.stringify(old)); } }catch(e){}
+applyUI();
 setupPrivate();
 FILES.forEach(f => f.load());
 try{ const li = localStorage.getItem('rc-list'); if (li) state.listId = li; }catch(e){}

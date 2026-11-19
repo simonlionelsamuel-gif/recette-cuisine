@@ -38,7 +38,7 @@ jobs:
           mkdir -p www
           cp -r index.html manifest.webmanifest sw.js icons www/
           npm init -y > /dev/null
-          npm install --no-audit --no-fund @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+          npm install --no-audit --no-fund @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/app@7
           npx cap init "Nos courses" ch.noscourses.app --web-dir www
           npx cap add android
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
