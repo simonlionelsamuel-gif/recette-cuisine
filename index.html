@@ -310,7 +310,7 @@ function toEdit(q, u){ // valeur affichée dans le formulaire
   return [q,u];
 }
 function fromEdit(v, u){
-  if (v === '' || v == null || isNaN(parseFloat(v))) return {qty:null, unit: u==='kg'?'g':u==='l'||u==='dl'?'ml':u};
+  if (v === '' || v == null || isNaN(parseFloat(v))) return {qty:null, unit:u};
   const q = parseFloat(String(v).replace(',','.'));
   const m = UNITS[norm(u)];
   if (m) return {qty:q*m[1], unit:m[0]};
@@ -449,12 +449,12 @@ function findProduct(name){
   return null;
 }
 const iconFor = i => { const p = findProduct(i.name); return p ? p.icon : (CAT_ICON[i.cat] || '🛒'); };
-// Quantité par défaut logique quand rien n'est précisé ; un nombre seul prend l'unité habituelle du produit
+// Unité logique par produit : sans quantité, on garde juste l'unité (quantité vide) ; un nombre seul prend cette unité
 function withDefaults(p){
   const prod = findProduct(p.name);
   if (!prod) return p;
   const conv = (q,u) => { const m = UNITS[norm(u)]; return m ? {qty:q*m[1], unit:m[0]} : {qty:q, unit:u}; };
-  if (p.qty == null) return {...p, ...conv(prod.q, prod.u)};
+  if (p.qty == null) return {...p, qty:null, unit:prod.u};
   if (!p.unitGiven && prod.u !== 'pce') return {...p, ...conv(p.qty, prod.u)};
   return p;
 }
@@ -597,7 +597,7 @@ function addItem({name, qty=null, unit='', cat, from}, opts={}){
     if (!opts.quiet) toast(result === 'merged' ? `${d.name} : ${fmtQty(d.qty,d.unit)} au total` : result === 'back' ? `${d.name} remis dans la liste` : `${d.name} est déjà dans la liste`);
     return result;
   }
-  const d = {name, key, qty, unit: qty!=null ? (unit||'pce') : unit, cat: cat || guessCat(name), stores: [], note:'', done:false, doneAt:null, by: cfg.name || '', at: Date.now(), from: from?[from]:[]};
+  const d = {name, key, qty, unit: qty!=null ? (unit||'pce') : (unit||''), cat: cat || guessCat(name), stores: [], note:'', done:false, doneAt:null, by: cfg.name || '', at: Date.now(), from: from?[from]:[]};
   backend.putItem(uid(), d); bumpCatalog(d);
   return 'new';
 }
@@ -675,7 +675,7 @@ function showSugg(){
   const hits = Object.entries(state.doc.catalog).filter(([key,c]) => key.replace(/-/g,' ').includes(k) || norm(c.name).includes(norm(p.name)))
     .sort((a,b)=>(b[1].count||0)-(a[1].count||0)).slice(0,5);
   if (!hits.length) { box.hidden = true; return; }
-  box.innerHTML = hits.map(([key,c]) => `<button type="button" data-sugg="${esc(key)}"><span class="em" aria-hidden="true">${iconFor(c)}</span>${esc(c.name)}<small>${esc(fmtQty(p.qty ?? c.qty, p.qty!=null ? p.unit : c.unit))}</small></button>`).join('');
+  box.innerHTML = hits.map(([key,c]) => `<button type="button" data-sugg="${esc(key)}"><span class="em" aria-hidden="true">${iconFor(c)}</span>${esc(c.name)}<small>${esc(p.qty!=null ? fmtQty(withDefaults({...p, name:c.name}).qty, withDefaults({...p, name:c.name}).unit) : '')}</small></button>`).join('');
   box.hidden = false;
 }
 
@@ -781,7 +781,7 @@ $('#list').onclick = e => {
   const ed = e.target.closest('[data-edit]'); if (ed) return openEdit(ed.dataset.edit);
   if (e.target.id === 'clearDone') clearDone();
 };
-$('#usual').onclick = e => { const b = e.target.closest('[data-usual]'); if (!b) return; const c = state.doc.catalog[b.dataset.usual]; if (c) addItem(c.qty != null ? {name:c.name, qty:c.qty, unit:c.unit||'', cat:c.cat} : {...withDefaults({name:c.name, qty:null, unit:''}), cat:c.cat}); };
+$('#usual').onclick = e => { const b = e.target.closest('[data-usual]'); if (!b) return; const c = state.doc.catalog[b.dataset.usual]; if (c) addItem({...withDefaults({name:c.name, qty:null, unit:''}), cat:c.cat}); };
 $('#addForm').onsubmit = e => {
   e.preventDefault();
   const p = parseLine($('#addInput').value); if (!p) return;
@@ -792,7 +792,7 @@ $('#addInput').onblur = () => setTimeout(() => { $('#sugg').hidden = true; }, 15
 $('#sugg').onclick = e => {
   const b = e.target.closest('[data-sugg]'); if (!b) return;
   const c = state.doc.catalog[b.dataset.sugg], p = parseLine($('#addInput').value) || {};
-  addItem({name:c.name, qty: p.qty ?? c.qty ?? null, unit: p.qty!=null ? p.unit : (c.unit||''), cat:c.cat});
+  addItem({...withDefaults({name:c.name, qty: p.qty ?? null, unit: p.unit||'', unitGiven: p.unitGiven}), cat:c.cat});
   $('#addInput').value = ''; $('#sugg').hidden = true;
 };
 $('#toastUndo').onclick = () => { if (undoFn) undoFn(); undoFn = null; $('#toast').hidden = true; };
