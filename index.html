@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1E6B4E">
+<meta name="theme-color" content="#FF6B35">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Courses">
@@ -14,152 +14,135 @@
 <title>Nos courses</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* Layout: une colonne mobile, barre d'ajout en haut, rayons empilés, panneaux qui montent du bas */
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>/* Layout: bandeau orange en haut (titre, magasins, ajout), rayons en cartes blanches, panneaux qui montent du bas */
 :root{
-  --bg:#F2F5F1;
+  --bg:#F4F9F5;
   --surface:#FFFFFF;
-  --ink:#16231C;
-  --muted:#5E6E65;
-  --line:#DCE4DE;
-  --accent:#1E6B4E;
+  --ink:#1E2B24;
+  --muted:#6A7A71;
+  --line:#E2ECE5;
+  --accent:#FF6B35;
   --accent-ink:#FFFFFF;
-  --accent-soft:#E1EEE7;
-  --warn:#B4472F;
-  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
-  --body:"Figtree", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --accent-soft:#FFEDE4;
+  --fresh:#21A366;
+  --sun:#FFC83D;
+  --warn:#D9452B;
+  --display:"Nunito", "Avenir Next", system-ui, sans-serif;
+  --body:"Nunito", -apple-system, "Segoe UI", system-ui, sans-serif;
   color-scheme:light;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0F1512; --surface:#18211C; --ink:#E6EEE9; --muted:#93A59A; --line:#2A3630;
-    --accent:#5CC497; --accent-ink:#0B1A13; --accent-soft:#1E3329; --warn:#F0866B;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0F1512; --surface:#18211C; --ink:#E6EEE9; --muted:#93A59A; --line:#2A3630;
-  --accent:#5CC497; --accent-ink:#0B1A13; --accent-soft:#1E3329; --warn:#F0866B;
-  color-scheme:dark;
-}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%}
+html,body{margin:0;min-height:100%}
 body{overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.wrap{max-width:560px;margin:0 auto;padding:0 16px 120px}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 
-header{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 0 10px;display:grid;gap:10px}
-.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-h1{font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:-.02em;margin:0;text-wrap:balance}
-.status{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
-.dot.ok{background:var(--accent)}
-.dot.warn{background:var(--warn)}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,#FF8A3D 0%,#FF6B35 55%,#F2542D 100%);color:#fff;padding:max(14px, calc(env(safe-area-inset-top) + 10px)) 16px 14px;display:grid;gap:12px;border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(242,84,45,.25)}
+html.apk header{padding-top:40px}
+.hwrap{max-width:560px;margin:0 auto;width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.hwrap>*{min-width:0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-family:var(--display);font-weight:900;font-size:26px;white-space:nowrap;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.topr{display:flex;align-items:center;gap:8px;min-width:0}
+.status{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:5px 10px}
+.dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.6;flex:none}
+.dot.ok{background:#7CF0B0;opacity:1}
+.dot.warn{background:var(--sun);opacity:1}
+.iconbtn{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:12px;width:38px;height:38px;display:grid;place-items:center;font-size:18px}
 
 .stores{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .stores::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:14px;font-weight:600;display:flex;gap:6px;align-items:center}
-.chip .n{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:500}
-.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.chip[aria-pressed="true"] .n{color:inherit;opacity:.8}
+.chip{flex:none;border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:999px;padding:7px 13px;font-size:14px;font-weight:800;display:flex;gap:6px;align-items:center}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.85;font-weight:700}
+.chip[aria-pressed="true"]{background:#fff;color:var(--accent)}
 
 .add{position:relative}
 .add form{display:flex;gap:8px}
-.add input{flex:1;min-width:0;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;font-size:16px}
-.add input:focus{border-color:var(--accent);outline:none}
-.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
-.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line);font-weight:600}
-.btn.danger{background:transparent;color:var(--warn);border:1px solid var(--line)}
-.hint{font-size:12.5px;color:var(--muted);margin:4px 2px 0}
-.sugg{position:absolute;left:0;right:0;top:52px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:hidden;z-index:6}
-.sugg button{display:flex;width:100%;text-align:left;gap:10px;align-items:center;padding:11px 14px;border:0;background:none;border-bottom:1px solid var(--line)}
+.add form>*{min-width:0}
+.add input{flex:1;min-width:0;border:0;background:#fff;color:var(--ink);border-radius:14px;padding:13px 14px;font-size:16px;font-weight:600;box-shadow:0 2px 0 rgba(0,0,0,.06)}
+.add input::placeholder{color:#9AA79F;font-weight:500}
+.add input:focus{outline:3px solid var(--sun)}
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;background:var(--accent);color:var(--accent-ink)}
+header .btn{background:var(--sun);color:#4A2A00}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line);font-weight:700}
+.btn.danger{background:transparent;color:var(--warn);border:1.5px solid var(--line)}
+.hint{font-size:13px;color:var(--muted);margin:4px 2px 0}
+.sugg{position:absolute;left:0;right:0;top:54px;background:var(--surface);color:var(--ink);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.16);overflow:hidden;z-index:6}
+.sugg button{display:flex;width:100%;text-align:left;gap:10px;align-items:center;padding:11px 14px;border:0;background:none;border-bottom:1px solid var(--line);font-weight:700}
 .sugg button:last-child{border-bottom:0}
-.sugg small{color:var(--muted);margin-left:auto}
+.sugg .em{font-size:20px}
+.sugg small{color:var(--muted);margin-left:auto;font-weight:600}
 
-.usual{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:12px -16px 0;padding:0 16px}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px calc(120px + env(safe-area-inset-bottom))}
+.usual{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:14px -16px 0;padding:2px 16px}
 .usual::-webkit-scrollbar{display:none}
-.usual .lbl{flex:none;font-size:12.5px;color:var(--muted);align-self:center;margin-right:2px}
-.pill{flex:none;border:1px dashed var(--line);background:transparent;border-radius:999px;padding:6px 11px;font-size:14px}
-.pill b{color:var(--accent);margin-right:3px}
+.usual .lbl{flex:none;font-size:13px;color:var(--muted);align-self:center;font-weight:800}
+.pill{flex:none;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px 6px 8px;font-size:14px;font-weight:700;display:flex;gap:6px;align-items:center}
+.pill .em{font-size:18px}
 
-.aisle{margin-top:18px}
-.aisle h2{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
-.aisle h2 i{width:4px;height:14px;border-radius:2px;display:inline-block}
-.aisle h2 span{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
-#app ul{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-#app li{display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--line);min-height:56px}
+.aisle{margin-top:20px}
+.aisle h2{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;margin:0 0 8px 4px}
+.aisle h2 .em{font-size:20px}
+.aisle h2 span.n{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:800;font-size:13px;border-radius:999px;padding:1px 9px;color:#fff}
+#app ul{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:18px;overflow:hidden;box-shadow:0 1px 3px rgba(30,43,36,.06),0 6px 16px rgba(30,43,36,.05)}
+#app li{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);min-height:62px}
 #app li:last-child{border-bottom:0}
-.sheet ul{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.sheet li{display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--line)}
-.sheet li:last-child{border-bottom:0}
-.check{flex:none;width:52px;height:56px;border:0;background:none;display:grid;place-items:center}
-.check span{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;transition:background .15s}
-li.done .check span{background:var(--accent);border-color:var(--accent)}
-li.done .check span::after{content:"";width:6px;height:11px;border:solid var(--accent-ink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
-.body{flex:1;min-width:0;border:0;background:none;text-align:left;padding:9px 0;display:grid;gap:2px}
-.name{font-weight:600;font-size:16.5px;overflow-wrap:anywhere}
-.meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
-.qty{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;background:var(--accent-soft);border-radius:6px;padding:1px 6px}
-.tag{border:1px solid var(--line);border-radius:6px;padding:0 5px;font-size:12px}
-.who{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;display:grid;place-items:center;margin-right:12px}
+.check{flex:none;width:50px;height:62px;border:0;background:none;display:grid;place-items:center}
+.check span{width:26px;height:26px;border-radius:50%;border:2.5px solid #C9D6CE;display:grid;place-items:center;transition:background .15s,border-color .15s}
+li.done .check span{background:var(--fresh);border-color:var(--fresh)}
+li.done .check span::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.icon{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:24px;margin-right:10px}
+.body{flex:1;min-width:0;border:0;background:none;text-align:left;padding:10px 0;display:grid;gap:3px}
+.name{font-weight:800;font-size:16.5px;overflow-wrap:anywhere}
+.meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-weight:600}
+.qty{color:#8A3A12;font-weight:800;font-variant-numeric:tabular-nums;background:var(--accent-soft);border-radius:8px;padding:1px 7px}
+.tag{border:1.5px solid var(--line);border-radius:8px;padding:0 6px;font-size:12px}
+.who{flex:none;width:28px;height:28px;border-radius:50%;background:#E6F6EE;color:var(--fresh);font-size:12px;font-weight:900;display:grid;place-items:center;margin-right:12px}
 li.done .name{text-decoration:line-through;color:var(--muted)}
-.cart h2{color:var(--muted)}
-.cartbar{display:flex;justify-content:space-between;align-items:center;margin:18px 0 6px}
-.cartbar h2{margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
-.link{border:0;background:none;color:var(--accent);font-weight:700;font-size:14px;padding:6px 0}
-.empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:22px;text-align:center;color:var(--muted);margin-top:18px}
-.tools{display:grid;gap:8px;margin-top:24px}
-.banner{font-size:13px;background:var(--accent-soft);border-radius:10px;padding:8px 12px;color:var(--ink)}
+li.done .icon{filter:grayscale(.7);opacity:.6}
+.cartbar{display:flex;justify-content:space-between;align-items:center;margin:22px 4px 8px}
+.cartbar h2{margin:0;font-size:15px;font-weight:900;color:var(--muted)}
+.link{border:0;background:none;color:var(--accent);font-weight:800;font-size:14px;padding:6px 0}
+.empty{background:var(--surface);border-radius:18px;padding:26px 20px;text-align:center;color:var(--muted);margin-top:20px;font-weight:600}
+.empty b{display:block;font-size:34px;margin-bottom:6px}
+.tools{display:grid;gap:8px;margin-top:26px}
 
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;gap:14px;align-items:center;font-size:14.5px;z-index:20;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.toast button{border:0;background:none;color:var(--accent-soft);font-weight:700;padding:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:14px;padding:11px 15px;display:flex;gap:14px;align-items:center;font-size:14.5px;font-weight:700;z-index:20;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.toast button{border:0;background:none;color:var(--sun);font-weight:900;padding:0}
 .toast[hidden]{display:none}
 
-.scrim{position:fixed;inset:0;background:rgba(10,20,15,.45);z-index:10;display:flex;align-items:flex-end;justify-content:center}
+.scrim{position:fixed;inset:0;background:rgba(30,43,36,.4);z-index:10;display:flex;align-items:flex-end;justify-content:center}
 .scrim[hidden]{display:none}
-.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px 16px 24px;max-height:88%;overflow:auto;display:grid;gap:14px}
-.sheet h3{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:20px 16px calc(24px + env(safe-area-inset-bottom));max-height:88%;overflow:auto;display:grid;gap:14px}
+.sheet h3{font-family:var(--display);font-size:22px;font-weight:900;margin:0;text-wrap:balance;display:flex;align-items:center;gap:10px}
 .field{display:grid;gap:6px}
-.field label,.field .lab{font-size:13px;font-weight:600;color:var(--muted)}
-.field input,.field select,.field textarea{border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-size:16px;width:100%}
+.field label,.field .lab{font-size:13px;font-weight:800;color:var(--muted)}
+.field input,.field select,.field textarea{border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 12px;font-size:16px;font-weight:600;width:100%}
 .row{display:flex;gap:8px}
 .row>*{flex:1}
 .toggles{display:flex;flex-wrap:wrap;gap:6px}
-.toggles .chip{font-size:13.5px}
+.toggles .chip{background:var(--bg);color:var(--ink);border:1.5px solid var(--line);font-size:13.5px}
+.toggles .chip[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .actions{display:flex;gap:8px}
 .actions .btn{flex:1}
-.recipe{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:8px}
-.recipe h4{margin:0;font-size:16px}
-.recipe ul{border:0;border-radius:0;background:none}
-.recipe li{min-height:0;border:0;font-size:14px;color:var(--muted);gap:8px;padding:2px 0}
-.recipe li b{color:var(--ink);font-variant-numeric:tabular-nums;min-width:64px}
-.stepper{display:flex;align-items:center;gap:10px}
-.stepper button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:18px;font-weight:700}
-.stepper output{font-weight:700;min-width:90px;text-align:center;font-variant-numeric:tabular-nums}
-.order li{min-height:48px;padding:0 6px 0 12px;gap:10px}
-.order li i{width:4px;height:18px;border-radius:2px}
-.order li span{flex:1;font-weight:600}
-.order li button{width:38px;height:38px;border:0;background:none;font-size:18px;color:var(--muted)}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.sheet ul{list-style:none;margin:0;padding:0;background:var(--bg);border-radius:14px;overflow:hidden}
+.sheet li{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);min-height:48px;padding:0 6px 0 12px}
+.sheet li:last-child{border-bottom:0}
+.sheet li span{flex:1;font-weight:700}
+.sheet li button{width:38px;height:38px;border:0;background:none;font-size:18px;color:var(--muted)}
 
-.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;width:38px;height:38px;display:grid;place-items:center;font-size:18px;color:var(--muted)}
-.topr{display:flex;align-items:center;gap:10px}
-.status{border:0;background:none;padding:4px 0}
 .setup{max-width:560px;margin:0 auto;padding:max(28px, calc(env(safe-area-inset-top) + 16px)) 16px 60px;display:grid;gap:16px;overflow-wrap:anywhere}
-.setup ol li{display:list-item}
-.setup[hidden],#app[hidden]{display:none}
-.setup p{margin:0;color:var(--muted)}
-.setup ol{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--ink);font-size:15px}
-.setup code{background:var(--accent-soft);border-radius:4px;padding:0 4px;font-size:14px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
-#suMsg{color:var(--warn);font-weight:600;min-height:1.2em}
-.wrap{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
-header{padding-top:max(14px, calc(env(safe-area-inset-top) + 10px))}
 html.apk .setup{padding-top:56px}
-html.apk header{padding-top:40px}
+.setup[hidden],#app[hidden]{display:none}
+.setup h1{color:var(--accent)}
+.setup p{margin:0;color:var(--muted);font-weight:600}
+.setup ol{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px}
+.setup code{background:var(--accent-soft);border-radius:5px;padding:0 4px;font-size:14px}
+.card{background:var(--surface);border-radius:18px;padding:16px;display:grid;gap:12px;box-shadow:0 1px 3px rgba(30,43,36,.06)}
+#suMsg{color:var(--warn);font-weight:800;min-height:1.2em}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
@@ -186,8 +169,8 @@ html.apk header{padding-top:40px}
 </section>
 
 <div id="app" hidden>
-<div class="wrap">
   <header>
+   <div class="hwrap">
     <div class="top">
       <h1>Nos courses</h1>
       <div class="topr">
@@ -198,18 +181,20 @@ html.apk header{padding-top:40px}
     <div class="stores" id="stores" role="toolbar" aria-label="Magasin"></div>
     <div class="add">
       <form id="addForm" autocomplete="off">
-        <input id="addInput" type="text" placeholder="Ajouter… ex. 2 l lait, 500 g carottes" aria-label="Ajouter un article" enterkeyhint="done">
+        <input id="addInput" type="text" placeholder="Ajouter… ex. lait, 2 kg pommes" aria-label="Ajouter un article" enterkeyhint="done">
         <button class="btn" type="submit">Ajouter</button>
       </form>
       <div class="sugg" id="sugg" hidden></div>
     </div>
+   </div>
   </header>
-  <div class="usual" id="usual"></div>
-  <main id="list"></main>
-  <div class="tools">
-    <button class="btn ghost" id="openOrder" type="button">Ordre des rayons</button>
+  <div class="wrap">
+    <div class="usual" id="usual"></div>
+    <main id="list"></main>
+    <div class="tools">
+      <button class="btn ghost" id="openOrder" type="button">Ordre des rayons</button>
+    </div>
   </div>
-</div>
 </div>
 
 <div class="toast" id="toast" hidden role="status"><span id="toastMsg"></span><button id="toastUndo" type="button">Annuler</button></div>
@@ -281,6 +266,7 @@ const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 function guessCat(name){
   const learned = state.doc.catalog[slug(keyOf(name))];
   if (learned && learned.cat) return learned.cat;
+  const prod = findProduct(name); if (prod) return prod.cat;
   const n = ' ' + norm(name).split(' ').map(sing).join(' ') + ' ';
   const toks = n.trim().split(' ');
   for (const [cat, kws] of KEYWORDS){
@@ -294,20 +280,20 @@ function guessCat(name){
 }
 function parseLine(raw){
   let s = raw.trim(); if (!s) return null;
-  let qty = null, unit = '', name = s, m;
+  let qty = null, unit = '', name = s, m, unitGiven = false;
   const unitOf = u => UNITS[norm(u)];
   if ((m = s.match(/^(\d+(?:[.,]\d+)?)\s*([a-zA-Zéèêîôûç]+)?\.?\s+(.+)$/))) {
     const q = parseFloat(m[1].replace(',','.'));
     const u = m[2] && unitOf(m[2]);
-    if (u) { qty = q*u[1]; unit = u[0]; name = m[3]; }
+    if (u) { qty = q*u[1]; unit = u[0]; name = m[3]; unitGiven = true; }
     else { qty = q; unit = 'pce'; name = (m[2] ? m[2]+' ' : '') + m[3]; }
   } else if ((m = s.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*([a-zA-Zéèêîôûç]+)?$/))) {
     const q = parseFloat(m[2].replace(',','.'));
     const u = m[3] ? unitOf(m[3]) : ['pce',1];
-    if (u) { qty = q*u[1]; unit = u[0]; name = m[1]; }
+    if (u) { qty = q*u[1]; unit = u[0]; name = m[1]; unitGiven = !!m[3]; }
   }
   name = name.replace(/^(de |d')/i,'').trim();
-  return {name: cap(name), qty, unit};
+  return {name: cap(name), qty, unit, unitGiven};
 }
 function fmtQty(q, u){
   if (q == null || q === '' || isNaN(q)) return '';
@@ -337,6 +323,141 @@ function roundScaled(q, u){
   return Math.max(1, Math.round(q));
 }
 
+
+// Produits connus : mots-clés | icône | rayon | quantité par défaut | unité par défaut (testés dans l'ordre)
+const PRODUCT_LINES = `
+gel douche|savon|shampoing|shampooing|apres shampoing;🧴;hyg;1;pce
+dentifrice|brosse a dent;🪥;hyg;1;pce
+deodorant|creme solaire|creme main|lait corporel;🧴;hyg;1;pce
+mouchoir;🤧;hyg;1;paquet
+papier toilette|papier wc;🧻;men;1;paquet
+essuie tout|sopalin|papier menage;🧻;men;1;paquet
+lessive|adoucissant;🧺;men;1;pce
+liquide vaisselle|produit vaisselle|pastille lave|tablette lave;🧽;men;1;pce
+eponge;🧽;men;1;paquet
+sac poubelle;🗑️;men;1;paquet
+ampoule;💡;men;1;pce
+pile;🔋;men;1;paquet
+lait de coco;🥥;epi;1;boîte
+tomates pelees|tomate pelee|tomates concassees|coulis|concentre de tomate|puree de tomate|passata;🥫;epi;1;boîte
+pate feuilletee|pate brisee|pate a pizza|pate a gateau|pate sablee|fond de tarte;🥧;epi;1;pce
+pate a tartiner|caotina|ovomaltine|nutella|confiture;🍯;epi;1;pot
+patate douce;🍠;fl;500;g
+pomme de terre|patate;🥔;fl;1;kg
+pomme;🍎;fl;1;kg
+poire;🍐;fl;1;kg
+banane;🍌;fl;1;kg
+mandarine|clementine;🍊;fl;1;kg
+orange;🍊;fl;1;kg
+citron|lime;🍋;fl;3;pce
+raisin;🍇;fl;500;g
+fraise|framboise;🍓;fl;500;g
+myrtille|mure;🫐;fl;250;g
+cerise;🍒;fl;500;g
+peche|nectarine|abricot|prune;🍑;fl;500;g
+ananas;🍍;fl;1;pce
+mangue;🥭;fl;1;pce
+pasteque;🍉;fl;1;pce
+melon;🍈;fl;1;pce
+kiwi;🥝;fl;4;pce
+avocat;🥑;fl;2;pce
+tomate cerise;🍅;fl;250;g
+tomate;🍅;fl;500;g
+poivron;🫑;fl;2;pce
+piment;🌶️;fl;2;pce
+concombre;🥒;fl;1;pce
+courgette;🥒;fl;2;pce
+aubergine;🍆;fl;1;pce
+carotte;🥕;fl;1;kg
+echalote;🧅;fl;250;g
+oignon;🧅;fl;1;kg
+ail;🧄;fl;1;pce
+brocoli|chou fleur|chou-fleur;🥦;fl;1;pce
+salade|laitue|batavia|iceberg|doucette|mache|rucola|roquette|endive;🥬;fl;1;pce
+epinard;🥬;fl;500;g
+poireau|chou|blette|celeri;🥬;fl;1;pce
+haricot;🫘;fl;500;g
+mais;🌽;epi;1;boîte
+champignon;🍄;fl;250;g
+courge|potiron|butternut;🎃;fl;1;pce
+herbes de provence|herbe de provence;🧂;epi;1;pot
+herbe|persil|basilic|coriandre|ciboulette|menthe|thym|romarin|aneth|gingembre;🌿;fl;1;botte
+fenouil|asperge|radis|betterave|artichaut;🥗;fl;500;g
+croissant;🥐;bou;4;pce
+baguette;🥖;bou;1;pce
+pain|tresse|zopf|toast|brioche|petit pain|ballon;🍞;bou;1;pce
+gateau|tarte|cake;🍰;bou;1;pce
+tortilla|wrap;🌯;epi;1;paquet
+poulet|dinde;🍗;via;500;g
+saucisse|cervelas|merguez|chipolata|wienerli|schublig;🌭;via;4;pce
+lard|lardon|bacon;🥓;via;150;g
+jambon|salami|viande sechee|charcuterie;🍖;via;200;g
+boeuf|steak|hache|entrecote|porc|veau|agneau|escalope|emince|viande|cotelette|roti;🥩;via;500;g
+thon|sardine;🐟;epi;2;boîte
+saumon|truite|cabillaud|poisson|perche|colin|dorade;🐟;via;300;g
+crevette|scampi;🦐;via;200;g
+lait;🥛;lai;1;l
+yogourt|yaourt|yogurt|skyr;🥣;lai;4;pce
+creme;🥛;lai;2;dl
+beurre;🧈;lai;250;g
+oeuf;🥚;lai;6;pce
+fromage|gruyere|emmental|tete de moine|raclette|vacherin|tomme|reblochon|appenzeller|parmesan|feta|mozzarella|mascarpone|ricotta|sere|cottage|brie|camembert|cheddar|comte;🧀;lai;200;g
+pate|spaghetti|penne|tagliatelle|fusilli|lasagne|nouille|macaroni|cornette|linguine;🍝;fec;500;g
+riz|risotto;🍚;fec;1;kg
+quinoa|couscous|boulgour|semoule|polenta|farine;🌾;fec;1;kg
+lentille|pois chiche;🫘;fec;500;g
+cereale|muesli|flocon|avoine|granola|cornflakes;🥣;fec;1;paquet
+gnocchi|ravioli|tortellini;🥟;fec;500;g
+huile;🫒;epi;1;bouteille
+olive;🫒;epi;1;pot
+vinaigre;🍶;epi;1;bouteille
+sel|poivre|epice|curry|paprika|cumin|cannelle|muscade;🧂;epi;1;pot
+sucre;🍬;epi;1;kg
+miel;🍯;epi;1;pot
+cafe;☕;epi;1;paquet
+coca|limonade|rivella|ice tea|the froid|soda;🥤;boi;1;bouteille
+the|tisane|infusion;🍵;epi;1;paquet
+moutarde|mayonnaise|ketchup|sauce|pesto|tahini;🥫;epi;1;pce
+bouillon|conserve;🥫;epi;1;paquet
+sesame|graine|noix|amande|noisette|cacahuete|pignon|pistache;🥜;epi;1;sachet
+levure|bicarbonate|vanille|sucre vanille;🧁;epi;1;paquet
+chocolat;🍫;dou;2;pce
+biscuit|cookie|petit beurre|gaufrette|madeleine;🍪;dou;1;paquet
+chips|apero|bretzel|cracker;🥨;dou;1;paquet
+popcorn;🍿;dou;1;paquet
+bonbon|gomme|chewing;🍬;dou;1;paquet
+glace;🍨;sur;1;pce
+pizza;🍕;sur;1;pce
+frites;🍟;sur;1;paquet
+surgele;🧊;sur;1;paquet
+eau;💧;boi;6;bouteille
+jus;🧃;boi;1;l
+sirop;🧃;boi;1;bouteille
+biere;🍺;boi;6;bouteille
+vin|prosecco|champagne;🍷;boi;1;bouteille
+`.trim().split('\n').map(l => { const [k,icon,cat,q,u] = l.split(';'); return {kws:k.split('|').map(w => w.split(' ').map(sing).join(' ')), icon, cat, q:+q, u}; });
+const CAT_ICON = {fl:'🥬',bou:'🍞',via:'🥩',lai:'🧀',fec:'🍝',epi:'🥫',dou:'🍫',boi:'🧃',sur:'🧊',men:'🧽',hyg:'🧴',aut:'🛒'};
+function findProduct(name){
+  const n = ' ' + norm(name).split(' ').map(sing).join(' ') + ' ';
+  const toks = n.trim().split(' ');
+  for (const p of PRODUCT_LINES){
+    for (const k of p.kws){
+      if (k.includes(' ')) { if (n.includes(' '+k+' ') || n.includes(' '+k)) return p; }
+      else if (toks.some(t => t === k || (k.length >= 5 && t.startsWith(k)))) return p;
+    }
+  }
+  return null;
+}
+const iconFor = i => { const p = findProduct(i.name); return p ? p.icon : (CAT_ICON[i.cat] || '🛒'); };
+// Quantité par défaut logique quand rien n'est précisé ; un nombre seul prend l'unité habituelle du produit
+function withDefaults(p){
+  const prod = findProduct(p.name);
+  if (!prod) return p;
+  const conv = (q,u) => { const m = UNITS[norm(u)]; return m ? {qty:q*m[1], unit:m[0]} : {qty:q, unit:u}; };
+  if (p.qty == null) return {...p, ...conv(prod.q, prod.u)};
+  if (!p.unitGiven && prod.u !== 'pce') return {...p, ...conv(p.qty, prod.u)};
+  return p;
+}
 
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', path:'data/liste.json', branch:'main' };
@@ -472,12 +593,11 @@ function addItem({name, qty=null, unit='', cat, from}, opts={}){
     else if (qty != null && d.qty != null && d.unit === unit) { d.qty = d.qty + qty; result = 'merged'; }
     else if (qty != null && d.qty == null) { d.qty = qty; d.unit = unit; result = 'merged'; }
     if (from && !d.from.includes(from)) d.from.push(from);
-    if (state.store !== 'all' && d.stores.length && !d.stores.includes(state.store)) d.stores.push(state.store);
     backend.putItem(id, d); bumpCatalog(d);
     if (!opts.quiet) toast(result === 'merged' ? `${d.name} : ${fmtQty(d.qty,d.unit)} au total` : result === 'back' ? `${d.name} remis dans la liste` : `${d.name} est déjà dans la liste`);
     return result;
   }
-  const d = {name, key, qty, unit: qty!=null ? (unit||'pce') : unit, cat: cat || guessCat(name), stores: state.store==='all'?[]:[state.store], note:'', done:false, doneAt:null, by: cfg.name || '', at: Date.now(), from: from?[from]:[]};
+  const d = {name, key, qty, unit: qty!=null ? (unit||'pce') : unit, cat: cat || guessCat(name), stores: [], note:'', done:false, doneAt:null, by: cfg.name || '', at: Date.now(), from: from?[from]:[]};
   backend.putItem(uid(), d); bumpCatalog(d);
   return 'new';
 }
@@ -498,8 +618,8 @@ function clearDone(){
 /* ---------- Rendu ---------- */
 function renderStatus(){
   const map = {
-    idle:['','Connexion…'], ok:['ok', 'Synchronisé'], saving:['','Enregistrement…'],
-    offline:['warn','Hors ligne : enregistré sur ce téléphone'], auth:['warn','Jeton refusé : touche ici']
+    idle:['','Connexion…'], ok:['ok', 'Synchronisé'], saving:['','Envoi…'],
+    offline:['warn','Hors ligne'], auth:['warn','Jeton refusé']
   };
   const [cls, txt] = map[state.status] || map.idle;
   $('#status').innerHTML = `<i class="dot ${cls}"></i><span>${txt}</span>`;
@@ -516,16 +636,16 @@ function render(){
   const usual = Object.entries(state.doc.catalog).filter(([k,c]) => !inList.has(k) && (c.count||0) >= 1)
     .sort((a,b) => (b[1].count||0)-(a[1].count||0) || (b[1].last||0)-(a[1].last||0)).slice(0,12);
   $('#usual').innerHTML = usual.length ? `<span class="lbl">Habituels</span>` + usual.map(([k,c]) =>
-    `<button class="pill" type="button" data-usual="${esc(k)}"><b>+</b>${esc(c.name)}</button>`).join('') : '';
+    `<button class="pill" type="button" data-usual="${esc(k)}"><span class="em" aria-hidden="true">${iconFor(c)}</span>${esc(c.name)}</button>`).join('') : '';
 
   const store = state.store;
   const vis = act.filter(([,i]) => visibleIn(i, store));
   let html = '';
-  if (!vis.length) html += `<div class="empty">Rien à acheter ${store==='all' ? 'pour l’instant' : 'ici'}. Ajoute un article en haut.</div>`;
+  if (!vis.length) html += `<div class="empty"><b aria-hidden="true">🧺</b>Rien à acheter ${store==='all' ? 'pour l’instant' : 'ici'}. Ajoute un article en haut.</div>`;
   for (const c of orderFor(store)){
     const rows = vis.filter(([,i]) => (CAT[i.cat]?i.cat:'aut') === c).sort((a,b) => (a[1].at||0)-(b[1].at||0));
     if (!rows.length) continue;
-    html += `<section class="aisle"><h2><i style="background:${CAT[c].color}"></i>${esc(CAT[c].name)}<span>${rows.length}</span></h2><ul>${rows.map(rowHtml).join('')}</ul></section>`;
+    html += `<section class="aisle"><h2 style="color:${CAT[c].color}"><span class="em" aria-hidden="true">${CAT_ICON[c]}</span>${esc(CAT[c].name)}<span class="n" style="background:${CAT[c].color}">${rows.length}</span></h2><ul>${rows.map(rowHtml).join('')}</ul></section>`;
   }
   const done = Object.entries(items()).filter(([,i]) => i.done && visibleIn(i, store)).sort((a,b) => (b[1].doneAt||0)-(a[1].doneAt||0));
   if (done.length){
@@ -541,8 +661,9 @@ function rowHtml([id, i]){
   if (state.store === 'all' && i.stores && i.stores.length) meta.push(...i.stores.map(s => `<span class="tag">${esc((STORES.find(x=>x.id===s)||{}).name||s)}</span>`));
   if (i.from && i.from.length) meta.push(`<span>pour ${esc(i.from.join(', '))}</span>`);
   const who = i.by ? `<span class="who" title="Ajouté par ${esc(i.by)}">${esc(i.by.trim().charAt(0).toUpperCase())}</span>` : '';
+  const col = (CAT[i.cat]||CAT.aut).color;
   return `<li class="${i.done?'done':''}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
-    <button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
+    <span class="icon" style="background:${col}1f" aria-hidden="true">${iconFor(i)}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
 }
 
 /* ---------- Suggestions ---------- */
@@ -554,7 +675,7 @@ function showSugg(){
   const hits = Object.entries(state.doc.catalog).filter(([key,c]) => key.replace(/-/g,' ').includes(k) || norm(c.name).includes(norm(p.name)))
     .sort((a,b)=>(b[1].count||0)-(a[1].count||0)).slice(0,5);
   if (!hits.length) { box.hidden = true; return; }
-  box.innerHTML = hits.map(([key,c]) => `<button type="button" data-sugg="${esc(key)}"><i class="dot" style="background:${(CAT[c.cat]||CAT.aut).color}"></i>${esc(c.name)}<small>${esc(fmtQty(p.qty ?? c.qty, p.qty!=null ? p.unit : c.unit))}</small></button>`).join('');
+  box.innerHTML = hits.map(([key,c]) => `<button type="button" data-sugg="${esc(key)}"><span class="em" aria-hidden="true">${iconFor(c)}</span>${esc(c.name)}<small>${esc(fmtQty(p.qty ?? c.qty, p.qty!=null ? p.unit : c.unit))}</small></button>`).join('');
   box.hidden = false;
 }
 
@@ -572,8 +693,9 @@ function closeSheet(){ $('#scrim').hidden = true; $('#sheet').innerHTML = ''; }
 
 function openEdit(id){
   const i = state.doc.items[id]; if (!i || i.deleted) return;
-  const [v,u] = toEdit(i.qty, i.unit);
-  openSheet(`<h3>${esc(i.name)}</h3>
+  let [v,u] = toEdit(i.qty, i.unit);
+  if (i.qty == null) { const pr = findProduct(i.name); if (pr) u = pr.u; }
+  openSheet(`<h3><span aria-hidden="true">${iconFor(i)}</span>${esc(i.name)}</h3>
   <div class="field"><label for="eName">Article</label><input id="eName" value="${esc(i.name)}"></div>
   <div class="row"><div class="field"><label for="eQty">Quantité</label><input id="eQty" inputmode="decimal" value="${v===''?'':esc(String(Math.round(v*100)/100))}"></div>
   <div class="field"><label for="eUnit">Unité</label><select id="eUnit">${EDIT_UNITS.map(x=>`<option value="${x}" ${x===u?'selected':''}>${x||'—'}</option>`).join('')}</select></div></div>
@@ -659,11 +781,11 @@ $('#list').onclick = e => {
   const ed = e.target.closest('[data-edit]'); if (ed) return openEdit(ed.dataset.edit);
   if (e.target.id === 'clearDone') clearDone();
 };
-$('#usual').onclick = e => { const b = e.target.closest('[data-usual]'); if (!b) return; const c = state.doc.catalog[b.dataset.usual]; if (c) addItem({name:c.name, qty:c.qty ?? null, unit:c.unit||'', cat:c.cat}); };
+$('#usual').onclick = e => { const b = e.target.closest('[data-usual]'); if (!b) return; const c = state.doc.catalog[b.dataset.usual]; if (c) addItem(c.qty != null ? {name:c.name, qty:c.qty, unit:c.unit||'', cat:c.cat} : {...withDefaults({name:c.name, qty:null, unit:''}), cat:c.cat}); };
 $('#addForm').onsubmit = e => {
   e.preventDefault();
   const p = parseLine($('#addInput').value); if (!p) return;
-  addItem(p); $('#addInput').value = ''; $('#sugg').hidden = true;
+  addItem(withDefaults(p)); $('#addInput').value = ''; $('#sugg').hidden = true;
 };
 $('#addInput').oninput = showSugg;
 $('#addInput').onblur = () => setTimeout(() => { $('#sugg').hidden = true; }, 150);
