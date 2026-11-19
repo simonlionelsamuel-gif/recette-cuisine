@@ -215,6 +215,9 @@ html.apk .tabbar{padding-bottom:14px}
 .progress{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
 .progress i{display:block;height:100%;width:2%;background:var(--accent);transition:width .3s}
 .fab{margin-left:auto}
+.count{color:var(--muted);font-weight:800;font-size:13px;margin:16px 4px 0}
+.cards{margin-top:8px}
+.more{width:100%;margin-top:14px}
 .ver{text-align:center;color:var(--muted);font-size:13px;font-weight:700;margin:18px 0 0}
 </style>
 </head>
@@ -597,7 +600,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.8';
+const APP_VERSION = '1.0.9';
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
 const API_BASE = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
@@ -606,7 +609,7 @@ const KEY_CFG = 'rc-config', KEY_TAB = 'rc-tab';
 
 /* ---------- État ---------- */
 let cfg = {token:'', name:''};
-const state = { tab:'list', status:'idle', lastSync:0, have:[], recQuery:'', favOnly:false };
+const state = { tab:'list', status:'idle', lastSync:0, have:[], recQuery:'', favOnly:false, shown:40 };
 const headers = () => ({ 'Authorization':'Bearer '+cfg.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' });
 const enc = str => { const b = new TextEncoder().encode(str); let bin=''; for (let i=0;i<b.length;i+=8192) bin += String.fromCharCode.apply(null, b.subarray(i,i+8192)); return btoa(bin); };
 const dec = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g,'')), c => c.charCodeAt(0)));
@@ -940,12 +943,14 @@ function renderRecipes(){
   let html = '';
   if (!recipes().length) html = `<div class="empty"><b aria-hidden="true">📖</b>Aucune recette pour l’instant.</div>`;
   else if (!list.length) html = `<div class="empty"><b aria-hidden="true">🤔</b>Aucune recette ne correspond. Retire un ingrédient ou un filtre.</div>`;
+  const total = list.length; list = list.slice(0, state.shown);
+  html += `<p class="count">${total} recette${total>1?'s':''}${state.have.length||state.recQuery||state.favOnly ? ' trouvée'+(total>1?'s':'') : ''}</p>`;
   html += `<div class="cards">` + list.map(({id, r, m}) => `<button class="rcard" type="button" data-rec="${id}">
       <span class="rphoto" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></span>
       <span class="rbody"><span class="rtitle">${esc(r.title)}</span>
       <span class="rmeta">${r.time ? `<span>⏱ ${esc(r.time)} min</span>` : ''}<span>👥 ${r.persons||4}</span>${r.fav ? '<span class="fav">❤</span>' : ''}${r.source && r.source.url ? `<span>${esc(r.source.name)}</span>` : ''}</span>
       ${roots.length ? `<span class="rmatch ${m.missing.length===0?'full':''}">${m.missing.length===0 ? 'Tu as tout ✓' : `Tu as ${m.have}/${m.total} · manque ${esc(m.missing.slice(0,3).map(i=>i.name.toLowerCase()).join(', '))}${m.missing.length>3?'…':''}`}</span>` : ''}
-      </span></button>`).join('') + `</div>`;
+      </span></button>`).join('') + `</div>` + (total > list.length ? `<button class="btn ghost more" type="button" id="moreRec">Voir plus de recettes (${total - list.length})</button>` : '');
   $('#recList').innerHTML = html;
   hydratePhotos($('#recList'));
 }
@@ -1188,9 +1193,9 @@ $('#haveForm').onsubmit = e => { e.preventDefault(); const v = $('#haveInput').v
   // un mot qui ne ressemble à aucun ingrédient : recherche dans les titres
   if (!findProduct(n) && !DICTIONARY.some(w => norm(w) === norm(n))) { state.recQuery = n; } else if (!state.have.includes(n)) state.have.push(n);
   $('#haveInput').value = ''; $('#haveSugg').hidden = true; render(); };
-$('#haveChips').onclick = e => { const b = e.target.closest('[data-rmhave]'); if (b) { state.have.splice(+b.dataset.rmhave, 1); render(); } };
+$('#haveChips').onclick = e => { const b = e.target.closest('[data-rmhave]'); if (b) { state.have.splice(+b.dataset.rmhave, 1); state.shown = 40; render(); } };
 $('#favOnly').onclick = () => { state.favOnly = !state.favOnly; render(); };
-$('#recList').onclick = e => { const b = e.target.closest('[data-rec]'); if (b) openRecipe(b.dataset.rec); };
+$('#recList').onclick = e => { if (e.target.id === 'moreRec') { state.shown += 40; render(); return; } const b = e.target.closest('[data-rec]'); if (b) openRecipe(b.dataset.rec); };
 $('#addRecipe').onclick = openAddRecipe;
 $('#clearQuery').onclick = () => { state.recQuery = ''; state.have = []; render(); };
 $('#toastUndo').onclick = () => { if (undoFn) undoFn(); undoFn = null; $('#toast').hidden = true; };
