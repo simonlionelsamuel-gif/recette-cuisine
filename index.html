@@ -152,9 +152,10 @@ body[data-tab="list"] .only-rec, body[data-tab="rec"] .only-list{display:none!im
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);display:flex;justify-content:center;gap:8px;padding:8px 16px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(30,43,36,.08)}
 html.edge .tabbar{padding-bottom:calc(var(--bottom-inset) + 8px)}
 html.edge .toast{bottom:calc(var(--bottom-inset) + 86px)}
-html.edge .sheet{padding-bottom:calc(var(--bottom-inset) + 24px)}
+html.edge .scrim{top:var(--top-inset);bottom:var(--bottom-inset)}
+html.edge .sheet{padding-bottom:24px}
 html.edge .wrap{padding-bottom:calc(var(--bottom-inset) + 130px)}
-html.edge .sheet.full{max-height:calc(100% - var(--top-inset))}
+html.edge .sheet.full{max-height:100%}
 .tabbar button{flex:1;max-width:260px;border:0;background:none;border-radius:14px;padding:8px 6px;font-weight:900;font-size:14px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
 .tabbar button .em{font-size:22px}
 .tabbar button[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
@@ -623,7 +624,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.11';
+const APP_VERSION = '1.0.12';
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
 const API_BASE = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
@@ -837,13 +838,95 @@ const rootOf = name => { const p = findProduct(name); if (p) { const n = ' '+nor
 function matchRecipe(r, haveRoots){
   const ings = (r.ingredients||[]).filter(i => i.name);
   const counted = ings.filter(i => !STAPLES.has(keyOf(i.name)) && !STAPLES.has(rootOf(i.name)));
-  const have = counted.filter(i => haveRoots.some(h => rootOf(i.name) === h || keyOf(i.name).includes(h) || h.includes(rootOf(i.name))));
+  const have = counted.filter(i => haveRoots.some(h => rootOf(i.name) === h || (' '+keyOf(i.name)+' ').includes(' '+h+' ')));
   const missing = counted.filter(i => !have.includes(i));
   return {have: have.length, total: counted.length, missing};
 }
+const DISH_ICONS = `papet|potee|pot-au-feu|ragout|mijote|navarin|blanquette|bourguignon|goulasch|tajine|cassoulet|choucroute;🥘
+fondue|raclette;🫕
+soupe|veloute|potage|bouillon|minestrone|gaspacho|gazpacho|bouillabaisse;🍲
+salade|coleslaw|taboule|bowl;🥗
+pizza|flammekueche|tarte flambee|focaccia;🍕
+quiche|tarte salee|tourte|feuillete;🥧
+tarte|clafoutis|crumble;🥧
+gateau|cake|biscuit roule|cheesecake|cheese-cake|fraisier|foret-noire|tourte au;🍰
+muffin|cupcake|brownie|madeleine|financier;🧁
+cookie|biscuit|sable|macaron|meringue|tuile|bricelet|leckerli|biberli|biscome|mailanderli|spitzbub;🍪
+crepe|pancake|galette;🥞
+gaufre;🧇
+beignet|donut|berliner|merveille;🍩
+glace|sorbet|parfait glace|yogourt glace;🍨
+mousse|creme brulee|panna cotta|tiramisu|flan|pudding|creme dessert|zabaglione;🍮
+smoothie|milkshake|frappe|lassi|limonade|lemonade|jus;🥤
+cocktail|punch|sangria|spritz|sour|mojito|vin chaud;🍹
+the|chai|infusion|chocolat chaud|cafe;☕
+burger|hamburger;🍔
+hot-dog|hot dog;🌭
+wrap|burrito|fajita|kebab|pita|durum;🌯
+tacos|taco|quesadilla|nachos;🌮
+sushi|maki|poke;🍣
+curry|dal|dhal|masala|korma|tikka;🍛
+risotto|paella|riz cantonais|riz saute|riz pilaf|biryani;🍚
+wok|nouilles|ramen|pad thai|udon|soba|nouilles de riz;🍜
+lasagne|cannelloni|spaghetti|tagliatelle|penne|pates|macaroni|maccheroni|linguine|carbonara|bolognese|bolognaise|alplermagronen|älplermagronen;🍝
+gnocchi|ravioli|tortellini|raviole|knoepfli|spaetzli|dumpling|gyoza|ravioles;🥟
+chili;🌶️
+rosti|gratin dauphinois|puree|pommes de terre|frites|potatoes;🥔
+gratin;🧀
+croute au fromage|croutes au fromage|croque|sandwich|toast|tartine|bruschetta|panini;🥪
+omelette|oeufs|frittata|tortilla espagnole|oeuf;🍳
+pain|tresse|brioche|zopf|baguette|petits pains|pate levee;🍞
+pate feuilletee|feuillete;🥐
+pate brisee|pate sablee|fond de tarte;🥧
+pate a pizza;🍕
+pate a crepes;🥞
+pate a choux|chou a la creme|eclair|profiterole;🧁
+pates fraiches;🍝
+chantilly|creme patissiere|creme fouettee;🍦
+pain de viande|meatloaf|boulette|fricadelle;🍖
+brochette|kebab|souvlaki;🍢
+bircher|muesli|porridge|granola;🥣
+buns|bun;🍞
+lapin;🐇
+canard|magret;🦆
+agneau|gigot;🐑
+pesto;🌿
+bechamel|sauce|vinaigrette|mayonnaise|pesto|hollandaise|ketchup|chutney|dip|houmous|tapenade;🫙
+poulet roti|poulet|volaille|ailes;🍗
+saumon|truite|poisson|cabillaud|perche|thon|dorade|eglefin|colin|merlu|bar|sole|sardine|maquereau;🐟
+crevette|scampi|gambas;🦐
+moules|huitres|fruits de mer;🦪
+steak|entrecote|boeuf|filet|roti|escalope|cordon bleu|schnitzel|cotelette;🥩
+saucisse|cervelas|merguez;🌭
+legumes|ratatouille|wok de legumes|poelee;🥦
+compote|confiture|gelee;🍯
+croutons;🍞`.trim().split('\n').map(l => { const [k, icon] = l.split(';'); return {kws: k.split('|').map(norm), icon}; });
+const MINOR = new Set(['beurre','farine','oignon','echalote','ail','sel','poivre','sucre','huile','eau','vinaigre','levure','herbe','persil','basilic','ciboulette','coriandre','thym','romarin','menthe','aneth','laurier','muscade','cumin','paprika','curry','cannelle','vanille','moutarde','citron','lait','creme','oeuf','jaune d oeuf','maizena','bouillon','vin','miel']);
+function mainIngredient(r){
+  const ings = (r.ingredients||[]).filter(i => i.name && !MINOR.has(rootOf(i.name)) && !MINOR.has(keyOf(i.name).split(' ')[0]));
+  const weight = i => { const b = baseOf(i.unit||''); const q = i.qty || 0; return b[0] === 'g' || b[0] === 'ml' ? q * b[1] : b[0] === 'pce' ? q * 150 : q * 20; };
+  return ings.sort((a,b) => weight(b) - weight(a))[0] || null;
+}
+const SMALL_UNITS = new Set(['c. à s.','c. à c.','pincée','gousse','brin','botte','feuille','tranche']);
+function isMainForScale(i){
+  if (i.qty == null || SMALL_UNITS.has(i.unit) || /feuille|brin|zeste|pincee|gousse/.test(norm(i.name))) return false;
+  if (MINOR.has(rootOf(i.name)) || MINOR.has(keyOf(i.name).split(' ')[0])) return false;
+  const p = findProduct(i.name); if (p && (p.icon === '🌿' || ['epi','boi','hyg','men'].includes(p.cat))) return false;
+  const b = baseOf(i.unit||''); return b[0] === 'pce' ? true : (i.qty * b[1]) >= 50;
+}
 function recipeIcon(r){
-  const main = (r.ingredients||[]).find(i => { const p = findProduct(i.name); return p && ['via','fec','fl','lai'].includes(p.cat); });
-  return main ? iconFor({name:main.name, cat:guessCat(main.name)}) : '🍽️';
+  if (r.icon) return r.icon;
+  // le mot le plus tôt dans le titre décrit le plat (« Brochettes de courge et chutney » -> brochettes)
+  const t = ' ' + norm(r.title) + ' ';
+  let best = null, bestPos = 1e9, bestLen = 0;
+  for (const d of DISH_ICONS) for (const k of d.kws) {
+    let pos = t.indexOf(' ' + k + ' '); const pos2 = t.indexOf(' ' + k + 's ');
+    if (pos < 0 || (pos2 >= 0 && pos2 < pos)) pos = pos2;
+    if (pos >= 0 && (pos < bestPos || (pos === bestPos && k.length > bestLen))) { best = d.icon; bestPos = pos; bestLen = k.length; }
+  }
+  if (best && bestPos < 25) return best;
+  const m = mainIngredient(r); const mp = m && findProduct(m.name);
+  return mp ? (iconFor({name:m.name, cat:mp.cat})) : (best || '🍽️');
 }
 const COUNT_UNITS = new Set(['', 'pce', 'gousse', 'botte', 'boîte', 'tranche', 'pot', 'sachet', 'paquet', 'bouteille', 'barquette']);
 function scaleQty(q, u, f){ if (q == null) return null; const v = q * f; return COUNT_UNITS.has(u||'') ? Math.max(0.5, Math.round(v*2)/2) : u === 'g' ? (v >= 100 ? Math.round(v/10)*10 : Math.max(1, Math.round(v))) : u === 'ml' ? Math.max(5, Math.round(v/5)*5) : Math.max(0.25, Math.round(v*4)/4); }
@@ -985,7 +1068,9 @@ function rowHtml([id, i]){
     <span class="icon" style="background:${col}1f" aria-hidden="true">${iconFor(i)}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
 }
 function renderRecipes(){
-  $('#haveChips').innerHTML = state.have.map((h,ix) => `<button type="button" class="hchip" data-rmhave="${ix}"><span aria-hidden="true">${iconFor({name:h, cat:guessCat(h)})}</span>${esc(h)}<b aria-label="retirer">×</b></button>`).join('');
+  const noFilter = !state.have.length && !state.recQuery && !state.favOnly && !state.basesOnly;
+  $('#clearQuery').setAttribute('aria-pressed', noFilter);
+  $('#haveChips').innerHTML = (state.recQuery ? `<button type="button" class="hchip" data-rmquery="1"><span aria-hidden="true">🔎</span>« ${esc(state.recQuery)} »<b aria-label="retirer">×</b></button>` : '') + state.have.map((h,ix) => `<button type="button" class="hchip" data-rmhave="${ix}"><span aria-hidden="true">${iconFor({name:h, cat:guessCat(h)})}</span>${esc(h)}<b aria-label="retirer">×</b></button>`).join('');
   $('#favOnly').setAttribute('aria-pressed', state.favOnly);
   $('#basesOnly').setAttribute('aria-pressed', !!state.basesOnly);
   const roots = state.have.map(rootOf);
@@ -1020,8 +1105,19 @@ function toast(msg, undo){
 }
 
 /* ---------- Panneaux ---------- */
-function openSheet(html, full){ const sh = $('#sheet'); sh.innerHTML = html; sh.classList.toggle('full', !!full); sh.scrollTop = 0; $('#scrim').hidden = false; sh.onclick = null; sh.onchange = null; sh.oninput = null; }
-function closeSheet(){ $('#scrim').hidden = true; $('#sheet').innerHTML = ''; }
+let sheetOpen = false;
+function openSheet(html, full){ if (!sheetOpen) { try { history.pushState({sheet:1}, ''); } catch(e){} sheetOpen = true; } const sh = $('#sheet'); sh.innerHTML = html; sh.classList.toggle('full', !!full); sh.scrollTop = 0; $('#scrim').hidden = false; sh.onclick = null; sh.onchange = null; sh.oninput = null; }
+function closeSheet(fromBack){
+  if (!sheetOpen) return;
+  sheetOpen = false; $('#scrim').hidden = true; $('#sheet').innerHTML = '';
+  if (!fromBack && history.state && history.state.sheet) { ignorePop = true; history.back(); }
+}
+let ignorePop = false;
+window.addEventListener('popstate', () => {
+  if (ignorePop) { ignorePop = false; return; }
+  if (sheetOpen) { closeSheet(true); return; }
+  if (state.tab === 'rec') { setTab('list', true); return; }
+});
 const unitOptions = sel => EDIT_UNITS.map(x=>`<option value="${esc(x)}" ${x===sel?'selected':''}>${esc(x||'—')}</option>`).join('');
 
 function openEdit(id){
@@ -1121,7 +1217,7 @@ function openRecipe(id){
       <div class="scale card soft">
         <div class="stepper"><button type="button" data-p="-1" aria-label="Une personne de moins">−</button><output>${num(persons)} pers.</output><button type="button" data-p="1" aria-label="Une personne de plus">+</button></div>
         <div class="field"><label for="rIng">Ou adapter selon ce que j’ai</label>
-          <div class="row"><select id="rIng"><option value="-1">Choisir un ingrédient…</option>${(r.ingredients||[]).map((i,ix)=> i.qty!=null ? `<option value="${ix}" ${ix===byIng?'selected':''}>${esc(i.name)}</option>` : '').join('')}</select>
+          <div class="row"><select id="rIng"><option value="-1">Choisir un ingrédient…</option>${(r.ingredients||[]).map((i,ix)=> isMainForScale(i) ? `<option value="${ix}" ${ix===byIng?'selected':''}>${esc(i.name)}</option>` : '').join('')}</select>
           <input id="rHave" inputmode="decimal" placeholder="${byIng>=0 ? esc(toEdit(r.ingredients[byIng].qty, r.ingredients[byIng].unit)[1]||'qté') : 'qté'}" value="${esc(haveQty)}"></div></div>
       </div>
       <h4>Ingrédients</h4>
@@ -1176,6 +1272,8 @@ function openRecipeForm(id, prefill){
     openSheet(`<h3>${isNew ? 'Nouvelle recette' : 'Modifier la recette'}</h3>
       <div class="rhero small" ${r.photo && !photoBlob ? `data-photo="${esc(r.photo)}"` : ''} id="fHero" ${photoBlob ? `style="background-image:url('${URL.createObjectURL(photoBlob)}')"` : ''}><span class="remoji" aria-hidden="true">📷</span></div>
       <label class="btn ghost filebtn">Photo du plat (facultatif)<input type="file" accept="image/*" id="fPhoto" hidden></label>
+      <div class="field"><span class="lab">Icône de la recette</span><button type="button" class="iconpick" id="fIconBtn"><span id="fIcon">${r.icon || recipeIcon({...r, icon:null})}</span> Changer l’icône</button>
+      <div class="icongrid" id="fIcons" hidden>${[...new Set([...DISH_ICONS.map(d => d.icon), ...ICON_CHOICES])].map(e => `<button type="button" data-fic="${e}">${e}</button>`).join('')}</div></div>
       <div class="field"><label for="fTitle">Nom de la recette</label><input id="fTitle" value="${esc(r.title)}" placeholder="ex. Papet vaudois"></div>
       <div class="row"><div class="field"><label for="fPers">Personnes</label><input id="fPers" inputmode="numeric" value="${esc(String(r.persons||4))}"></div>
       <div class="field"><label for="fTime">Temps (min)</label><input id="fTime" inputmode="numeric" value="${esc(String(r.time||''))}"></div></div>
@@ -1185,6 +1283,8 @@ function openRecipeForm(id, prefill){
       <div class="field"><label for="fNote">Note perso</label><input id="fNote" value="${esc(r.note||'')}" placeholder="ex. un peu moins de sel"></div>
       <div class="actions">${isNew ? '<button class="btn ghost" type="button" data-close>Annuler</button>' : '<button class="btn danger" type="button" id="fDel">Supprimer</button>'}<button class="btn" type="button" id="fSave">Enregistrer</button></div>`, true);
     hydratePhotos($('#sheet'));
+    $('#fIconBtn').onclick = () => { $('#fIcons').hidden = !$('#fIcons').hidden; };
+    $('#fIcons').onclick = e => { const b = e.target.closest('[data-fic]'); if (!b) return; r.icon = b.dataset.fic; $('#fIcon').textContent = r.icon; $('#fIcons').hidden = true; };
     $('#fPhoto').onchange = async e => { const f = e.target.files[0]; if (!f) return; collect(); try { photoBlob = await shrink(f); draw(); } catch(_) { toast('Cette image ne peut pas être lue.'); } };
     $('#sheet').onclick = async e => {
       if (e.target.id === 'fAddIng') { collect(); r.ingredients.push({name:'', qty:null, unit:''}); draw(); const rows = document.querySelectorAll('.ingrow .iq'); rows[rows.length-1].focus(); return; }
@@ -1272,7 +1372,7 @@ $('#setupForm').onsubmit = async e => {
 };
 
 /* ---------- Événements ---------- */
-function setTab(t){ state.tab = t; try{ localStorage.setItem(KEY_TAB, t); }catch(_){} window.scrollTo(0,0); render(); }
+function setTab(t, fromBack){ if (t === 'rec' && state.tab !== 'rec' && !fromBack) { try { history.pushState({tab:'rec'}, ''); } catch(e){} } else if (t === 'list' && state.tab === 'rec' && !fromBack && history.state && history.state.tab === 'rec') { ignorePop = true; history.back(); } state.tab = t; try{ localStorage.setItem(KEY_TAB, t); }catch(_){} window.scrollTo(0,0); render(); }
 $('#tabList').onclick = () => setTab('list');
 $('#lists').onclick = e => {
   if (e.target.closest('#addList')) return openListForm(null);
@@ -1293,9 +1393,11 @@ attachSuggest($('#addInput'), $('#sugg'), p => addItem(withDefaults(p)));
 attachSuggest($('#haveInput'), $('#haveSugg'), p => { if (!state.have.includes(p.name)) state.have.push(p.name); render(); });
 $('#haveForm').onsubmit = e => { e.preventDefault(); const v = $('#haveInput').value.trim(); if (!v) return; const p = parseLine(v); const n = p ? p.name : cap(v);
   // un mot qui ne ressemble à aucun ingrédient : recherche dans les titres
-  if (!findProduct(n) && !DICTIONARY.some(w => norm(w) === norm(n))) { state.recQuery = n; } else if (!state.have.includes(n)) state.have.push(n);
+  const asIng = findProduct(n) || DICTIONARY.some(w => norm(w) === norm(n)) || recipes().some(([,r]) => (r.ingredients||[]).some(i => (' '+keyOf(i.name)+' ').includes(' '+keyOf(n)+' ')));
+  if (!asIng) { state.recQuery = n; } else if (!state.have.includes(n)) state.have.push(n);
+  state.shown = 40;
   $('#haveInput').value = ''; $('#haveSugg').hidden = true; render(); };
-$('#haveChips').onclick = e => { const b = e.target.closest('[data-rmhave]'); if (b) { state.have.splice(+b.dataset.rmhave, 1); state.shown = 40; render(); } };
+$('#haveChips').onclick = e => { if (e.target.closest('[data-rmquery]')) { state.recQuery = ''; state.shown = 40; render(); return; } const b = e.target.closest('[data-rmhave]'); if (b) { state.have.splice(+b.dataset.rmhave, 1); state.shown = 40; render(); } };
 $('#favOnly').onclick = () => { state.favOnly = !state.favOnly; state.shown = 40; render(); };
 $('#basesOnly').onclick = () => { state.basesOnly = !state.basesOnly; state.shown = 40; render(); };
 $('#recList').onclick = e => { if (e.target.id === 'moreRec') { state.shown += 40; render(); return; } const b = e.target.closest('[data-rec]'); if (b) openRecipe(b.dataset.rec); };
