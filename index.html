@@ -47,15 +47,17 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 
-header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,var(--h1) 0%,var(--h2) 55%,var(--h3) 100%);color:#fff;padding:max(14px, calc(env(safe-area-inset-top) + 10px)) 16px 14px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr);border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(242,84,45,.25)}
-html.edge header{padding-top:calc(var(--top-inset) + 10px)}
-.hwrap{max-width:560px;margin:0 auto;width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,var(--h1) 0%,var(--h2) 55%,var(--h3) 100%);color:#fff;padding:max(10px, calc(env(safe-area-inset-top) + 6px)) 16px 10px;display:grid;gap:8px;grid-template-columns:minmax(0,1fr);border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(242,84,45,.25)}
+html.edge header{padding-top:calc(var(--top-inset) + 6px)}
+.hwrap{max-width:560px;margin:0 auto;width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
 .hwrap>*{min-width:0}
 .add form>*{min-width:0}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.top .lists{flex:1;min-width:0;margin:0 0 0 -16px;padding:0 4px 0 16px;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
 h1{font-family:var(--display);font-weight:900;font-size:28px;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .topr{display:flex;align-items:center;gap:8px;min-width:0}
 .status{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:5px 10px}
+.status{padding:0;width:38px;height:38px;justify-content:center;border-radius:12px}.status span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.status .dot{width:12px;height:12px}
 .dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.6;flex:none}
 .dot.ok{background:#7CF0B0;opacity:1}
 .dot.warn{background:var(--sun);opacity:1}
@@ -371,14 +373,14 @@ body[data-tab="rec"] .hwrap{gap:10px}
   <header>
    <div class="hwrap">
     <div class="top">
-      <h1><span class="only-list">Nos listes</span><span class="only-rec">Recettes</span></h1>
+      <h1 class="only-rec">Recettes</h1>
+      <div class="lists only-list" id="lists" role="toolbar" aria-label="Listes"></div>
       <div class="topr">
         <button class="status" id="status" type="button"><i class="dot"></i><span>Connexion…</span></button>
         <button class="iconbtn add-rec only-rec" id="addRecipe" type="button" aria-label="Ajouter une recette">＋</button>
         <button class="iconbtn" id="openSettings" type="button" aria-label="Réglages">⚙</button>
       </div>
     </div>
-    <div class="lists only-list" id="lists" role="toolbar" aria-label="Listes"></div>
     <div class="add only-list">
       <form id="addForm" autocomplete="off">
         <input id="addInput" type="text" placeholder="Ajouter… ex. lait, 2 kg pommes" aria-label="Ajouter un article" enterkeyhint="done" autocapitalize="sentences">
@@ -760,7 +762,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.21';
+const APP_VERSION = '1.0.22';
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
 const API_BASE = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
@@ -1179,7 +1181,7 @@ function parseRecipeText(text){
 function renderStatus(){
   const map = { idle:['','Connexion…'], ok:['ok','Synchronisé'], saving:['','Envoi…'], offline:['warn','Hors ligne'], auth:['warn','Jeton refusé'] };
   const [cls, txt] = map[state.status] || map.idle;
-  $('#status').innerHTML = `<i class="dot ${cls}"></i><span>${txt}</span>`;
+  $('#status').innerHTML = `<i class="dot ${cls}"></i><span>${txt}</span>`;  $('#status').setAttribute('aria-label', txt); $('#status').title = txt;
 }
 function render(){
   renderStatus();
