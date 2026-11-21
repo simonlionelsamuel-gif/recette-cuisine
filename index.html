@@ -208,6 +208,10 @@ html.edge .setup{padding-top:calc(var(--top-inset) + 20px)}
 :root[data-size="l"]{--z:1.1}
 :root[data-size="xl"]{--z:1.2}
 :root[data-size="xxl"]{--z:1.32}
+/* Rond pour cocher à droite, initiale à gauche */
+:root[data-check="right"] #app li .check{order:9}
+:root[data-check="right"] #app li .who{order:-1;margin:0 2px 0 12px}
+:root[data-check="right"] #app li:not(:has(.who)) .icon{margin-left:12px}
 /* Liste compacte : lignes basses, petites icônes, rayons rapprochés */
 :root[data-compact="1"] #app li{min-height:42px}
 :root[data-compact="1"] #app .check{height:42px;width:42px}
@@ -804,7 +808,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.25';
+const APP_VERSION = '1.0.26';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1564,7 +1568,7 @@ function openAddRecipe(){
   $('#sheet').onclick = e => { if (e.target.closest('#imManual')) return openRecipeForm(null); if (e.target.closest('[data-close]')) closeSheet(); };
 }
 
-const UI_DEFAULT = {accent:'orange', mode:'clair', size:'normal', compact:false, awake:false, vibrate:true};
+const UI_DEFAULT = {accent:'orange', mode:'clair', size:'normal', compact:false, checkRight:false, awake:false, vibrate:true};
 function ui(){ return {...UI_DEFAULT, ...(cfg.ui || {})}; }
 let wakeLock = null;
 async function applyAwake(){
@@ -1580,6 +1584,7 @@ function applyUI(){
   if (dark) de.dataset.mode = 'dark'; else delete de.dataset.mode;
   const sz = u.size === 'grand' ? 'l' : u.size; if (sz && sz !== 'normal') de.dataset.size = sz; else delete de.dataset.size;
   if (u.compact) de.dataset.compact = '1'; else delete de.dataset.compact;
+  if (u.checkRight) de.dataset.check = 'right'; else delete de.dataset.check;
   const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = getComputedStyle(de).getPropertyValue('--h2').trim() || '#FF6B35';
   applyAwake();
 }
@@ -1596,6 +1601,7 @@ function openSettings(){
     <div class="opt"><span class="lab">Couleur</span><div class="swatches" id="uiAccent">${ACCENTS.map(([k,c,n]) => `<button type="button" data-v="${k}" style="background:${c}" aria-label="Couleur ${n}" title="${n}" aria-pressed="${ui().accent===k}"></button>`).join('')}</div></div>
     <div class="opt"><span class="lab">Thème</span><div class="segs" id="uiMode">${[['clair','☀️ Clair'],['sombre','🌙 Sombre'],['auto','📱 Comme le téléphone']].map(([k,l]) => `<button type="button" data-v="${k}" aria-pressed="${ui().mode===k}">${l}</button>`).join('')}</div></div>
     <div class="opt"><span class="lab">Taille du texte</span><div class="segs" id="uiSize">${[['xs','Très petite'],['s','Petite'],['normal','Normale'],['l','Grande'],['xl','Très grande'],['xxl','Énorme']].map(([k,l]) => `<button type="button" data-v="${k}" aria-pressed="${(ui().size==='grand'?'l':ui().size)===k}">${l}</button>`).join('')}</div></div>
+    <label class="switch"><input type="checkbox" id="uiCheckRight" ${ui().checkRight?'checked':''}><span><b>Rond pour cocher à droite</b><small>L’initiale de qui a ajouté l’article passe à gauche.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiCompact" ${ui().compact?'checked':''}><span><b>Liste compacte</b><small>Lignes plus basses : environ un tiers d’articles en plus à l’écran.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiAwake" ${ui().awake?'checked':''}><span><b>Garder l’écran allumé</b><small>Pratique en magasin. Consomme un peu plus de batterie.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiVibrate" ${ui().vibrate?'checked':''}><span><b>Vibration en cochant</b><small>Petite vibration quand un article va dans le caddie.</small></span></label>
@@ -1611,6 +1617,7 @@ function openSettings(){
   const segPick = (id, key) => { $(id).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; setUI({[key]: b.dataset.v}); $(id).querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', x === b)); }; };
   segPick('#uiAccent', 'accent'); segPick('#uiMode', 'mode'); segPick('#uiSize', 'size');
   $('#uiCompact').onchange = e => setUI({compact: e.target.checked});
+  $('#uiCheckRight').onchange = e => setUI({checkRight: e.target.checked});
   $('#uiAwake').onchange = e => { setUI({awake: e.target.checked}); if (e.target.checked && !navigator.wakeLock) toast('Ce téléphone ne permet pas de garder l’écran allumé depuis l’app.'); };
   $('#uiVibrate').onchange = e => setUI({vibrate: e.target.checked});
   $('#sSync').onclick = () => { FILES.forEach(f => f.etag = null); pullAll(true); closeSheet(); };
