@@ -980,7 +980,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.31';
+const APP_VERSION = '1.0.32';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1366,6 +1366,20 @@ async function uploadPhoto(blob, id){
   return path;
 }
 
+// Copie de chaque lecture de photo dans le dépôt privé (ocrtest/telephone), pour pouvoir améliorer la lecture
+async function saveOcrSample(bmp, info){
+  try {
+    if (!cfg.token) return;
+    const c = colorLike(bmp, info.rot || 0, 0, 1600), blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.8));
+    const stamp = new Date().toISOString().slice(0,16).replace(/[-:T]/g,'') + '-' + slug(keyOf(cfg.name || 'x'));
+    const put = async (path, b64, msg) => fetch(API_BASE + path, {method:'PUT', headers:{...headers(), 'Content-Type':'application/json'}, body: JSON.stringify({message: msg, content: b64, branch: GH.branch})});
+    const buf = new Uint8Array(await blob.arrayBuffer()); let bin = ''; for (let i = 0; i < buf.length; i += 8192) bin += String.fromCharCode.apply(null, buf.subarray(i, i+8192));
+    await put(`ocrtest/telephone/${stamp}.jpg`, btoa(bin), 'Photo lue (test de lecture)');
+    const json = JSON.stringify({app: APP_VERSION, appareil: navigator.userAgent, taille: [bmp.width, bmp.height], ...info}, null, 1);
+    await put(`ocrtest/telephone/${stamp}.json`, btoa(unescape(encodeURIComponent(json))), 'Résultat de lecture (test)');
+  } catch(e){}
+}
+
 /* ---------- Lecture d'une recette sur photo (OCR) ---------- */
 let tessLoading = null;
 function loadTesseract(){
@@ -1395,13 +1409,13 @@ function prepForOcr(bmp, rot, bin, max=2200){
   if (bin) binarize(px, c.width, c.height);
   x.setTransform(1,0,0,1,0,0); x.putImageData(d, 0, 0);
   whitenEdges(c);
-  const ang = skewAngle(c);
+  const ang = skewAngle(c); c._ang = 0;
   if (Math.abs(ang) >= 0.4) {
     const rad = Math.abs(ang) * Math.PI / 180, r = document.createElement('canvas');
     r.width = Math.ceil(c.width * Math.cos(rad) + c.height * Math.sin(rad)); r.height = Math.ceil(c.height * Math.cos(rad) + c.width * Math.sin(rad));
     const y = r.getContext('2d'); y.fillStyle = '#fff'; y.fillRect(0, 0, r.width, r.height);
     y.translate(r.width/2, r.height/2); y.rotate(-ang * Math.PI / 180); y.drawImage(c, -c.width/2, -c.height/2);
-    whitenEdges(r);
+    whitenEdges(r); r._ang = ang;
     return r;
   }
   return c;
@@ -1446,6 +1460,54 @@ function skewAngle(c){
   }
   return best;
 }
+// Photo du plat imprimée sur la page : zone de demi-teintes ou de couleurs où l'on n'a lu aucun mot
+function colorLike(bmp, rot, ang, max=2200){
+  const W = bmp.width, H = bmp.height, sc = Math.min(1, max / Math.max(W, H)), w = Math.round(W*sc), h = Math.round(H*sc), side = rot % 180 !== 0;
+  const c = document.createElement('canvas'); c.width = side ? h : w; c.height = side ? w : h;
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.translate(c.width/2, c.height/2); x.rotate(rot * Math.PI / 180); x.drawImage(bmp, -w/2, -h/2, w, h);
+  if (!ang) return c;
+  const rad = Math.abs(ang) * Math.PI / 180, r = document.createElement('canvas');
+  r.width = Math.ceil(c.width * Math.cos(rad) + c.height * Math.sin(rad)); r.height = Math.ceil(c.height * Math.cos(rad) + c.width * Math.sin(rad));
+  const y = r.getContext('2d'); y.fillStyle = '#fff'; y.fillRect(0, 0, r.width, r.height); y.translate(r.width/2, r.height/2); y.rotate(-ang * Math.PI / 180); y.drawImage(c, -c.width/2, -c.height/2);
+  return r;
+}
+async function findDishPhoto(bmp, rot, ang, tsv){
+  const full = colorLike(bmp, rot, ang), k = 600 / Math.max(full.width, full.height);
+  const W = Math.round(full.width*k), H = Math.round(full.height*k), sm = document.createElement('canvas'); sm.width = W; sm.height = H;
+  const sx = sm.getContext('2d', {willReadFrequently:true}); sx.drawImage(full, 0, 0, W, H);
+  const px = sx.getImageData(0, 0, W, H).data, cs = 12, cw = Math.floor(W/cs), ch = Math.floor(H/cs);
+  const cont = new Uint8Array(cw*ch), txt = new Uint8Array(cw*ch), vals = new Float32Array(cs*cs);
+  for (let cy = 0; cy < ch; cy++) for (let cx = 0; cx < cw; cx++) {
+    let n = 0, colr = 0;
+    for (let y = cy*cs; y < cy*cs+cs; y++) for (let x = cx*cs; x < cx*cs+cs; x++) { const i = (y*W+x)*4, r = px[i], g = px[i+1], b = px[i+2], mx = Math.max(r,g,b), mn = Math.min(r,g,b); vals[n++] = (r*299+g*587+b*114)/1000; if (mx && (mx-mn)/mx > 0.3) colr++; }
+    const so = Array.from(vals).sort((a,b)=>a-b), bg = so[Math.floor(so.length*0.95)]; let dark = 0; for (const v of so) if (v < bg - Math.max(12, bg * 0.12)) dark++;
+    cont[cy*cw+cx] = (dark/n > 0.25 || colr/n > 0.3) ? 1 : 0;
+  }
+  // cases occupées par du texte lu
+  for (const row of String(tsv||'').split('\n').slice(1)) { const c = row.split('\t'); if (c.length < 12 || c[0] !== '5' || +c[10] < 50 || (c[11].match(/[a-zà-ÿ]/gi)||[]).length < 2) continue;
+    const x0 = Math.max(0, Math.floor(+c[6]*k/cs - 0.3)), y0 = Math.max(0, Math.floor(+c[7]*k/cs - 0.3)), x1 = Math.min(cw-1, Math.floor((+c[6] + +c[8])*k/cs + 1.3)), y1 = Math.min(ch-1, Math.floor((+c[7] + +c[9])*k/cs + 1.3));
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) txt[y*cw+x] = 1; }
+  let ph = cont.map((v,i) => v && !txt[i] ? 1 : 0);
+  // fermeture 3×3 (relie les morceaux de la photo), puis ouverture 2×2 (enlève les points isolés)
+  const at = (a, x, y) => x >= 0 && y >= 0 && x < cw && y < ch ? a[y*cw+x] : 0;
+  const dil = a => a.map((v,i) => { const x = i % cw, y = (i / cw) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (at(a,x+dx,y+dy)) return 1; return 0; });
+  const ero = a => a.map((v,i) => { const x = i % cw, y = (i / cw) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (!at(a,x+dx,y+dy)) return 0; return 1; });
+  ph = ero(dil(ph)).map((v,i) => v || ph[i] ? 1 : 0);
+  const op = ph.map((v,i) => { const x = i % cw, y = (i / cw) | 0; return v && ((at(ph,x+1,y) && at(ph,x,y+1) && at(ph,x+1,y+1)) || (at(ph,x-1,y) && at(ph,x,y-1) && at(ph,x-1,y-1)) || (at(ph,x+1,y) && at(ph,x,y-1) && at(ph,x+1,y-1)) || (at(ph,x-1,y) && at(ph,x,y+1) && at(ph,x-1,y+1))) ? 1 : 0; });
+  const seen = new Uint8Array(cw*ch); let best = null;
+  for (let i = 0; i < op.length; i++) if (op[i] && !seen[i]) {
+    const st = [i]; seen[i] = 1; let n = 0, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+    while (st.length) { const q = st.pop(), x = q % cw, y = (q / cw) | 0; n++; x0 = Math.min(x0,x); x1 = Math.max(x1,x); y0 = Math.min(y0,y); y1 = Math.max(y1,y);
+      for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) { const nx = x+dx, ny = y+dy, j = ny*cw+nx; if (nx>=0 && ny>=0 && nx<cw && ny<ch && op[j] && !seen[j]) { seen[j] = 1; st.push(j); } } }
+    if (!best || n > best.n) best = {n, x0, y0, x1, y1};
+  }
+  if (!best) return null;
+  const bw = best.x1 - best.x0 + 1, bh = best.y1 - best.y0 + 1;
+  if (best.n < cw*ch*0.03 || bw*bh > cw*ch*0.6 || best.n / (bw*bh) < 0.5 || bw < 5 || bh < 5 || bw/bh > 3 || bh/bw > 3) return null;
+  const f = cs / k, out = document.createElement('canvas'); out.width = Math.round(bw*f); out.height = Math.round(bh*f);
+  out.getContext('2d').drawImage(full, best.x0*f, best.y0*f, out.width, out.height, 0, 0, out.width, out.height);
+  return await new Promise(res => out.toBlob(b => res(b), 'image/jpeg', 0.85));
+}
 function ocrScore(r, conf){ return (conf || 0) + Math.min(r.ingredients.length, 12) * 2 + (r.title ? 4 : 0); }
 async function ocrImage(file, onProgress){
   await loadTesseract();
@@ -1456,18 +1518,22 @@ async function ocrImage(file, onProgress){
     // découpage automatique de la page (colonnes, blocs) : par défaut Tesseract.js lit tout comme un seul bloc
     await worker.setParameters({ tessedit_pageseg_mode: '3', preserve_interword_spaces: '1' });
     const read = async (rot, bin) => {
-      const { data } = await worker.recognize(prepForOcr(bmp, rot, bin), {}, { text: true, tsv: true });
+      const cv = prepForOcr(bmp, rot, bin);
+      const { data } = await worker.recognize(cv, {}, { text: true, tsv: true });
       const r = data.tsv ? parseTSV(data.tsv) : parseRecipeText(data.text || '');
-      return { r, score: ocrScore(r, data.confidence), conf: data.confidence || 0 };
+      return { r, rot, ang: cv._ang || 0, tsv: data.tsv, score: ocrScore(r, data.confidence), conf: data.confidence || 0 };
     };
-    let best = await read(0);
+    const tries = [];
+    let best = await read(0); tries.push(best);
     // photo couchée ou à l'envers : on essaie les autres sens si la lecture est mauvaise
     const good = t => t.r.ingredients.length >= 3 && t.conf >= 75;
     if (!good(best)) {
       // 2e essai en noir et blanc (ombres, papier gris), puis photo couchée ou à l'envers
       stages = 5;
-      for (const [rot, bin] of [[0, true], [180, false], [90, false], [270, false]]) { stage++; const t = await read(rot, bin); if (t.score > best.score) best = t; if (good(t)) break; }
+      for (const [rot, bin] of [[0, true], [180, false], [90, false], [270, false]]) { stage++; const t = await read(rot, bin); tries.push(t); if (t.score > best.score) best = t; if (good(t)) break; }
     }
+    try { const ph = await findDishPhoto(bmp, best.rot, best.ang, best.tsv); if (ph) best.r._photoBlob = ph; } catch(e){}
+    saveOcrSample(bmp, { rot: best.rot, resultat: {...best.r, _photoBlob: !!best.r._photoBlob}, lectures: tries.map(t => ({rot: t.rot, conf: t.conf, score: t.score, tsv: t.tsv})) });
     return best.r;
   } finally { try { await worker.terminate(); } catch(e){} }
 }
@@ -1484,7 +1550,7 @@ function parseTSV(tsv){
     const letters = (text.match(/[a-zà-ÿ0-9]/gi)||[]).length;
     const conf = +c[10];
     // mots illisibles : gardés pour mesurer les espaces, mais pas dans le texte
-    words.push({k:c[2]+'.'+c[3]+'.'+c[4], left:+c[6], top:+c[7], w:+c[8], h:+c[9], conf, text, drop: !letters || (conf < 35 && letters < 4 && !(conf >= 12 && /^(\d+([.,]\d+)?|[½¼¾]|c\.?[sc]\.?|cs|cc|dl|di|cl|ml|kg|g|l|de|d'|du)$/i.test(text)))});
+    words.push({k:c[2]+'.'+c[3]+'.'+c[4], left:+c[6], top:+c[7], w:+c[8], h:+c[9], conf, text, drop: !letters || (conf < 35 && letters < 4 && !(conf >= 12 && /^(\d+([.,]\d+)?|[½¼¾]|c\.?[sc]\.?|cs|cc|dl|di|cl|ml|kg|g|l|de|d'|du|\d+([.,]\d+)?\s*(d[lIi1]|cl|ml|kg|g|l|cs|cc))$/i.test(text)))});
   }
   const pageW = Math.max(1, ...words.map(w => w.left + w.w)), pageH = Math.max(1, ...words.map(w => w.top + w.h));
   const hsAll = words.filter(w => !w.drop).map(w => w.h).sort((a,b)=>a-b), medH = hsAll[Math.floor(hsAll.length/2)] || 10;
@@ -1531,6 +1597,9 @@ function parseTSV(tsv){
     const pm = n.match(/(\d+)\s*(?:personnes?|pers\b|portions?|parts?)/); if (pm && n.length < 45) { out.persons = +pm[1]; l.used = true; }
     const tm = n.match(/(\d+)\s*(?:min\b|minutes?|mn\b)\.?\s*$/) || (n.length < 30 && n.match(/(\d+)\s*(?:min\b|minutes?|mn\b)/)); if (tm && n.length < 70 && !out.time) { out.time = tm[1]; l.used = true; }
     if (NUTRI.test(n) && n.length < 40) l.used = true;
+    if (/^(personnes?|pers\.?|portions?)$/.test(n)) { // « 4 » et « personnes » lus séparément
+      const num = good.find(o => o !== l && /^\d{1,2}$/.test(o.text.trim()) && Math.abs(o.top - l.top) < l.h * 1.2 && o.left < l.left && l.left - o.right < l.h * 3);
+      if (num) { out.persons = +num.text.trim(); num.used = true; } l.used = true; }
     if (HEAD.test(n.replace(/[.:]+$/,'').trim())) { l.used = true; l.head = /^ingr/.test(n) ? 'ing' : /^(preparation|instructions?|etapes?|comment|marche|deroulement|methode)/.test(n) ? 'steps' : ''; }
   }
   const titleCand = good.filter(l => !l.used && !isIng(l.text) && l.letters >= 4 && l.text.length <= 70 && l.top < pageH * 0.6);
@@ -1553,7 +1622,7 @@ function parseTSV(tsv){
     // ligne sans quantité dans la liste d'ingrédients (« Poivre du moulin », « Sel »)
     if (sectionOf(l) === 'ing' && l.text.length < 45 && !/[.!?]$/.test(l.text) && l.letters >= 3) { const ing = parseIngredientLine(l.text); out.ingredients.push(ing); lastIng = {ing, seg:l}; continue; }
     // suite d'un ingrédient sur la ligne suivante (même colonne, juste en dessous, court)
-    if (lastIng && !/\d/.test(l.text) && l.col === lastIng.seg.col && l.top - lastIng.seg.top < l.h * 2.2 && l.text.length < 30 && l.left >= lastIng.seg.left - medH && !/[.!?]$/.test(l.text) && !/^[A-ZÀ-Ü][a-zà-ÿ]+ (le|la|les|l')/.test(l.text)) { lastIng.ing.name += ' ' + l.text; lastIng.seg = l; continue; }
+    if (lastIng && !/\d/.test(l.text) && l.col === lastIng.seg.col && l.top > lastIng.seg.top && l.top - lastIng.seg.top < l.h * 2.2 && l.text.length < 30 && l.left >= lastIng.seg.left - medH && !/[.!?]$/.test(l.text) && !/^[A-ZÀ-Ü][a-zà-ÿ]+ (le|la|les|l')/.test(l.text)) { lastIng.ing.name += ' ' + l.text; lastIng.seg = l; continue; }
     if (l.text.length < 12 && !/[.!?]$/.test(l.text) && l.letters < 6) continue; // bribes isolées
     stepLines.push(l.text); lastIng = null;
   }
@@ -1571,7 +1640,7 @@ function parseTSV(tsv){
   return out;
 }
 function parseIngredientLine(t){
-  let s = t.replace(/^[\s•\-–*·]+/,'').replace(/[½¼¾⅓⅔]/g, m => ' ' + {'½':0.5,'¼':0.25,'¾':0.75,'⅓':0.33,'⅔':0.67}[m] + ' ').trim();
+  let s = t.replace(/^(\d+(?:[.,]\d+)?)(d[lIi1]|cl|ml|kg|g|cs|cc)\b/i, (m, q, u) => q + ' ' + (/^d[lIi1]$/i.test(u) ? 'dl' : u)).replace(/^[\s•\-–*·]+/,'').replace(/[½¼¾⅓⅔]/g, m => ' ' + {'½':0.5,'¼':0.25,'¾':0.75,'⅓':0.33,'⅔':0.67}[m] + ' ').trim();
   let qty = null, unit = '';
   const n0 = ocrNorm(s);
   const vague = n0.match(OCR_VAGUE);
@@ -1586,6 +1655,7 @@ function parseIngredientLine(t){
       k = k.replace(/s$/,'') in OCR_UNITS && !(k in OCR_UNITS) ? k.replace(/s$/,'') : k;
       if (OCR_UNITS[k]) { const [u, f] = OCR_UNITS[k]; unit = u; qty = qty != null ? Math.round(qty * f * 100) / 100 : null; s = s.slice(um[0].length); }
     }
+    if (!unit && qty >= 1000 && /^\d+9$/.test(String(qty))) { qty = Math.round((qty - 9) / 10); unit = 'g'; } // « 200g » lu « 2009 »
     if (!unit && qty != null) unit = 'pce';
   }
   s = s.trim().replace(/^(de\s+la\s+|de\s+l['’]\s*|d['’]\s*|des\s+|du\s+|de\s+)/i, '');
@@ -1908,7 +1978,7 @@ function openRecipeForm(id, prefill){
   const isNew = !id;
   const r = isNew ? {title:'', persons:4, time:'', ingredients:[], steps:[], photo:null, fav:false, note:'', source:null, ...(prefill||{})} : JSON.parse(JSON.stringify(R().recipes[id]));
   if (!r.ingredients.length) r.ingredients.push({name:'', qty:null, unit:''});
-  let photoBlob = null;
+  let photoBlob = (prefill && prefill._photoBlob) || null; delete r._photoBlob;
   const ingRow = (i, ix) => { const [v,u] = toEdit(i.qty, i.unit); return `<div class="ingrow" data-ix="${ix}">
       <input class="iq" inputmode="decimal" placeholder="Qté" value="${v===''?'':esc(String(Math.round(v*100)/100))}" aria-label="Quantité">
       <select class="iu" aria-label="Unité">${unitOptions(u)}</select>
