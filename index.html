@@ -213,8 +213,8 @@ html.edge .setup{padding-top:calc(var(--top-inset) + 20px)}
 :root[data-size="xxl"]{--z:1.32}
 /* Rond pour cocher à droite, initiale à gauche */
 :root[data-checkpos="right"] #app li .check{order:9}
-:root[data-checkpos="right"] #app li .who{order:-1;margin:0 2px 0 12px}
-:root[data-checkpos="right"] #app li:not(:has(.who)) .icon{margin-left:12px}
+:root[data-checkpos="right"] #app li .who{margin-right:0}
+:root[data-checkpos="right"] #app li .icon{margin-left:12px}
 /* Liste compacte : lignes basses, petites icônes, rayons rapprochés */
 :root[data-compact="1"] #app li{min-height:42px}
 :root[data-compact="1"] #app .check{height:42px;width:42px}
@@ -813,7 +813,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.28';
+const APP_VERSION = '1.0.29';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1616,7 +1616,7 @@ function openSettings(){
     <div class="opt"><span class="lab">Couleur</span><div class="swatches" id="uiAccent">${ACCENTS.map(([k,c,n]) => `<button type="button" data-v="${k}" style="background:${c}" aria-label="Couleur ${n}" title="${n}" aria-pressed="${ui().accent===k}"></button>`).join('')}</div></div>
     <div class="opt"><span class="lab">Thème</span><div class="segs" id="uiMode">${[['clair','☀️ Clair'],['sombre','🌙 Sombre'],['auto','📱 Comme le téléphone']].map(([k,l]) => `<button type="button" data-v="${k}" aria-pressed="${ui().mode===k}">${l}</button>`).join('')}</div></div>
     <div class="opt"><span class="lab">Taille du texte</span><div class="segs" id="uiSize">${[['xs','Très petite'],['s','Petite'],['normal','Normale'],['l','Grande'],['xl','Très grande'],['xxl','Énorme']].map(([k,l]) => `<button type="button" data-v="${k}" aria-pressed="${(ui().size==='grand'?'l':ui().size)===k}">${l}</button>`).join('')}</div></div>
-    <label class="switch"><input type="checkbox" id="uiCheckRight" ${ui().checkRight?'checked':''}><span><b>Rond pour cocher à droite</b><small>L’initiale de qui a ajouté l’article passe à gauche.</small></span></label>
+    <label class="switch"><input type="checkbox" id="uiCheckRight" ${ui().checkRight?'checked':''}><span><b>Rond pour cocher à droite</b><small>L’initiale de qui a ajouté l’article reste à droite, juste avant le rond.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiCompact" ${ui().compact?'checked':''}><span><b>Liste compacte</b><small>Lignes plus basses : environ un tiers d’articles en plus à l’écran.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiAwake" ${ui().awake?'checked':''}><span><b>Garder l’écran allumé</b><small>Pratique en magasin. Consomme un peu plus de batterie.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiVibrate" ${ui().vibrate?'checked':''}><span><b>Vibration en cochant</b><small>Petite vibration quand un article va dans le caddie.</small></span></label>
