@@ -114,6 +114,8 @@ li.done .icon{filter:grayscale(.7);opacity:.6}
 .cartbar{display:flex;justify-content:space-between;align-items:center;margin:22px 4px 8px}
 .cartbar h2{margin:0;font-size:15px;font-weight:900;color:var(--muted)}
 .link{border:0;background:none;color:var(--accent);font-weight:800;font-size:14px;padding:6px 0}
+#clearDone{padding:10px 0 10px 14px;margin:-10px 0;cursor:pointer;touch-action:manipulation}
+#app li[data-row]{cursor:pointer}
 .empty{background:var(--surface);border-radius:18px;padding:26px 20px;text-align:center;color:var(--muted);margin-top:20px;font-weight:600}
 .empty b{display:block;font-size:34px;margin-bottom:6px}
 .tools{display:grid;gap:8px;margin-top:26px}
@@ -210,9 +212,9 @@ html.edge .setup{padding-top:calc(var(--top-inset) + 20px)}
 :root[data-size="xl"]{--z:1.2}
 :root[data-size="xxl"]{--z:1.32}
 /* Rond pour cocher à droite, initiale à gauche */
-:root[data-check="right"] #app li .check{order:9}
-:root[data-check="right"] #app li .who{order:-1;margin:0 2px 0 12px}
-:root[data-check="right"] #app li:not(:has(.who)) .icon{margin-left:12px}
+:root[data-checkpos="right"] #app li .check{order:9}
+:root[data-checkpos="right"] #app li .who{order:-1;margin:0 2px 0 12px}
+:root[data-checkpos="right"] #app li:not(:has(.who)) .icon{margin-left:12px}
 /* Liste compacte : lignes basses, petites icônes, rayons rapprochés */
 :root[data-compact="1"] #app li{min-height:42px}
 :root[data-compact="1"] #app .check{height:42px;width:42px}
@@ -757,6 +759,8 @@ velo|chaine velo|chambre a air|pneu;🚲;aut;pce
 laine|bracelet|fil a broder|fil bracelet|fil de coton;🧵;aut;pce
 vis|tige|clou|boulon|cheville|ecrou;🔩;aut;pce
 cadeau;🎁;aut;pce
+stylo|bic|stylo bille|feutre|marqueur|surligneur;🖊️;aut;pce
+crayon|gomme|taille crayon;✏️;aut;pce
 carte|enveloppe;💌;aut;pce
 medicament|paracetamol|ibuprofene|vitamine;💊;hyg;paquet
 `.trim().split('\n').map(l => { const [k,icon,cat,u] = l.split(';'); return {kws:k.split('|').map(w => norm(w).split(' ').map(sing).join(' ')), icon, cat, u}; });
@@ -809,7 +813,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.27';
+const APP_VERSION = '1.0.28';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1278,7 +1282,7 @@ function rowHtml([id, i]){
   if (i.done && i.doneAt) meta.push(`<span class="doneinfo">✓ ${i.doneBy ? esc(i.doneBy) + ' · ' : ''}${doneWhen(i.doneAt)}</span>`);
   const who = i.by ? `<span class="who" title="Ajouté par ${esc(i.by)}">${esc(i.by.trim().charAt(0).toUpperCase())}</span>` : '';
   const col = (CAT[i.cat]||CAT.aut).color;
-  return `<li class="${i.done?'done':''}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
+  return `<li class="${i.done?'done':''}" data-row="${id}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
     <span class="icon" style="background:${col}1f" aria-hidden="true">${ICH(iconFor(i))}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
 }
 function renderRecipes(){
@@ -1595,7 +1599,7 @@ function applyUI(){
   if (dark) de.dataset.mode = 'dark'; else delete de.dataset.mode;
   const sz = u.size === 'grand' ? 'l' : u.size; if (sz && sz !== 'normal') de.dataset.size = sz; else delete de.dataset.size;
   if (u.compact) de.dataset.compact = '1'; else delete de.dataset.compact;
-  if (u.checkRight) de.dataset.check = 'right'; else delete de.dataset.check;
+  if (u.checkRight) de.dataset.checkpos = 'right'; else delete de.dataset.checkpos;
   const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = getComputedStyle(de).getPropertyValue('--h2').trim() || '#FF6B35';
   applyAwake();
 }
@@ -2995,8 +2999,8 @@ $('#lists').onclick = e => {
 $('#tabRec').onclick = () => setTab('rec');
 $('#list').onclick = e => {
   const c = e.target.closest('[data-check]'); if (c) return toggle(c.dataset.check);
-  const ed = e.target.closest('[data-edit]'); if (ed) return openEdit(ed.dataset.edit);
-  if (e.target.id === 'clearDone') clearDone();
+  if (e.target.closest('#clearDone')) return clearDone();
+  const ed = e.target.closest('[data-edit],[data-row]'); if (ed) return openEdit(ed.dataset.edit || ed.dataset.row);
 };
 $('#addForm').onsubmit = e => { e.preventDefault(); const p = parseLine($('#addInput').value); if (!p) return; addItem(withDefaults(p)); $('#addInput').value = ''; $('#sugg').hidden = true; };
 attachSuggest($('#addInput'), $('#sugg'), p => addItem(withDefaults(p)));
