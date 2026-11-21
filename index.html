@@ -983,7 +983,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.37';
+const APP_VERSION = '1.0.38';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1383,6 +1383,89 @@ async function saveOcrSample(bmp, info){
     const json = JSON.stringify({app: APP_VERSION, appareil: navigator.userAgent, taille: [bmp.width, bmp.height], ...info}, null, 1);
     await put(`ocrtest/telephone/${stamp}.json`, btoa(unescape(encodeURIComponent(json))), 'Résultat de lecture (test)');
   } catch(e){}
+}
+
+/* ---------- Lecture de recette par IA (Gemini) ---------- */
+const AI_MODELS = ['gemini-3.5-flash', 'gemini-2.5-flash'];
+const aiKey = () => ((L().config || {}).geminiKey || '').trim();
+const AI_PROMPT = `Tu lis la photo d'une recette de cuisine (page imprimée, livre, écran ou fiche manuscrite), en français.
+Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, de cette forme exacte :
+{"title": string, "persons": entier ou null, "time_minutes": entier ou null,
+ "ingredients": [{"qty": nombre ou null, "unit": string, "name": string}],
+ "steps": [string],
+ "dish_photo_box": [ymin, xmin, ymax, xmax] ou null, "title_box": [ymin, xmin, ymax, xmax] ou null}
+Règles :
+- title : le nom de la recette tel qu'imprimé (pas un intertitre comme « Préparation »).
+- ingredients : un élément par ingrédient, dans l'ordre. qty en chiffres (0.25 pour ¼ ; null si « un peu », « selon goût »…).
+  unit : une valeur parmi g, kg, ml, cl, dl, l, cs, cc, pincée, gousse, tranche, botte, brin, sachet, paquet, boîte, pot, pce, ou "" (« CS »/« c. à soupe » = cs, « CC »/« c. à café » = cc ; un nombre sans unité = pce).
+  name : le nom avec ses précisions (« oignon, finement haché », « saucissons vaudois (d'env. 300 g) »), sans l'article « de/d' » du début. Pour « un peu de poivre », mets qty null et name « poivre ».
+- steps : la préparation complète, mot pour mot, découpée en étapes logiques de 1 à 3 phrases. Corrige seulement les erreurs évidentes de lecture. N'invente rien, n'ajoute rien.
+- time_minutes : le temps indiqué sur la fiche (préparation ou total), sinon null.
+- dish_photo_box : si la page contient une photo du plat, son cadre exact en coordonnées normalisées 0-1000 [ymin, xmin, ymax, xmax] sur l'image reçue (photo seule, sans titre ni texte) ; sinon null.
+- title_box : le cadre du titre, mêmes coordonnées 0-1000, ou null.`;
+async function aiReadRecipe(bmp){
+  const key = aiKey(); if (!key) throw new Error('pas de clé');
+  const c = colorLike(bmp, 0, 0, 1600), b64 = c.toDataURL('image/jpeg', 0.85).split(',')[1];
+  let lastErr = null;
+  for (const model of AI_MODELS) {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 60000);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, { method: 'POST', signal: ctl.signal,
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({ contents: [{ parts: [{ text: AI_PROMPT }, { inline_data: { mime_type: 'image/jpeg', data: b64 } }] }],
+          generationConfig: { responseMimeType: 'application/json', temperature: 0 } }) });
+      if (res.status === 404) { lastErr = new Error('modèle ' + model + ' indisponible'); continue; }
+      if (!res.ok) { const tx = await res.text().catch(() => ''); throw new Error('IA ' + res.status + ' ' + tx.slice(0, 200)); }
+      const data = await res.json();
+      const txt = ((((data.candidates || [])[0] || {}).content || {}).parts || []).map(p => p.text || '').join('');
+      const j = JSON.parse(txt.replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, ''));
+      return { j, canvas: c, model };
+    } catch (e) { lastErr = e; if (e.name === 'AbortError') break; if (!/indisponible/.test(e.message)) break; }
+    finally { clearTimeout(t); }
+  }
+  throw lastErr || new Error('IA');
+}
+function aiToRecipe(j){
+  const out = { title: String(j.title || '').trim(), persons: Math.max(1, parseInt(j.persons) || 4), time: j.time_minutes ? String(parseInt(j.time_minutes)) : '', ingredients: [], steps: [] };
+  for (const i of (Array.isArray(j.ingredients) ? j.ingredients : [])) {
+    const name = String(i && i.name || '').trim(); if (!name) continue;
+    const qty = i.qty == null || i.qty === '' ? null : parseFloat(String(i.qty).replace(',', '.'));
+    if (qty == null || isNaN(qty)) { out.ingredients.push({ name: cap(name), qty: null, unit: '' }); continue; }
+    const u = String(i.unit || '').trim();
+    const ing = parseIngredientLine(`${qty} ${u && u !== 'pce' ? u + ' ' : ''}${name}`);
+    out.ingredients.push(ing.name ? ing : { name: cap(name), qty, unit: u || 'pce' });
+  }
+  out.steps = (Array.isArray(j.steps) ? j.steps : []).map(x => String(x || '').trim()).filter(Boolean);
+  return out;
+}
+async function cropAiPhoto(canvas, box, tbox){
+  if (!Array.isArray(box) || box.length !== 4) return null;
+  const [y0, x0, y1, x1] = box.map(Number); if ([y0,x0,y1,x1].some(isNaN) || y1 - y0 < 50 || x1 - x0 < 50) return null;
+  const W = canvas.width, H = canvas.height, b = { x0: x0/1000*W, y0: y0/1000*H, x1: x1/1000*W, y1: y1/1000*H };
+  const tb = Array.isArray(tbox) && tbox.length === 4 ? { top: tbox[0]/1000*H, left: tbox[1]/1000*W, bottom: tbox[2]/1000*H, right: tbox[3]/1000*W } : null;
+  if (tb && tb.bottom > b.y0 && tb.top < b.y0) b.y0 = tb.bottom; // jamais le titre dans la photo
+  const R = refineFrame(canvas, b, Math.max(8, W * 0.012), tb); // cadre ajusté au bord net de la photo
+  const out = document.createElement('canvas'); out.width = Math.max(1, Math.round(R.x1 - R.x0)); out.height = Math.max(1, Math.round(R.y1 - R.y0));
+  out.getContext('2d').drawImage(canvas, R.x0, R.y0, out.width, out.height, 0, 0, out.width, out.height);
+  return await new Promise(res => out.toBlob(bb => res(bb), 'image/jpeg', 0.85));
+}
+// lecture d'une photo de recette : l'IA si une clé est réglée, sinon (ou en cas d'échec) la lecture classique
+async function readRecipePhoto(file, onProgress, onInfo){
+  if (aiKey() && navigator.onLine !== false) {
+    try {
+      onInfo && onInfo('Lecture par l’IA…');
+      let p = 0; const tick = setInterval(() => { p = Math.min(0.9, p + 0.06); onProgress && onProgress(p); }, 500);
+      const bmp = await loadBitmap(file);
+      let r;
+      try { r = await aiReadRecipe(bmp); } finally { clearInterval(tick); }
+      const rec = aiToRecipe(r.j);
+      try { const ph = await cropAiPhoto(r.canvas, r.j.dish_photo_box, r.j.title_box); if (ph) rec._photoBlob = ph; } catch(e){}
+      onProgress && onProgress(1);
+      saveOcrSample(bmp, { rot: 0, ia: r.model, resultat: { ...rec, _photoBlob: !!rec._photoBlob }, reponseIA: r.j });
+      if (rec.title || rec.ingredients.length) return { rec, via: 'ia' };
+    } catch (e) { console.warn('IA', e); onInfo && onInfo('IA indisponible, lecture classique…'); }
+  }
+  return { rec: await ocrImage(file, onProgress), via: 'classique' };
 }
 
 /* ---------- Lecture d'une recette sur photo (OCR) ---------- */
@@ -2246,10 +2329,10 @@ function openAddRecipe(){
     if (!f) return;
     openSheet(`<h3>Lecture de la recette…</h3><div class="progress"><i id="ocrBar"></i></div><p class="hint" id="ocrMsg">Préparation de la lecture (la première fois, environ 10 secondes de téléchargement).</p>`);
     try {
-      const pre = await ocrImage(f, p => { const b = $('#ocrBar'); if (b) b.style.width = Math.round(p*100) + '%'; const m = $('#ocrMsg'); if (m) m.textContent = 'Lecture du texte… ' + Math.round(p*100) + ' %'; });
+      const { rec: pre, via } = await readRecipePhoto(f, p => { const b = $('#ocrBar'); if (b) b.style.width = Math.round(p*100) + '%'; const m = $('#ocrMsg'); if (m && !m.dataset.ia) m.textContent = 'Lecture du texte… ' + Math.round(p*100) + ' %'; }, t => { const m = $('#ocrMsg'); if (m) { m.textContent = t; m.dataset.ia = /IA…$/.test(t) ? '1' : ''; } });
       if (!pre.title && !pre.ingredients.length) { openSheet(`<h3>Texte introuvable</h3><p class="hint">Je n’ai pas réussi à lire de recette sur cette image. Essaie une photo prise bien en face, nette et bien éclairée (sans reflet), avec la recette qui remplit l’image. Sinon, saisis-la à la main.</p><button class="btn" type="button" data-close>OK</button>`); $('#sheet').onclick = e => { if (e.target.closest('[data-close]')) closeSheet(); }; return; }
       openRecipeForm(null, pre);
-      toast('Fiche pré-remplie : vérifie et corrige avant d’enregistrer.');
+      toast(via === 'ia' ? 'Fiche remplie par l’IA : vérifie avant d’enregistrer.' : 'Fiche pré-remplie (lecture sans IA) : vérifie et corrige avant d’enregistrer.');
     } catch(err) {
       openSheet(`<h3>Lecture impossible</h3><p class="hint">La lecture de photo a besoin d’internet la première fois. Vérifie ta connexion et réessaie, ou saisis la recette à la main.</p><button class="btn" type="button" data-close>OK</button>`);
       $('#sheet').onclick = e => { if (e.target.closest('[data-close]')) closeSheet(); };
@@ -2299,6 +2382,8 @@ function openSettings(){
     <label class="switch"><input type="checkbox" id="uiVibrate" ${ui().vibrate?'checked':''}><span><b>Vibration en cochant</b><small>Petite vibration quand un article va dans le caddie.</small></span></label>
     <p class="hint">Ces réglages ne concernent que ce téléphone.</p>
     <p class="hint">Dernière synchronisation : ${esc(when)}. Les données sont dans le dépôt privé ${esc(GH.owner)}/${esc(GH.repo)}.</p>
+    <div class="field"><label for="sAi">🤖 Lecture des photos de recettes par IA (clé Gemini)</label><input id="sAi" type="password" autocomplete="off" placeholder="Colle ici ta clé (commence par AIza…)" value="${esc(aiKey())}">
+      <small class="hint">${aiKey() ? '✅ Clé enregistrée : les photos de recettes sont lues par l’IA (partagée avec les téléphones reliés).' : 'Sans clé, la lecture classique est utilisée.'} <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Créer une clé gratuite</a></small></div>
     <button class="btn" type="button" id="sInvite">👥 Inviter quelqu’un</button>
     <div class="opt"><span class="lab">Téléphones reliés</span><div class="devices">${devicesHtml()}</div></div>
     <button class="btn ghost" type="button" id="sOrder">Ordre des rayons</button>
@@ -2313,7 +2398,7 @@ function openSettings(){
   $('#uiAwake').onchange = e => { setUI({awake: e.target.checked}); if (e.target.checked && !navigator.wakeLock) toast('Ce téléphone ne permet pas de garder l’écran allumé depuis l’app.'); };
   $('#uiVibrate').onchange = e => setUI({vibrate: e.target.checked});
   $('#sSync').onclick = () => { FILES.forEach(f => f.etag = null); pullAll(true); closeSheet(); };
-  $('#sSave').onclick = () => { cfg.name = $('#sName').value.trim(); saveCfg(); setupPrivate(); if (privFile) privFile.pull(); closeSheet(); render(); toast('Réglages enregistrés'); };
+  $('#sSave').onclick = () => { const k = $('#sAi').value.trim(); if (k !== aiKey()) { const c = L().config || (L().config = {}); c.geminiKey = k; c.updatedAt = Date.now(); listFile.changed(); } cfg.name = $('#sName').value.trim(); saveCfg(); setupPrivate(); if (privFile) privFile.pull(); closeSheet(); render(); toast('Réglages enregistrés'); };
   $('#sOut').onclick = () => { closeSheet(); showSetup(true); };
 }
 
