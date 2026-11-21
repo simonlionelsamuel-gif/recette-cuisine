@@ -102,6 +102,7 @@ li.done .doneinfo{color:var(--fresh);font-weight:700}
 li.done .check span{background:var(--fresh);border-color:var(--fresh)}
 li.done .check span::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .tint{font-style:normal;display:inline-block}
+.cic{width:1.25em;height:1.25em;display:inline-block;vertical-align:-.2em}
 .icon{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:24px;margin-right:10px}
 .body{flex:1;min-width:0;border:0;background:none;text-align:left;padding:10px 0;display:grid;gap:3px}
 .name{font-weight:800;font-size:16.5px;overflow-wrap:anywhere}
@@ -272,7 +273,11 @@ html.edge .sheet.full{max-height:100%}
 .qinfo{color:#fff;font-weight:700;font-size:13px}
 .cards{display:grid;gap:12px;margin-top:16px}
 .rcard{display:flex;gap:12px;align-items:stretch;text-align:left;border:0;background:var(--surface);border-radius:18px;padding:10px;box-shadow:0 1px 3px rgba(30,43,36,.06),0 6px 16px rgba(30,43,36,.05)}
-.rphoto{flex:none;width:86px;height:86px;border-radius:14px;background:var(--accent-soft) center/cover no-repeat;display:grid;place-items:center}
+.rweb{position:absolute;left:-4px;top:-4px;font-size:13px;line-height:1;background:var(--surface);border-radius:50%;padding:3px;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.pendbar{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:2px solid var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:16px;padding:12px 14px;margin-top:14px;font-size:15px}
+.pendbar span:first-child{font-size:24px}.pendbar small{display:block;color:var(--muted);font-weight:700;font-size:12.5px}.pendbar b{display:block}.pendbar span:nth-child(2){flex:1}
+.cmp{display:grid;gap:10px;margin:8px 0}.cmpcol{border:1px solid var(--line);border-radius:14px;padding:10px 12px}.cmpcol h4{margin:0 0 2px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}.cmpcol .t{font-weight:900;font-size:16px}.cmpcol ul{margin:6px 0 0;padding:0 0 0 18px;font-size:14px;background:none!important;border:0!important;list-style:disc}.cmpcol ul li{display:list-item!important;padding:1px 0!important;margin:0!important;min-height:0!important;border:0!important;background:none!important}.cmpcol li.same{color:var(--muted)}.cmpcol li.diff{font-weight:800}.cmpcol.new{border-color:var(--accent)}
+.rphoto{position:relative;flex:none;width:86px;height:86px;border-radius:14px;background:var(--accent-soft) center/cover no-repeat;display:grid;place-items:center}
 .rphoto.has .remoji,.rhero.has .remoji{display:none}
 .remoji{font-size:40px}
 .rbody{display:grid;gap:4px;align-content:center;min-width:0}
@@ -553,28 +558,54 @@ function roundScaled(q, u){
 
 // Produits connus : mots-clés | icône | rayon | unité logique (testés dans l'ordre, le plus précis d'abord)
 const PRODUCT_LINES = `
-gel douche|shampoing|shampooing|apres shampoing|lait corporel|creme main|creme solaire|deodorant;🧴;hyg;pce
+deodorant|deo|anti transpirant;svg:deo;hyg;pce
+creme solaire|protection solaire;🧴;hyg;pce
+maquillage|mascara|rouge a levres|fond de teint;💄;hyg;pce
+vernis|dissolvant;💅;hyg;pce
+peigne|brosse a cheveux;🪮;hyg;pce
+elastique cheveux|barrette|chouchou;🎀;hyg;pce
+masque;😷;hyg;paquet
+thermometre;🌡️;hyg;pce
+lentille de contact|liquide lentille;👁️;hyg;pce
+gel douche|shampoing|shampooing|apres shampoing|lait corporel|creme main|creme solaire;🧴;hyg;pce
 savon;🧼;hyg;pce
-dentifrice|brosse a dent|fil dentaire;🪥;hyg;pce
+dentifrice;svg:dentifrice;hyg;pce
+brosse a dent|fil dentaire|bain de bouche;🪥;hyg;pce
 rasoir|lame de rasoir;🪒;hyg;paquet
 mouchoir;🤧;hyg;paquet
 coton tige|coton|demaquillant;☁️;hyg;paquet
 couche|lingette;👶;hyg;paquet
 pansement;🩹;hyg;paquet
-serviette hygienique|tampon|protege slip;🌸;hyg;paquet
+serviette hygienique|tampon|protege slip;svg:serviettes;hyg;paquet
 papier toilette|papier wc;🧻;men;paquet
 essuie tout|sopalin|papier menage;🧻;men;paquet
-lessive|adoucissant|detachant;🧺;men;pce
-liquide vaisselle|produit vaisselle|pastille lave|tablette lave|sel lave;🫧;men;pce
+lessive|adoucissant|detachant;svg:lessive;men;pce
+liquide vaisselle|produit vaisselle|pastille lave|tablette lave|sel lave;svg:vaisselle;men;pce
 eponge;🧽;men;paquet
 nettoyant|javel|vinaigre menage|anticalcaire;🧹;men;pce
-sac poubelle;🗑️;men;paquet
+sac poubelle|sac a ordure;svg:poubelle;men;paquet
 ampoule;💡;men;pce
 pile;🔋;men;paquet
 bougie;🕯️;men;pce
 allumette|briquet;🔥;men;pce
 papier cuisson;📜;men;pce
-papier alu|aluminium|film alimentaire|sac congelation;📦;men;pce
+papier alu|papier aluminium|aluminium|alu;svg:alu;men;pce
+film alimentaire|sac congelation|sachet zip|boite plastique;📦;men;pce
+gants de menage|gant de menage|gants|gant;svg:gants;men;paquet
+seau;🪣;men;pce
+balai|serpilliere;🧹;men;pce
+insecticide|anti moustique|spray moustique;🦟;men;pce
+piege a souris;🪤;men;pce
+filtre a cafe;☕;men;paquet
+pince a linge;🧷;men;paquet
+cintre;👔;men;pce
+paille|gobelet|assiette jetable|vaisselle jetable;🥤;men;paquet
+serviette en papier|serviette de table;🧻;men;paquet
+charbon|briquette;🔥;men;paquet
+terreau|engrais;🪴;men;pce
+plante|pot de fleur;🪴;men;pce
+graine a semer|semis;🌱;men;sachet
+glacon;svg:glacons;sur;paquet
 gourde|bouteille isotherme;🥤;men;pce
 lait de coco|creme de coco;🥥;epi;boîte
 noix de coco;🥥;fl;pce
@@ -596,16 +627,23 @@ pomme verte|granny smith|granny;🍏;fl;kg
 pomme;🍎;fl;kg
 poire;🍐;fl;kg
 banane;🍌;fl;kg
-mandarine|clementine|orange|pamplemousse;🍊;fl;kg
+mandarine|clementine|orange|pamplemousse|pomelo;🍊;fl;kg
 citron vert|lime|limette;🍋~vert;fl;pce
 citron;🍋;fl;pce
 raisin blanc|raisin vert;🍇~blanc;fl;g
 raisin|raisin rouge;🍇;fl;g
 fraise;🍓;fl;g
-framboise;🍓;fl;g
-myrtille|mure|cassis|prune|pruneau;🫐;fl;g
+framboise;svg:framboise;fl;g
+prune|pruneau|reine claude|mirabelle;svg:prune;fl;g
+figue;svg:figue;fl;pce
+grenade;svg:grenade;fl;pce
+groseille|canneberge|cranberry;🍒;fl;g
+litchi|fruit de la passion|maracuja|kaki|goyave;🍑;fl;pce
+coing|nashi;🍐;fl;pce
+myrtille|mure|cassis;🫐;fl;g
 cerise;🍒;fl;g
-peche|nectarine|abricot;🍑;fl;g
+abricot;svg:abricot;fl;g
+peche|nectarine;🍑;fl;g
 ananas;🍍;fl;pce
 mangue;🥭;fl;pce
 pasteque;🍉;fl;pce
@@ -626,7 +664,8 @@ courgette jaune;🥒~jaune;fl;pce
 courgette;🥒;fl;pce
 aubergine;🍆;fl;pce
 carotte;🥕;fl;kg
-radis|navet|panais|topinambour;🥕;fl;g
+radis|radis noir;svg:radis;fl;botte
+navet|panais|topinambour;🥕;fl;g
 betterave;🍠~betterave;fl;g
 oignon rouge;🧅~rouge;fl;pce
 oignon|echalote;🧅;fl;pce
@@ -634,18 +673,25 @@ ail;🧄;fl;pce
 gingembre;🫚;fl;g
 chou fleur|chou-fleur;🥦~blanc;fl;pce
 brocoli|romanesco;🥦;fl;pce
-salade|laitue|batavia|iceberg|doucette|mache|rucola|roquette|endive|cresson|epinard|blette|cote de bette;🥬;fl;pce
+epinard|pousse d epinard|blette|cote de bette;svg:epinard;fl;g
+pak choi|bok choy|chou chinois;🥬;fl;pce
+chou rave|chou-rave;🥬;fl;pce
+germe de soja;🌱;fl;g
+salade|laitue|batavia|iceberg|doucette|mache|rucola|roquette|endive|cresson;🥬;fl;pce
 chou rouge|salade rouge|trevise|radicchio;🥬~rouge;fl;g
 chou|chou frise|chou de bruxelles|chou blanc;🥬;fl;g
-poireau|celeri|fenouil|rhubarbe;🥬;fl;pce
-asperge blanche;🌱~blanc;fl;g
-asperge;🌱;fl;g
-artichaut;🥬;fl;pce
+poireau;svg:poireau;fl;pce
+celeri|celeri branche|celeri rave;svg:celeri;fl;pce
+fenouil;svg:fenouil;fl;pce
+rhubarbe;🥬;fl;g
+asperge blanche;svg:asperge~blanc;fl;g
+asperge;svg:asperge;fl;g
+artichaut;svg:artichaut;fl;pce
 petit pois|pois mange-tout|pois gourmand|haricot vert|haricot;🫛;fl;g
-mais;🌽;epi;boîte
-champignon|champignon de paris|bolet|cepe;🍄~brun;fl;g
+mais|epi de mais|mais doux;🌽;epi;boîte
+champignon|champignon de paris|bolet|cepe|shiitake|pleurote|truffe;🍄~brun;fl;g
 chanterelle|girolle;🍄;fl;g
-courge|potiron|butternut;🎃;fl;pce
+courge|potiron|butternut|citrouille|patisson;🎃;fl;pce
 herbes de provence|herbe de provence;🌿;epi;pot
 tige de citronnelle|citronnelle|herbe|persil|basilic|coriandre|ciboulette|menthe|thym|romarin|aneth|sauge|laurier|estragon;🌿;fl;botte
 croissant;🥐;bou;pce
@@ -665,7 +711,8 @@ poulet|emince de poulet|volaille|cuisse de poulet|aile de poulet|blanc de poulet
 dinde;🦃;via;g
 saucisse|cervelas|merguez|chipolata|wienerli|schublig|saucisson;🌭;via;pce
 lard|lardon|bacon|pancetta|viande sechee;🥓;via;g
-jambon|charcuterie|coppa|salami|chorizo;🍖;via;g
+jambon|jambon cru|jambon cuit|jambonneau;svg:jambon;via;g
+charcuterie|coppa|salami|chorizo;🍖;via;g
 hache|steak hache|viande hachee|burger|hamburger;🍔;via;g
 boeuf|emince de boeuf|entrecote|rumsteck|filet de boeuf;🐄;via;g
 veau;🐮;via;g
@@ -676,50 +723,81 @@ chevreuil|cerf|gibier|sanglier;🦌;via;g
 canard|magret;🦆;via;g
 steak|escalope|emince|viande|roti|cordon bleu|schnitzel;🥩;via;g
 thon|sardine|maquereau en boite|anchois;🥫;epi;boîte
-saumon|sushi;🍣;via;g
+sushi|maki;🍣;epi;pce
+crabe|surimi;🦀;via;g
+homard|langouste;🦞;via;pce
+kebab|gyros;🥙;via;pce
+falafel;🧆;epi;paquet
+nem|rouleau de printemps|dim sum;🥟;sur;paquet
+saumon|filet de saumon|saumon fume;svg:saumon;via;g
 crevette|scampi|gambas;🦐;via;g
 moule|huitre|fruit de mer;🦪;via;g
 calamar|seiche|poulpe;🦑;via;g
 truite|cabillaud|poisson|perche|colin|dorade|merlu|eglefin|sole|bar;🐟;via;g
 yogourt a boire|yaourt a boire|yogurt a boire|drink;🥛;lai;pce
 oeuf;🥚;lai;pce
-lait;🥛;lai;l
-creme|crème|demi creme|creme entiere;🥛;lai;dl
-creme acidulee|mascarpone|sere|cottage|ricotta|fromage frais|philadelphia|yogourt|yaourt|yogurt|skyr|petit suisse;🥣;lai;pce
+lait;svg:lait;lai;l
+creme|crème|demi creme|creme entiere;svg:creme;lai;dl
+yogourt|yaourt|yogurt|skyr|petit suisse|yaourt grec|quark|kefir;svg:yaourt;lai;pce
+creme fouettee|chantilly;🍦;lai;pce
+flan|creme dessert|pudding|creme brulee;🍮;dou;pce
+tiramisu;🍰;dou;pce
+creme acidulee|mascarpone|sere|cottage|ricotta|fromage frais|philadelphia;🥣;lai;pce
 beurre|margarine;🧈;lai;g
 raclette|fondue|moitie-moitie|vacherin fribourgeois;🫕;lai;g
-fromage|gruyere|emmental|tete de moine|tomme|reblochon|appenzeller|parmesan|feta|mozzarella|brie|camembert|cheddar|comte|sbrinz|gorgonzola|chevre|vacherin|halloumi|pecorino|formagella;🧀;lai;g
+mozzarella|burrata|mozzarella di bufala;svg:mozzarella;lai;pce
+fromage rape|gruyere rape|parmesan rape;🧀;lai;g
+fromage|gruyere|emmental|tete de moine|tomme|reblochon|appenzeller|parmesan|feta|brie|camembert|cheddar|comte|sbrinz|gorgonzola|chevre|vacherin|halloumi|pecorino|formagella;🧀;lai;g
 nouille|ramen|vermicelle|nouilles chinoises|udon|knopfli|knoepfli|spatzli|spaetzli;🍜;fec;g
-pate|spaghetti|penne|tagliatelle|fusilli|lasagne|macaroni|cornette|linguine|farfalle|tortellini|ravioli;🍝;fec;g
+ravioli|tortellini|tortelloni|raviole;🥟;fec;g
+tofu|tempeh|seitan;svg:tofu;lai;pce
+pate|spaghetti|penne|tagliatelle|fusilli|lasagne|macaroni|cornette|linguine|farfalle;svg:pates;fec;g
 gnocchi;🥟;fec;g
 riz complet|riz brun|riz sauvage;🍚~complet;fec;kg
 riz|risotto|riz basmati;🍚;fec;kg
 polenta;🌽;fec;g
 houmous|hummus;🫘;epi;pot
-quinoa|couscous|boulgour|semoule|farine|maizena|epeautre;🌾;fec;kg
-cereale|muesli|flocon|avoine|granola|cornflakes|porridge;🥣;fec;paquet
+farine|farine fleur|farine mi blanche|farine complete|maizena|fecule;svg:farine;epi;kg
+chapelure|panure;🍞;epi;paquet
+puree en flocons|puree instantanee|stocki;🥔;epi;paquet
+quinoa|couscous|boulgour|semoule|epeautre;🌾;fec;kg
+muesli|flocon|avoine|porridge|flocons d avoine;🥣;fec;paquet
+barre de cereale|barre chocolatee|barre proteinee;🍫;dou;pce
+cereale|cornflakes|granola|chocapic|special k;svg:cereales;fec;paquet
 olive noire|olive noir;🫒~noir;epi;pot
-olive verte;🫒;epi;pot
-huile|olive;🫒;epi;bouteille
-vinaigre|sauce soja|soja;🍶;epi;bouteille
+olive verte|olive|tapenade|capre;🫒;epi;pot
+huile|huile d olive|huile de colza|huile de tournesol;svg:huile;epi;bouteille
+sauce soja|soja|sauce teriyaki|sauce poisson;svg:soja;epi;bouteille
+sauce bolognese|sauce pour pates;🍝;epi;pot
+wasabi;🌶️~vert;epi;pce
+sriracha|sambal;🌶️;epi;pce
+soupe|potage;🍲;epi;pce
+safran;🌼;epi;pce
+vinaigre|vinaigre balsamique|balsamique;svg:vinaigre;epi;bouteille
 sel;🧂;epi;paquet
-poivre|muscade|clou de girofle|cumin|curcuma|garam;🫙;epi;pot
+muscade|noix de muscade;svg:muscade;epi;pot
+poivre|clou de girofle|cumin|curcuma|garam;🫙;epi;pot
 curry vert|pate de curry vert;🍛~vert;epi;pot
 curry rouge|pate de curry rouge;🍛~rouge;epi;pot
 curry;🍛;epi;pot
 paprika|chili|harissa|tabasco;🌶️;epi;pot
 cannelle;🪵;epi;pot
-levure|bicarbonate|gelatine|poudre a lever;🧂;epi;paquet
+levure|levure fraiche|levure seche;svg:levure;epi;paquet
+bicarbonate|gelatine|poudre a lever;🧂;epi;paquet
 vanille|sucre vanille;🍦;epi;paquet
-sucre|sucre glace|cassonade;🍬;epi;kg
-cafe|capsule;☕;epi;paquet
+sucre|sucre glace|cassonade;svg:sucre;epi;kg
+capsule|capsule cafe|nespresso;svg:capsule;epi;paquet
+chocolat chaud|cacao en poudre|poudre de cacao;svg:chocolatchaud;epi;paquet
+cafe;☕;epi;paquet
 coca|limonade|rivella|ice tea|the froid|soda|cola;🥤;boi;bouteille
 the noir|earl grey;🍵~noir;epi;paquet
 the;🍵;epi;paquet
 tisane|infusion;🫖;epi;paquet
-ketchup;🍅;epi;pce
+ketchup;svg:ketchup;epi;pce
 pesto;🌿;epi;pot
-moutarde|mayonnaise|sauce|tahini|chutney|vinaigrette;🫙;epi;pce
+moutarde;svg:moutarde;epi;pce
+mayonnaise|mayo|thomy;svg:mayo;epi;pce
+sauce|tahini|chutney|vinaigrette;🫙;epi;pce
 bouillon|fond de veau|cube;🍲;epi;paquet
 conserve;🥫;epi;boîte
 noix|amande|noisette|chataigne|marron|pignon|pistache|noix de cajou;🌰;epi;sachet
@@ -737,18 +815,27 @@ cracker|crackers|galette de riz;🍘;dou;paquet
 chips;🥔;dou;paquet
 apero|bretzel;🥨;dou;paquet
 popcorn;🍿;dou;paquet
-bonbon|gomme|chewing|reglisse;🍬;dou;paquet
+sucette;🍭;dou;pce
+gateau d anniversaire;🎂;bou;pce
+bonbon|chewing|chewing gum|reglisse|haribo;🍬;dou;paquet
 glace|sorbet|cornet;🍨;sur;pce
 pizza;🍕;sur;pce
 frites;🍟;sur;paquet
 legumes surgeles|surgele;🧊;sur;paquet
 eau gazeuse|eau petillante|eau minerale gazeuse;🫧;boi;bouteille
-eau;💧;boi;bouteille
+eau|eau minerale|eau plate;svg:eau;boi;bouteille
 jus|nectar|smoothie;🧃;boi;l
 sirop;🍹;boi;bouteille
 biere brune|biere ambree;🍺~brune;boi;bouteille
 biere;🍺;boi;bouteille
 champagne|prosecco|mousseux;🍾;boi;bouteille
+whisky|rhum|gin|vodka|alcool|liqueur|cognac|kirsch|grappa|pastis;🥃;boi;bouteille
+cocktail|aperol|spritz|martini|campari;🍸;boi;bouteille
+cidre;🍏;boi;bouteille
+boisson energisante|red bull|energy drink;⚡;boi;pce
+tonic|eau tonique;🫧;boi;bouteille
+mate;🧉;boi;bouteille
+lait de coco;🥥;epi;boîte
 vin blanc;🥂;boi;bouteille
 vin;🍷;boi;bouteille
 lait d'avoine|lait d avoine|lait d'amande|lait de soja|boisson vegetale;🥛;boi;l
@@ -760,9 +847,39 @@ laine|bracelet|fil a broder|fil bracelet|fil de coton;🧵;aut;pce
 vis|tige|clou|boulon|cheville|ecrou;🔩;aut;pce
 cadeau;🎁;aut;pce
 stylo|bic|stylo bille|feutre|marqueur|surligneur;🖊️;aut;pce
-crayon|gomme|taille crayon;✏️;aut;pce
+crayon|gomme|taille crayon|crayon de couleur;✏️;aut;pce
 carte|enveloppe;💌;aut;pce
 medicament|paracetamol|ibuprofene|vitamine;💊;hyg;paquet
+journal|magazine;📰;aut;pce
+cahier|carnet|bloc note;📓;aut;pce
+trombone|agrafe|agrafeuse;📎;aut;paquet
+ciseau;✂️;aut;pce
+scotch|ruban adhesif|colle;📎;aut;pce
+jouet|peluche;🧸;aut;pce
+ballon de baudruche;🎈;aut;paquet
+chaussette;🧦;aut;paquet
+t shirt|t-shirt|tshirt|habit|vetement;👕;aut;pce
+chaussure|basket|pantoufle;👟;aut;pce
+lunette;👓;aut;pce
+parapluie;☂️;aut;pce
+cable|chargeur|rallonge|prise;🔌;aut;pce
+lampe de poche|lampe frontale;🔦;aut;pce
+marteau|outil;🔨;aut;pce
+tournevis;🪛;aut;pce
+cle|double de cle;🔑;aut;pce
+cadenas;🔒;aut;pce
+peinture|pinceau;🖌️;aut;pce
+timbre;📮;aut;paquet
+billet|ticket;🎟️;aut;pce
+essence|carburant|lave glace;⛽;aut;pce
+graine pour oiseau|nourriture oiseau;🐦;aut;paquet
+friandise chien|os a macher;🦴;aut;paquet
+biberon|tetine|lait bebe|lait en poudre bebe;🍼;aut;pce
+puzzle|jeu de societe;🧩;aut;pce
+jeu de carte;🃏;aut;pce
+livre;📚;aut;pce
+aiguille|bouton a coudre;🪡;aut;pce
+ruban|papier cadeau|emballage cadeau;🎀;aut;pce
 `.trim().split('\n').map(l => { const [k,icon,cat,u] = l.split(';'); return {kws:k.split('|').map(w => norm(w).split(' ').map(sing).join(' ')), icon, cat, u}; });
 
 // Mots courants proposés pendant la saisie (en plus de l'historique)
@@ -789,11 +906,61 @@ function findProduct(name){
   return hit;
 }
 // Variantes de couleur : « 🍋~vert » = emoji de base teinté (ou emoji officiel quand le téléphone l'a)
-const TINTS = {'🍋~vert':'hue-rotate(60deg) saturate(1.4) brightness(.9)','🫑~rouge':'hue-rotate(-90deg) saturate(2.5) brightness(.85)','🫑~jaune':'hue-rotate(-55deg) saturate(1.6) brightness(1.15)','🫑~orange':'hue-rotate(-65deg) saturate(2.5)','🍇~blanc':'hue-rotate(170deg) saturate(.9) brightness(1.15)','🧅~rouge':'hue-rotate(-70deg) saturate(2.2) brightness(.85)','🥬~rouge':'hue-rotate(175deg) saturate(1.3) brightness(.85)','🫒~noir':'brightness(.35) saturate(.5)','🫘~noir':'brightness(.3) saturate(.3)','🫘~blanc':'grayscale(1) brightness(3) contrast(.7)','🫘~vert':'hue-rotate(80deg) saturate(1.1)','🫘~beige':'sepia(1) saturate(.8) brightness(1.4)','🍫~blanc':'grayscale(1) sepia(.3) brightness(2.2) contrast(.8)','🍚~complet':'sepia(.9) saturate(1.4) brightness(.85)','🍞~complet':'brightness(.7) saturate(1.3)','🍅~vert':'hue-rotate(95deg) saturate(1.2)','🍅~jaune':'hue-rotate(45deg) saturate(1.3) brightness(1.15)','🥒~jaune':'hue-rotate(-55deg) saturate(1.5) brightness(1.15)','🌶️~vert':'hue-rotate(100deg) saturate(1.1)','🍠~betterave':'hue-rotate(-50deg) saturate(1.8) brightness(.75)','🥦~blanc':'grayscale(1) sepia(.25) brightness(1.7) contrast(.9)','🌱~blanc':'grayscale(1) sepia(.6) brightness(1.05) contrast(1.3)','🍵~noir':'sepia(1) saturate(1.5) hue-rotate(-15deg) brightness(.65)','🍛~vert':'hue-rotate(70deg) saturate(1.1)','🍛~rouge':'hue-rotate(-30deg) saturate(1.5)','🍺~brune':'sepia(.6) brightness(.55) saturate(1.5)','🍄~brun':'sepia(1) saturate(1.2) brightness(.8)'};
+// Icônes dessinées pour Nos courses — viewBox 64x64, style plat proche des emojis
+const SVG_ICONS = {
+lait:`<path d="M20 22l6-12h12l6 12z" fill="#dfe8f2"/><path d="M26 10h12l-2 -4h-8z" fill="#c4d3e3"/><rect x="18" y="22" width="28" height="36" rx="3" fill="#fff"/><path d="M18 22h28v4H18z" fill="#e8eef5"/><rect x="18" y="34" width="28" height="13" fill="#3b82f6"/><path d="M24 39c3-3 6 2 9 0s5-2 7 0" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><rect x="18" y="22" width="28" height="36" rx="3" fill="none" stroke="#b9c7d6" stroke-width="1.5"/>`,
+creme:`<path d="M22 26l5-9h10l5 9z" fill="#f4ead2"/><rect x="20" y="26" width="24" height="30" rx="3" fill="#fffaf0"/><rect x="20" y="36" width="24" height="10" fill="#f2b632"/><circle cx="32" cy="41" r="3" fill="#fff"/><rect x="20" y="26" width="24" height="30" rx="3" fill="none" stroke="#dccfae" stroke-width="1.5"/>`,
+yaourt:`<path d="M16 22h32l-4 34H20z" fill="#fff"/><path d="M17 31h30l-1.3 12H18.3z" fill="#ec4899"/><circle cx="32" cy="37" r="3.4" fill="#fff"/><path d="M14 18h36v5H14z" fill="#cfd8e3"/><path d="M14 18h36" stroke="#aab6c4" stroke-width="2"/><path d="M16 22h32l-4 34H20z" fill="none" stroke="#d4dbe5" stroke-width="1.5"/>`,
+farine:`<path d="M16 14h32l3 44H13z" fill="#f5ecd7" stroke="#d6c39a" stroke-width="1.4"/><path d="M16 14l4-6h24l4 6z" fill="#e6d5ae"/><rect x="14.6" y="22" width="34.8" height="26" fill="#2563eb"/><path d="M32 44V28" stroke="#fde68a" stroke-width="2" stroke-linecap="round"/><g fill="#fde68a"><ellipse cx="29" cy="32" rx="2.2" ry="3.6" transform="rotate(-30 29 32)"/><ellipse cx="35" cy="32" rx="2.2" ry="3.6" transform="rotate(30 35 32)"/><ellipse cx="29" cy="38" rx="2.2" ry="3.6" transform="rotate(-30 29 38)"/><ellipse cx="35" cy="38" rx="2.2" ry="3.6" transform="rotate(30 35 38)"/><ellipse cx="32" cy="26.5" rx="2" ry="3.2"/></g>`,
+sucre:`<g stroke="#cfd6df" stroke-width="1.6"><path d="M10 34l12-6 12 6-12 6z" fill="#fff"/><path d="M10 34v14l12 6V40z" fill="#eef1f5"/><path d="M34 34v14l-12 6V40z" fill="#dde3ea"/><path d="M30 34l12-6 12 6-12 6z" fill="#fff"/><path d="M30 34v14l12 6V40z" fill="#eef1f5"/><path d="M54 34v14l-12 6V40z" fill="#dde3ea"/><path d="M20 20l12-6 12 6-12 6z" fill="#fff"/><path d="M20 20v12l12 6V26z" fill="#eef1f5"/><path d="M44 20v12l-12 6V26z" fill="#dde3ea"/></g>`,
+lessive:`<path d="M16 22c0-4 3-6 7-6h22c4 0 6 2 6 6v32c0 3-2 4-4 4H20c-3 0-4-2-4-4z" fill="#2563eb"/><path d="M36 10h8v7h-8z" fill="#f59e0b"/><path d="M42 22h6v14h-6z" fill="#1d4ed8"/><rect x="20" y="30" width="20" height="18" rx="3" fill="#fff"/><circle cx="27" cy="38" r="3" fill="#93c5fd"/><circle cx="33" cy="42" r="2.2" fill="#60a5fa"/><circle cx="34" cy="35" r="1.6" fill="#93c5fd"/>`,
+vaisselle:`<path d="M22 24c0-3 2-5 5-5h10c3 0 5 2 5 5v30c0 2-2 4-4 4H26c-2 0-4-2-4-4z" fill="#22c55e"/><path d="M28 12h8v7h-8z" fill="#fff" stroke="#cbd5e1"/><path d="M30 6h6l-1 6h-4z" fill="#e2e8f0"/><rect x="25" y="32" width="14" height="14" rx="3" fill="#fefce8"/><path d="M29 41c2-3 4-3 6 0" stroke="#eab308" stroke-width="2" fill="none"/><circle cx="48" cy="22" r="5" fill="#bae6fd" stroke="#7dd3fc"/><circle cx="51" cy="12" r="3" fill="#bae6fd" stroke="#7dd3fc"/><circle cx="44" cy="10" r="2" fill="#bae6fd" stroke="#7dd3fc"/>`,
+alu:`<rect x="10" y="22" width="40" height="20" rx="10" fill="#cbd5e1"/><ellipse cx="50" cy="32" rx="5" ry="10" fill="#e2e8f0"/><ellipse cx="50" cy="32" rx="2" ry="4" fill="#94a3b8"/><path d="M14 42h30l6 14H20z" fill="#e5e7eb"/><path d="M18 46h26M21 50h25" stroke="#fff" stroke-width="2"/><rect x="10" y="22" width="40" height="5" rx="2.5" fill="#f1f5f9"/>`,
+poubelle:`<path d="M14 26c2-6 8-8 18-8s16 2 18 8l2 22c0 6-8 10-20 10S12 54 12 48z" fill="#334155"/><path d="M26 18c-2-6-6-8-8-10M38 18c2-6 6-8 8-10" stroke="#334155" stroke-width="5" stroke-linecap="round"/><path d="M27 19l5 4 5-4" fill="none" stroke="#facc15" stroke-width="3" stroke-linecap="round"/><path d="M20 30c0 8 2 16 4 22" stroke="#64748b" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+dentifrice:`<path d="M8 26h38l8 4v4l-8 4H8z" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/><path d="M8 26l-2 2v8l2 2" fill="#e2e8f0" stroke="#cbd5e1"/><rect x="54" y="28" width="5" height="8" rx="1.5" fill="#ef4444"/><path d="M14 30h26" stroke="#ef4444" stroke-width="3"/><path d="M14 34.5h26" stroke="#3b82f6" stroke-width="3"/>`,
+deo:`<rect x="22" y="20" width="20" height="38" rx="6" fill="#0ea5e9"/><rect x="24" y="10" width="16" height="12" rx="4" fill="#e2e8f0"/><rect x="29" y="6" width="6" height="6" rx="2" fill="#94a3b8"/><rect x="25" y="30" width="14" height="16" rx="3" fill="#fff"/><path d="M28 38h8" stroke="#0ea5e9" stroke-width="2.4" stroke-linecap="round"/>`,
+ketchup:`<path d="M22 24c0-4 4-6 10-6s10 2 10 6l-2 30c0 2-2 4-4 4h-8c-2 0-4-2-4-4z" fill="#dc2626"/><path d="M27 10h10l2 8H25z" fill="#f8fafc" stroke="#cbd5e1"/><path d="M30 4h4v6h-4z" fill="#f8fafc" stroke="#cbd5e1"/><rect x="25" y="32" width="14" height="12" rx="2" fill="#fff"/><circle cx="32" cy="38" r="3.4" fill="#ef4444"/><path d="M32 34.5v-2" stroke="#16a34a" stroke-width="1.6"/>`,
+moutarde:`<rect x="18" y="24" width="28" height="32" rx="6" fill="#facc15"/><rect x="20" y="16" width="24" height="9" rx="2" fill="#a16207"/><rect x="22" y="33" width="20" height="14" rx="3" fill="#fff"/><path d="M26 40c2-3 4 3 6 0s4 3 6 0" stroke="#ca8a04" stroke-width="2" fill="none"/>`,
+mayo:`<rect x="18" y="24" width="28" height="32" rx="6" fill="#fef9c3" stroke="#e5dca0" stroke-width="1.5"/><rect x="20" y="16" width="24" height="9" rx="2" fill="#3b82f6"/><rect x="22" y="33" width="20" height="14" rx="3" fill="#fff"/><ellipse cx="32" cy="40" rx="5" ry="3.5" fill="#fde047"/>`,
+huile:`<path d="M26 22h12v6c4 3 6 7 6 12v14c0 2-2 4-4 4H24c-2 0-4-2-4-4V40c0-5 2-9 6-12z" fill="#facc15" opacity=".9"/><path d="M26 22h12v6c4 3 6 7 6 12v14c0 2-2 4-4 4H24c-2 0-4-2-4-4V40c0-5 2-9 6-12z" fill="none" stroke="#ca8a04" stroke-width="1.5"/><rect x="27" y="12" width="10" height="10" rx="2" fill="#15803d"/><rect x="24" y="40" width="16" height="10" rx="2" fill="#fff"/><ellipse cx="32" cy="45" rx="3.4" ry="2.4" fill="#4d7c0f"/><path d="M24 34c4-2 12-2 16 0" stroke="#fde68a" stroke-width="2" fill="none"/>`,
+vinaigre:`<path d="M27 20h10v8c4 3 6 7 6 12v14c0 2-2 4-4 4H25c-2 0-4-2-4-4V40c0-5 2-9 6-12z" fill="#7f1d1d"/><rect x="28" y="10" width="8" height="10" rx="2" fill="#d6d3d1"/><rect x="24" y="40" width="16" height="10" rx="2" fill="#fef3c7"/><path d="M28 45h8" stroke="#7f1d1d" stroke-width="2"/><path d="M25 34c2-2 4-3 6-3" stroke="#b91c1c" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+soja:`<path d="M24 26c0-4 3-6 8-6s8 2 8 6v28c0 2-2 4-4 4h-8c-2 0-4-2-4-4z" fill="#292524"/><path d="M27 12h10v9H27z" fill="#dc2626"/><path d="M30 8h4v4h-4z" fill="#dc2626"/><rect x="26" y="34" width="12" height="12" rx="2" fill="#fef3c7"/><path d="M30 37v6M34 37v6M29 40h6" stroke="#b91c1c" stroke-width="1.6"/>`,
+cereales:`<path d="M16 10h28l4 4v40H16z" fill="#f97316"/><path d="M44 10l4 4v40l-4-2z" fill="#c2410c"/><rect x="20" y="16" width="20" height="8" rx="2" fill="#fff"/><path d="M18 42c0 8 6 12 14 12s14-4 14-12z" fill="#fff" stroke="#cbd5e1" stroke-width="1.4"/><g fill="#f59e0b"><circle cx="24" cy="39" r="3"/><circle cx="30" cy="37" r="3.2"/><circle cx="36" cy="38" r="3"/><circle cx="41" cy="40" r="2.6"/><circle cx="27" cy="41" r="2.4"/></g>`,
+poireau:`<path d="M28 60c-1-10-1-20 0-28h8c1 8 1 18 0 28z" fill="#f8fafc" stroke="#d9e2d0" stroke-width="1.2"/><path d="M29 60l-1 2h8l-1-2" fill="#c8b98f"/><path d="M28 34c-3-10-9-18-18-26 11 3 18 12 20 24z" fill="#15803d"/><path d="M36 34c2-12 9-20 18-28-10 4-15 12-18 24z" fill="#22c55e"/><path d="M31 34c-1-10 0-22 3-32 3 10 3 22 2 32z" fill="#16a34a"/><path d="M28 30h8v10h-8z" fill="#bbf7d0"/>`,
+celeri:`<g fill="#86efac" stroke="#4ade80" stroke-width="1"><path d="M22 58c0-14 2-28 6-36h4c-3 10-4 22-4 36z"/><path d="M30 58c0-14 1-28 4-38h4c-2 12-2 24-2 38z"/><path d="M37 58c0-12 2-24 6-34h4c-3 10-4 22-4 34z"/></g><g fill="#16a34a"><circle cx="29" cy="18" r="6"/><circle cx="36" cy="14" r="6"/><circle cx="45" cy="20" r="6"/><circle cx="24" cy="22" r="4"/></g>`,
+fenouil:`<path d="M18 40c0-8 6-12 14-12s14 4 14 12-6 18-14 18-14-10-14-18z" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/><path d="M32 30c-4 6-4 20 0 28M24 36c-2 8 0 16 4 20M40 36c2 8 0 16-4 20" stroke="#bbf7d0" stroke-width="1.6" fill="none"/><path d="M28 30l-4-16M32 30V10M36 30l4-16" stroke="#86efac" stroke-width="4" stroke-linecap="round"/><g stroke="#16a34a" stroke-width="1.6" stroke-linecap="round"><path d="M24 14l-5-4M24 14l-2-6M32 10l-3-5M32 10l3-5M40 14l5-4M40 14l2-6"/></g>`,
+epinard:`<path d="M30 56C14 50 10 32 18 16c10 4 16 18 12 40z" fill="#166534"/><path d="M30 56C46 50 52 32 44 14c-10 4-16 18-14 42z" fill="#15803d"/><path d="M30 56c-4-14-8-26-12-36M31 56c3-14 7-26 12-38" stroke="#4ade80" stroke-width="1.6" fill="none"/>`,
+radis:`<circle cx="32" cy="40" r="14" fill="#e11d48"/><path d="M32 54v6" stroke="#fda4af" stroke-width="2" stroke-linecap="round"/><path d="M26 36c2-3 5-4 8-3" stroke="#fda4af" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M32 27c-4-8-12-12-16-10 2 6 8 10 16 10z" fill="#16a34a"/><path d="M32 27c4-10 12-14 16-12-2 7-8 12-16 12z" fill="#22c55e"/><path d="M32 27c0-8 0-14 1-20" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>`,
+asperge:`<g stroke-linecap="round"><path d="M22 58l6-44" stroke="#65a30d" stroke-width="6"/><path d="M32 58V10" stroke="#84cc16" stroke-width="6"/><path d="M42 58l-6-44" stroke="#65a30d" stroke-width="6"/></g><g fill="#4d7c0f"><path d="M28 14l-4-6 7 2z"/><path d="M32 10l-3-6h6z"/><path d="M36 14l4-6-7 2z"/></g><rect x="18" y="42" width="28" height="6" rx="2" fill="#a855f7"/>`,
+artichaut:`<path d="M32 58v4" stroke="#3f6212" stroke-width="4" stroke-linecap="round"/><g stroke="#365314" stroke-width="1.2"><path d="M14 40c0-6 4-10 8-12l10 8 10-8c4 2 8 6 8 12 0 10-8 18-18 18S14 50 14 40z" fill="#4d7c0f"/><path d="M18 34c0-6 4-12 8-14l6 8 6-8c4 2 8 8 8 14l-14 10z" fill="#65a30d"/><path d="M23 26c0-6 4-12 9-16 5 4 9 10 9 16l-9 8z" fill="#84cc16"/></g><path d="M32 14v14M24 40l8 6 8-6" stroke="#a3e635" stroke-width="1.4" fill="none"/>`,
+framboise:`<path d="M24 16h16l-8 6z" fill="#16a34a"/><g fill="#e11d48" stroke="#9f1239" stroke-width=".8"><circle cx="26" cy="26" r="6"/><circle cx="38" cy="26" r="6"/><circle cx="32" cy="24" r="6"/><circle cx="22" cy="36" r="6"/><circle cx="32" cy="35" r="6"/><circle cx="42" cy="36" r="6"/><circle cx="26" cy="45" r="6"/><circle cx="38" cy="45" r="6"/><circle cx="32" cy="53" r="6"/></g><g fill="#fda4af"><circle cx="24" cy="24" r="1.4"/><circle cx="30" cy="33" r="1.4"/><circle cx="36" cy="43" r="1.4"/><circle cx="20" cy="34" r="1.4"/></g>`,
+abricot:`<circle cx="32" cy="36" r="20" fill="#fb923c"/><path d="M32 16c-4 8-4 30 0 40" stroke="#ea580c" stroke-width="2" fill="none"/><circle cx="40" cy="30" r="6" fill="#fdba74" opacity=".7"/><path d="M32 16c2-4 6-6 10-6-2 4-6 6-10 6z" fill="#16a34a"/><path d="M32 16v-6" stroke="#78350f" stroke-width="2" stroke-linecap="round"/>`,
+prune:`<ellipse cx="32" cy="38" rx="16" ry="19" fill="#6d28d9"/><path d="M32 19c-3 10-3 28 0 38" stroke="#4c1d95" stroke-width="2" fill="none"/><ellipse cx="38" cy="32" rx="5" ry="7" fill="#a78bfa" opacity=".6"/><path d="M32 19v-8" stroke="#78350f" stroke-width="2.4" stroke-linecap="round"/><path d="M33 14c4-4 9-4 12-2-3 3-8 4-12 2z" fill="#16a34a"/>`,
+figue:`<path d="M32 10c4 6 8 10 14 18 6 10 2 28-14 28S12 38 18 28c6-8 10-12 14-18z" fill="#7e22ce"/><path d="M32 10c-2-3-2-5 0-6 2 1 2 3 0 6z" fill="#65a30d"/><path d="M24 30c4-4 8-6 12-6" stroke="#c084fc" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M38 50c4-3 6-8 6-12" stroke="#581c87" stroke-width="2" fill="none"/>`,
+grenade:`<circle cx="32" cy="38" r="20" fill="#dc2626"/><path d="M26 18l2-8 4 6 4-6 2 8z" fill="#b91c1c"/><circle cx="25" cy="32" r="6" fill="#f87171" opacity=".55"/><path d="M44 46c-3 5-8 8-12 8" stroke="#991b1b" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+capsule:`<path d="M14 26h36l-6 22H20z" fill="#7c3aed"/><ellipse cx="32" cy="26" rx="20" ry="6" fill="#a78bfa"/><ellipse cx="32" cy="26" rx="14" ry="3.6" fill="#c4b5fd"/><path d="M20 48c4 4 20 4 24 0" stroke="#5b21b6" stroke-width="3" fill="none"/><path d="M22 32l3 12" stroke="#ddd6fe" stroke-width="2.4" stroke-linecap="round"/>`,
+tofu:`<path d="M12 28l20-10 20 10-20 10z" fill="#fefce8"/><path d="M12 28v18l20 10V38z" fill="#fef3c7"/><path d="M52 28v18L32 56V38z" fill="#fde68a"/><path d="M12 28l20-10 20 10-20 10zM12 28v18l20 10 20-10V28" fill="none" stroke="#e7d9a0" stroke-width="1.5"/>`,
+eau:`<path d="M26 16h12v4c4 2 6 6 6 10v24c0 3-2 4-4 4H24c-2 0-4-1-4-4V30c0-4 2-8 6-10z" fill="#bae6fd" stroke="#7dd3fc" stroke-width="1.5"/><rect x="27" y="8" width="10" height="8" rx="2" fill="#2563eb"/><rect x="20" y="34" width="24" height="12" fill="#3b82f6"/><path d="M32 37c-2 3-3 4-3 5.5a3 3 0 006 0c0-1.5-1-2.5-3-5.5z" fill="#fff"/><path d="M24 26c2-2 4-3 6-3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+saumon:`<path d="M8 40c6-12 18-18 32-18 8 0 14 2 18 6-2 10-12 18-26 20-10 1-18-2-24-8z" fill="#fb923c"/><g stroke="#ffedd5" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M18 34c4 4 4 10 0 14"/><path d="M28 28c5 5 5 14 0 19"/><path d="M38 25c5 5 5 14 0 20"/><path d="M48 25c4 4 4 11 0 16"/></g><path d="M8 40c6 6 14 9 24 8" stroke="#e2e8f0" stroke-width="3" fill="none"/>`,
+jambon:`<ellipse cx="32" cy="34" rx="24" ry="18" fill="#fff7ed"/><ellipse cx="32" cy="34" rx="20" ry="14" fill="#fb7185"/><path d="M20 30c6-4 16-6 24 0M18 38c8 4 20 4 28 0" stroke="#fda4af" stroke-width="2.4" fill="none" stroke-linecap="round"/><ellipse cx="32" cy="34" rx="24" ry="18" fill="none" stroke="#fed7aa" stroke-width="1.5"/>`,
+mozzarella:`<circle cx="24" cy="40" r="14" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/><circle cx="42" cy="36" r="12" fill="#fafafa" stroke="#e2e8f0" stroke-width="1.5"/><ellipse cx="20" cy="35" rx="5" ry="3" fill="#f1f5f9"/><path d="M36 20c4-8 12-10 18-8-2 8-10 12-18 8z" fill="#16a34a"/><path d="M38 19c4-3 9-5 14-6" stroke="#4ade80" stroke-width="1.4"/>`,
+muscade:`<ellipse cx="32" cy="34" rx="16" ry="20" fill="#92400e"/><path d="M22 22c4 6 6 14 4 24M32 15c-2 8-2 30 0 38M42 22c-4 6-6 14-4 24M18 34c6-2 22-2 28 0" stroke="#b45309" stroke-width="2" fill="none"/><ellipse cx="38" cy="26" rx="4" ry="6" fill="#d97706" opacity=".5"/>`,
+glacons:`<g stroke="#7dd3fc" stroke-width="1.6"><path d="M12 30l12-6 12 6-12 6z" fill="#f0f9ff"/><path d="M12 30v14l12 6V36z" fill="#e0f2fe"/><path d="M36 30v14l-12 6V36z" fill="#bae6fd"/><path d="M28 22l12-6 12 6-12 6z" fill="#f0f9ff"/><path d="M28 22v14l12 6V28z" fill="#e0f2fe"/><path d="M52 22v14l-12 6V28z" fill="#bae6fd"/></g><path d="M16 32l4-2M32 24l4-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`,
+levure:`<rect x="16" y="22" width="32" height="26" rx="4" fill="#fde68a" stroke="#eab308" stroke-width="1.5"/><path d="M16 30h32" stroke="#eab308" stroke-width="1.5"/><g fill="#d97706"><circle cx="26" cy="38" r="2"/><circle cx="32" cy="41" r="2"/><circle cx="38" cy="37" r="2"/><circle cx="29" cy="44" r="1.4"/><circle cx="36" cy="44" r="1.4"/></g><path d="M22 22v-6h20v6" fill="#fef3c7" stroke="#eab308" stroke-width="1.5"/>`,
+pates:`<g stroke-linecap="round"><path d="M14 48l14-30" stroke="#f59e0b" stroke-width="7"/><path d="M14 48l14-30" stroke="#fcd34d" stroke-width="3" stroke-dasharray="2 4"/><path d="M26 52l14-30" stroke="#f59e0b" stroke-width="7"/><path d="M26 52l14-30" stroke="#fcd34d" stroke-width="3" stroke-dasharray="2 4"/><path d="M38 52l14-30" stroke="#f59e0b" stroke-width="7"/><path d="M38 52l14-30" stroke="#fcd34d" stroke-width="3" stroke-dasharray="2 4"/></g>`,
+chocolatchaud:`<path d="M14 26h32v18c0 8-6 14-16 14s-16-6-16-14z" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/><path d="M46 30h4c4 0 6 3 6 6s-2 6-6 6h-4" fill="none" stroke="#cbd5e1" stroke-width="3"/><ellipse cx="30" cy="27" rx="15" ry="3.4" fill="#78350f"/><path d="M24 18c-2-3 2-5 0-8M32 18c-2-3 2-5 0-8" stroke="#cbd5e1" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+serviettes:`<rect x="12" y="20" width="40" height="32" rx="4" fill="#fbcfe8" stroke="#f472b6" stroke-width="1.5"/><path d="M12 30h40M12 41h40" stroke="#f9a8d4" stroke-width="1.5"/><path d="M24 20c2 4 14 4 16 0" fill="#fff" stroke="#f472b6" stroke-width="1.5"/>`,
+gants:`<path d="M18 56V34l-4-10c-1-3 3-5 5-2l3 6V14c0-3 4-3 4 0v12-16c0-3 4-3 4 0v16-14c0-3 4-3 4 0v14-10c0-3 4-3 4 0v26c0 8-4 14-10 14z" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/><rect x="17" y="50" width="22" height="8" rx="2" fill="#eab308"/>`,
+};
+
+const TINTS = {'svg:asperge~blanc':'grayscale(1) sepia(.6) brightness(1.15) contrast(1.2)','🍋~vert':'hue-rotate(60deg) saturate(1.4) brightness(.9)','🫑~rouge':'hue-rotate(-90deg) saturate(2.5) brightness(.85)','🫑~jaune':'hue-rotate(-55deg) saturate(1.6) brightness(1.15)','🫑~orange':'hue-rotate(-65deg) saturate(2.5)','🍇~blanc':'hue-rotate(170deg) saturate(.9) brightness(1.15)','🧅~rouge':'hue-rotate(-70deg) saturate(2.2) brightness(.85)','🥬~rouge':'hue-rotate(175deg) saturate(1.3) brightness(.85)','🫒~noir':'brightness(.35) saturate(.5)','🫘~noir':'brightness(.3) saturate(.3)','🫘~blanc':'grayscale(1) brightness(3) contrast(.7)','🫘~vert':'hue-rotate(80deg) saturate(1.1)','🫘~beige':'sepia(1) saturate(.8) brightness(1.4)','🍫~blanc':'grayscale(1) sepia(.3) brightness(2.2) contrast(.8)','🍚~complet':'sepia(.9) saturate(1.4) brightness(.85)','🍞~complet':'brightness(.7) saturate(1.3)','🍅~vert':'hue-rotate(95deg) saturate(1.2)','🍅~jaune':'hue-rotate(45deg) saturate(1.3) brightness(1.15)','🥒~jaune':'hue-rotate(-55deg) saturate(1.5) brightness(1.15)','🌶️~vert':'hue-rotate(100deg) saturate(1.1)','🍠~betterave':'hue-rotate(-50deg) saturate(1.8) brightness(.75)','🥦~blanc':'grayscale(1) sepia(.25) brightness(1.7) contrast(.9)','🌱~blanc':'grayscale(1) sepia(.6) brightness(1.05) contrast(1.3)','🍵~noir':'sepia(1) saturate(1.5) hue-rotate(-15deg) brightness(.65)','🍛~vert':'hue-rotate(70deg) saturate(1.1)','🍛~rouge':'hue-rotate(-30deg) saturate(1.5)','🍺~brune':'sepia(.6) brightness(.55) saturate(1.5)','🍄~brun':'sepia(1) saturate(1.2) brightness(.8)'};
 const NATIVE = {'🍋~vert':'🍋\u200d🟩','🍄~brun':'🍄\u200d🟫'};
 const emojiOk = (() => { const m = {}; return e => { if (e in m) return m[e]; try { const c = document.createElement('canvas').getContext('2d'); c.font = '32px sans-serif'; m[e] = c.measureText(e).width < c.measureText(e.split('\u200d')[0]).width * 1.4; } catch(x){ m[e] = false; } return m[e]; }; })();
 function ICH(code){
-  code = String(code || ''); if (!code.includes('~')) return code;
+  code = String(code || '');
+  if (code.startsWith('svg:')) { const [nm] = code.slice(4).split('~'), f = TINTS[code];
+    return SVG_ICONS[nm] ? `<svg class="cic" viewBox="2 2 60 60" aria-hidden="true"${f ? ` style="filter:${f}"` : ''}>${SVG_ICONS[nm]}</svg>` : '🛒'; }
+  if (!code.includes('~')) return code;
   if (NATIVE[code] && emojiOk(NATIVE[code])) return NATIVE[code];
   const base = code.split('~')[0], f = TINTS[code];
   return f ? `<i class="tint" style="filter:${f}">${base}</i>` : base;
@@ -813,7 +980,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.29';
+const APP_VERSION = '1.0.30';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1037,7 +1204,23 @@ function attachSuggest(input, box, onPick, enabled){
 
 /* ---------- Recettes : données ---------- */
 const R = () => recFile.doc;
-const recipes = () => Object.entries(R().recipes).filter(([,r]) => !r.deleted);
+const recipes = () => Object.entries(R().recipes).filter(([,r]) => !r.deleted && !r.pending);
+const pendingRecipes = () => Object.entries(R().recipes).filter(([,r]) => !r.deleted && r.pending);
+/* Ressemblance entre deux recettes (même calcul que l’import automatique) */
+const SIM_STOP = new Set('de du des la le les l d a au aux et en un une pour sur avec sans facon maison mode style ou the and with recette'.split(' '));
+const simSing = w => w.length > 3 && /[sx]$/.test(w) ? w.slice(0,-1) : w;
+const simToks = t => new Set(norm(t||'').replace(/[^a-z0-9]+/g,' ').split(' ').filter(w => w.length > 1 && !SIM_STOP.has(w) && !/^\d+$/.test(w)).map(simSing));
+const simIngs = r => new Set((r.ingredients||[]).map(i => norm(i.name||'').replace(/[^a-z0-9]+/g,' ').split(' ').filter(w => w.length > 2 && !SIM_STOP.has(w))[0]).filter(Boolean).map(simSing));
+const jac = (a,b) => { if (!a.size || !b.size) return 0; let n = 0; a.forEach(x => { if (b.has(x)) n++; }); return n / (a.size + b.size - n); };
+function recipeSimilarity(a, b){
+  const tj = jac(simToks(a.title), simToks(b.title)), ij = jac(simIngs(a), simIngs(b));
+  return (tj >= 0.75 || (tj >= 0.5 && ij >= 0.6)) ? Math.round((0.6*tj + 0.4*ij)*100)/100 : 0;
+}
+function mostSimilar(r, exceptId){
+  let best = null, bs = 0;
+  for (const [id, x] of recipes()) { if (id === exceptId) continue; const sc = recipeSimilarity(r, x); if (sc > bs) { bs = sc; best = id; } }
+  return best;
+}
 const putRecipe = (id, r) => { R().recipes[id] = {...r, updatedAt: Date.now()}; recFile.changed(); };
 const STAPLES = new Set(['sel','poivre','huile','eau','sucre','farine','beurre','vinaigre','herbes de provence'].map(keyOf));
 const rootOf = name => { const p = findProduct(name); if (p) { const n = ' '+norm(name).split(' ').map(sing).join(' ')+' '; const k = p.kws.find(k => n.includes(' '+k)) || p.kws[0]; return k; } return keyOf(name); };
@@ -1306,9 +1489,11 @@ function renderRecipes(){
   if (!recipes().length) html = `<div class="empty"><b aria-hidden="true">📖</b>Aucune recette pour l’instant.</div>`;
   else if (!list.length) html = `<div class="empty"><b aria-hidden="true">🤔</b>Aucune recette ne correspond. Retire un ingrédient ou un filtre.</div>`;
   const total = list.length; list = list.slice(0, state.shown);
+  const pend = pendingRecipes().length;
+  if (pend) html = `<button class="pendbar" type="button" id="pendBtn"><span aria-hidden="true">🆕</span><span><b>${pend} recette${pend>1?'s':''} importée${pend>1?'s':''} à vérifier</b><small>Elle${pend>1?'s':''} ressemble${pend>1?'nt':''} à une recette déjà enregistrée</small></span><span aria-hidden="true">›</span></button>` + html;
   html += `<p class="count">${total} recette${total>1?'s':''}${!noFilter ? ' trouvée'+(total>1?'s':'') : ''}</p>`;
   html += `<div class="cards">` + list.map(({id, r, m}) => `<button class="rcard" type="button" data-rec="${id}">
-      <span class="rphoto" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${ICH(recipeIcon(r))}</span></span>
+      <span class="rphoto" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${ICH(recipeIcon(r))}</span>${r.source && r.source.url ? '<span class="rweb" title="Recette importée d’un site">🌐</span>' : ''}</span>
       <span class="rbody"><span class="rtitle">${esc(r.title)}</span>
       <span class="rmeta">${r.time ? `<span>⏱ ${esc(r.time)} min</span>` : ''}<span>👥 ${r.persons||4}</span>${r.fav ? '<span class="fav">❤</span>' : ''}${r.source && r.source.url ? `<span>${esc(r.source.name)}</span>` : ''}</span>
       ${roots.length ? `<span class="rmatch ${m.missing.length===0?'full':''}">${m.missing.length===0 ? 'Tu as tout ✓' : `Tu as ${m.have}/${m.total} · manque ${esc(m.missing.slice(0,3).map(i=>i.name.toLowerCase()).join(', '))}${m.missing.length>3?'…':''}`}</span>` : ''}
@@ -1548,6 +1733,7 @@ function openRecipeForm(id, prefill){
         if (!r.title) { toast('Donne un nom à la recette.'); return; }
         const rid = id || uid();
         if (photoBlob) { e.target.disabled = true; e.target.textContent = 'Envoi de la photo…'; try { r.photo = await uploadPhoto(photoBlob, rid); } catch(_) { toast('La photo n’a pas pu être envoyée. La recette est enregistrée sans photo.'); } }
+        if (isNew) { const sim = mostSimilar(r, rid); if (sim) { openCompare(rid, r, sim, true); return; } }
         putRecipe(rid, r); closeSheet(); toast(isNew ? 'Recette ajoutée' : 'Recette modifiée');
       }
     };
@@ -1555,6 +1741,40 @@ function openRecipeForm(id, prefill){
     $('#sheet').onchange = e => { if (e.target.classList && e.target.classList.contains('iu')) e.target.dataset.touched = '1'; };
   };
   draw();
+}
+
+/* ---------- Recettes qui ressemblent à une recette déjà enregistrée ---------- */
+function openPending(){
+  const list = pendingRecipes();
+  if (!list.length) { closeSheet(); render(); return; }
+  if (list.length === 1) { const [id, r] = list[0]; return openCompare(id, r, r.pending.similar, false); }
+  openSheet(`<h3>Recettes importées à vérifier</h3><p class="hint">Chacune ressemble à une recette déjà enregistrée. Touche-la pour comparer.</p>
+    ${list.map(([id, r]) => `<button class="choice" type="button" data-pend="${id}"><span class="em" aria-hidden="true">${ICH(recipeIcon(r))}</span><span><b>${esc(r.title)}</b><small>ressemble à « ${esc((R().recipes[r.pending.similar]||{}).title || '?')} »</small></span></button>`).join('')}
+    <button class="btn ghost" type="button" data-close>Plus tard</button>`);
+  $('#sheet').onclick = e => { if (e.target.closest('[data-close]')) return closeSheet(); const b = e.target.closest('[data-pend]'); if (b) { const r = R().recipes[b.dataset.pend]; openCompare(b.dataset.pend, r, r.pending.similar, false); } };
+}
+function openCompare(newId, nr, oldId, manual){
+  const old = R().recipes[oldId];
+  if (!old || old.deleted) { const {pending, ...rest} = nr; putRecipe(newId, rest); if (!manual) return openPending(); closeSheet(); toast('Recette ajoutée'); return; }
+  const ingNames = r => (r.ingredients||[]).map(i => i.name).filter(Boolean);
+  const keyset = r => new Set(ingNames(r).map(n => rootOf(n)));
+  const ko = keyset(old), kn = keyset(nr);
+  const col = (r, label, other, cls) => `<div class="cmpcol ${cls}"><h4>${label}</h4><div class="t">${esc(r.title)}</div>
+    <div class="rmeta">${r.time ? `<span>⏱ ${esc(r.time)} min</span>` : ''}<span>👥 ${r.persons||4}</span><span>${(r.steps||[]).length} étape${(r.steps||[]).length>1?'s':''}</span>${r.source && r.source.name ? `<span>${esc(r.source.name)}</span>` : '<span>ma recette</span>'}</div>
+    <ul>${(r.ingredients||[]).filter(i => i.name).map(i => `<li class="${other.has(rootOf(i.name)) ? 'same' : 'diff'}">${esc([fmtQty(i.qty, i.unit), i.name].filter(Boolean).join(' '))}</li>`).join('')}</ul></div>`;
+  openSheet(`<h3>Cette recette ressemble à une recette déjà enregistrée</h3>
+    <p class="hint">En gras : les ingrédients qui ne sont pas dans l’autre recette.</p>
+    <div class="cmp">${col(nr, manual ? 'Nouvelle (à enregistrer)' : 'Nouvelle (importée)', ko, 'new')}${col(old, 'Déjà enregistrée', kn, '')}</div>
+    <div class="actions" style="flex-wrap:wrap"><button class="btn ghost" type="button" id="cNo">Ne pas enregistrer</button><button class="btn ghost" type="button" id="cRepl">Remplacer l’ancienne</button><button class="btn" type="button" id="cBoth">Garder les deux</button></div>`, true);
+  $('#sheet').onclick = e => {
+    const id = e.target.id; if (!['cNo','cRepl','cBoth'].includes(id)) return;
+    const {pending, ...rec} = nr;
+    if (id === 'cNo') { if (!manual) { R().recipes[newId] = {deleted:true, updatedAt:Date.now()}; recFile.changed(); } toast('Recette non enregistrée'); }
+    if (id === 'cBoth') { putRecipe(newId, rec); toast('Les deux recettes sont gardées'); }
+    if (id === 'cRepl') { putRecipe(newId, {...rec, fav: rec.fav || !!old.fav, note: rec.note || old.note || ''}); R().recipes[oldId] = {deleted:true, updatedAt:Date.now()}; recFile.changed(); toast('Ancienne recette remplacée'); }
+    if (!manual && pendingRecipes().length) return openPending();
+    closeSheet(); render();
+  };
 }
 
 function openAddRecipe(){
@@ -3028,7 +3248,7 @@ $('#modeSearch').onclick = () => setRecMode('search');
 $('#haveChips').onclick = e => { if (e.target.closest('[data-rmquery]')) { state.recQuery = ''; state.shown = 40; render(); return; } const b = e.target.closest('[data-rmhave]'); if (b) { state.have.splice(+b.dataset.rmhave, 1); state.shown = 40; render(); } };
 $('#favOnly').onclick = () => { state.favOnly = !state.favOnly; state.shown = 40; render(); };
 
-$('#recList').onclick = e => { if (e.target.id === 'moreRec') { state.shown += 40; render(); return; } const b = e.target.closest('[data-rec]'); if (b) openRecipe(b.dataset.rec); };
+$('#recList').onclick = e => { if (e.target.id === 'moreRec') { state.shown += 40; render(); return; } if (e.target.closest('#pendBtn')) return openPending(); const b = e.target.closest('[data-rec]'); if (b) openRecipe(b.dataset.rec); };
 $('#addRecipe').onclick = openAddRecipe;
 $('#clearQuery').onclick = () => { if (state.recMode === 'search') $('#haveInput').value = ''; state.recQuery = ''; state.have = []; state.favOnly = false; state.basesOnly = false; state.shown = 40; render(); };
 $('#toastUndo').onclick = () => { if (undoFn) undoFn(); undoFn = null; $('#toast').hidden = true; };
