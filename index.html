@@ -89,12 +89,12 @@ header .btn{background:var(--sun);color:#4A2A00}
 .pill{flex:none;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px 6px 8px;font-size:14px;font-weight:700;display:flex;gap:6px;align-items:center}
 .pill .em{font-size:18px}
 
-.aisle{margin-top:20px}
+.aisle{margin-top:10px}
 .aisle h2{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;margin:0 0 8px 4px}
 .aisle h2 .em{font-size:20px}
 .aisle h2 span.n{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:800;font-size:13px;border-radius:999px;padding:1px 9px;color:#fff}
 #app ul{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:18px;overflow:hidden;box-shadow:0 1px 3px rgba(30,43,36,.06),0 6px 16px rgba(30,43,36,.05)}
-#app li{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);min-height:62px}
+#app li{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);min-height:66px}
 #app li:last-child{border-bottom:0}
 .check{flex:none;width:50px;height:62px;border:0;background:none;display:grid;place-items:center}
 .check span{width:26px;height:26px;border-radius:50%;border:2.5px solid #C9D6CE;display:grid;place-items:center;transition:background .15s,border-color .15s}
@@ -103,7 +103,7 @@ li.done .check span{background:var(--fresh);border-color:var(--fresh)}
 li.done .check span::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .tint{font-style:normal;display:inline-block}
 .cic{width:1.25em;height:1.25em;display:inline-block;vertical-align:-.2em}
-.icon{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:24px;margin-right:10px}
+.icon{flex:none;width:50px;height:50px;border-radius:15px;display:grid;place-items:center;font-size:31px;margin-right:10px}
 .body{flex:1;min-width:0;border:0;background:none;text-align:left;padding:10px 0;display:grid;gap:3px}
 .name{font-weight:800;font-size:16.5px;overflow-wrap:anywhere}
 .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-weight:600}
@@ -220,12 +220,12 @@ html.edge .setup{padding-top:calc(var(--top-inset) + 20px)}
 :root[data-compact="1"] #app li{min-height:42px}
 :root[data-compact="1"] #app .check{height:42px;width:42px}
 :root[data-compact="1"] #app .check span{width:22px;height:22px}
-:root[data-compact="1"] #app .icon{width:28px;height:28px;font-size:17px;border-radius:9px;margin-right:8px}
+:root[data-compact="1"] #app .icon{width:34px;height:34px;font-size:22px;border-radius:10px;margin-right:8px}
 :root[data-compact="1"] #app .body{padding:4px 0;gap:1px}
 :root[data-compact="1"] #app .name{font-size:15px}
 :root[data-compact="1"] #app .meta{font-size:12px}
 :root[data-compact="1"] #app .who{width:22px;height:22px;font-size:10px}
-:root[data-compact="1"] .aisle{margin-top:12px}
+:root[data-compact="1"] .aisle{margin-top:6px}
 :root[data-compact="1"] .aisle h2{margin-bottom:5px;font-size:14px}
 :root[data-compact="1"] .rcard{padding:7px}
 :root[data-compact="1"] .rphoto{width:64px;height:64px}
@@ -982,7 +982,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.35';
+const APP_VERSION = '1.0.36';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1865,7 +1865,7 @@ function renderList(){
   for (const c of aisleOrder()){
     const rows = act.filter(([,i]) => (CAT[i.cat]?i.cat:'aut') === c).sort((a,b) => (a[1].at||0)-(b[1].at||0));
     if (!rows.length) continue;
-    html += `<section class="aisle"><h2 style="color:${CAT[c].color}"><span class="em" aria-hidden="true">${CAT_ICON[c]}</span>${esc(CAT[c].name)}<span class="n" style="background:${CAT[c].color}">${rows.length}</span></h2><ul class="rows">${rows.map(rowHtml).join('')}</ul></section>`;
+    html += `<section class="aisle" aria-label="${esc(CAT[c].name)}"><ul class="rows">${rows.map(rowHtml).join('')}</ul></section>`;
   }
   const done = Object.entries(items()).filter(([,i]) => i.done).sort((a,b) => (b[1].doneAt||0)-(a[1].doneAt||0));
   if (done.length) html += `<section class="cart"><div class="cartbar"><h2>Dans le caddie · ${done.length}</h2><button class="link" type="button" id="clearDone">Retirer les cochés</button></div><ul class="rows">${done.map(rowHtml).join('')}</ul></section>`;
@@ -1889,8 +1889,8 @@ function rowHtml([id, i]){
   if (i.done && i.doneAt) meta.push(`<span class="doneinfo">✓ ${i.doneBy ? esc(i.doneBy) + ' · ' : ''}${doneWhen(i.doneAt)}</span>`);
   const who = i.by ? `<span class="who" title="Ajouté par ${esc(i.by)}">${esc(i.by.trim().charAt(0).toUpperCase())}</span>` : '';
   const col = (CAT[i.cat]||CAT.aut).color;
-  return `<li class="${i.done?'done':''}" data-row="${id}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
-    <span class="icon" style="background:${col}1f" aria-hidden="true">${ICH(iconFor(i))}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
+  return `<li class="${i.done?'done':''}" data-row="${id}" style="${i.done ? '' : `background:${col}26`}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
+    <span class="icon" style="background:${col}2e" aria-hidden="true">${ICH(iconFor(i))}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
 }
 function renderRecipes(){
   const noFilter = (state.recMode === 'search' ? !state.recQuery : !state.have.length) && !state.favOnly && !state.basesOnly;
