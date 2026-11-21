@@ -982,7 +982,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.33';
+const APP_VERSION = '1.0.34';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1475,7 +1475,7 @@ function colorLike(bmp, rot, ang, max=2200){
   const y = r.getContext('2d'); y.fillStyle = '#fff'; y.fillRect(0, 0, r.width, r.height); y.translate(r.width/2, r.height/2); y.rotate(-ang * Math.PI / 180); y.drawImage(c, -c.width/2, -c.height/2);
   return r;
 }
-async function findDishPhoto(bmp, rot, ang, tsv){
+async function findDishPhoto(bmp, rot, ang, tsv, titleBox){
   const full = colorLike(bmp, rot, ang), k = 600 / Math.max(full.width, full.height);
   const W = Math.round(full.width*k), H = Math.round(full.height*k), sm = document.createElement('canvas'); sm.width = W; sm.height = H;
   const sx = sm.getContext('2d', {willReadFrequently:true}); sx.drawImage(full, 0, 0, W, H);
@@ -1491,8 +1491,10 @@ async function findDishPhoto(bmp, rot, ang, tsv){
   const wh = String(tsv||'').split('\n').slice(1).map(r => r.split('\t')).filter(c => c.length >= 12 && c[0] === '5' && +c[10] >= 50).map(c => +c[9]).sort((a,b)=>a-b), mh = wh[wh.length >> 1] || 20;
   for (const row of String(tsv||'').split('\n').slice(1)) { const c = row.split('\t'); if (c.length < 12 || c[0] !== '5') continue;
     const lt = (c[11].match(/[a-zà-ÿ]/gi)||[]).length; // mots bien lus, ou mots mal lus mais de taille « texte » (un titre en gras)
-    if (!(+c[10] >= 50 && lt >= 2) && !(lt >= 3 && +c[9] >= mh * 0.6 && +c[9] <= mh * 3.5)) continue;
+    if (!(+c[10] >= 50 && lt >= 2)) continue;
     const x0 = Math.max(0, Math.floor(+c[6]*k/cs - 0.3)), y0 = Math.max(0, Math.floor(+c[7]*k/cs - 0.3)), x1 = Math.min(cw-1, Math.floor((+c[6] + +c[8])*k/cs + 1.3)), y1 = Math.min(ch-1, Math.floor((+c[7] + +c[9])*k/cs + 1.3));
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) txt[y*cw+x] = 1; }
+  if (titleBox) { const x0 = Math.max(0, Math.floor(titleBox.left*k/cs) - 1), y0 = Math.max(0, Math.floor(titleBox.top*k/cs)), x1 = Math.min(cw-1, Math.ceil(titleBox.right*k/cs)), y1 = Math.min(ch-1, Math.floor((titleBox.bottom + 4)*k/cs));
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) txt[y*cw+x] = 1; }
   let ph = cont.map((v,i) => v && !txt[i] ? 1 : 0);
   // fermeture 3×3 (relie les morceaux de la photo), puis ouverture 2×2 (enlève les points isolés)
@@ -1501,6 +1503,7 @@ async function findDishPhoto(bmp, rot, ang, tsv){
   const ero = a => a.map((v,i) => { const x = i % cw, y = (i / cw) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (!at(a,x+dx,y+dy)) return 0; return 1; });
   ph = ero(dil(ph)).map((v,i) => v || ph[i] ? 1 : 0);
   const op = ph.map((v,i) => { const x = i % cw, y = (i / cw) | 0; return v && ((at(ph,x+1,y) && at(ph,x,y+1) && at(ph,x+1,y+1)) || (at(ph,x-1,y) && at(ph,x,y-1) && at(ph,x-1,y-1)) || (at(ph,x+1,y) && at(ph,x,y-1) && at(ph,x+1,y-1)) || (at(ph,x-1,y) && at(ph,x,y+1) && at(ph,x-1,y+1))) ? 1 : 0; });
+  if (window.__dbgPhoto) window.__dbgPhoto = {cw, ch, cont: Array.from(cont), txt: Array.from(txt), op: Array.from(op)};
   const seen = new Uint8Array(cw*ch); let best = null;
   for (let i = 0; i < op.length; i++) if (op[i] && !seen[i]) {
     const st = [i]; seen[i] = 1; let n = 0, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
@@ -1531,7 +1534,7 @@ function titleFromTSV(tsv){
     const h = l.map(w => w.h).sort((a,b)=>a-b)[l.length >> 1], conf = l.reduce((s,w)=>s+w.conf,0)/l.length;
     if (letters < 4 || text.length > 70 || conf < 55) continue;
     if (/^(preparation|ingredients?|recette|profil|valeurs)/.test(ocrNorm(text))) continue;
-    if (!best || h > best.h) best = {text, h, conf};
+    if (!best || h > best.h) best = {text, h, conf, box: {left: l[0].left, top: Math.min(...l.map(w=>w.top)), right: Math.max(...l.map(w=>w.left+w.w)), bottom: Math.max(...l.map(w=>w.top+w.h))}};
   }
   return best && best.h >= med * 1.2 ? best : null;
 }
@@ -1546,19 +1549,20 @@ async function readIngredients(worker, cv, box){
   const r = parseTSV(tsv);
   return r.ingredients;
 }
-async function readTitle(worker, cv, photoTop){
-  const H = Math.round(Math.min(cv.height * 0.3, photoTop > cv.height * 0.04 ? photoTop + 10 : cv.height * 0.3));
+async function readTitle(worker, cv){
+  const H = Math.round(cv.height * 0.35);
   const band = document.createElement('canvas'); band.width = cv.width; band.height = H; band.getContext('2d').drawImage(cv, 0, 0, cv.width, H, 0, 0, cv.width, H);
   let found = null;
-  for (const [psm, sc] of [['6', 1], ['11', 0.6]]) {
+  for (const [psm, sc] of [['6', 1], ['11', 1], ['6', 0.6]]) {
     let c = band; if (sc !== 1) { c = document.createElement('canvas'); c.width = Math.round(band.width*sc); c.height = Math.round(band.height*sc); c.getContext('2d').drawImage(band, 0, 0, c.width, c.height); }
     await worker.setParameters({ tessedit_pageseg_mode: psm });
     const { data } = await worker.recognize(c, {}, { tsv: true });
-    const t = titleFromTSV(data.tsv); if (t && (!found || t.conf > found.conf)) found = t;
-    if (found && found.conf >= 80) break;
+    const t = titleFromTSV(data.tsv);
+    if (t) { for (const k of ['left','top','right','bottom']) t.box[k] /= sc; t.score = t.conf * Math.min(t.text.replace(/[^a-zà-ÿ]/gi,'').length, 30); if (!found || t.score > found.score) found = t; }
+    if (found && found.conf >= 85 && /\S\s+\S/.test(found.text)) break;
   }
   await worker.setParameters({ tessedit_pageseg_mode: '3' });
-  return found ? found.text.replace(/[.:]+$/,'') : '';
+  return found ? {text: found.text.replace(/[.:]+$/,''), box: found.box} : null;
 }
 function ocrScore(r, conf){ return (conf || 0) + Math.min(r.ingredients.length, 12) * 2 + (r.title ? 4 : 0); }
 async function ocrImage(file, onProgress){
@@ -1584,12 +1588,15 @@ async function ocrImage(file, onProgress){
       stages = 5;
       for (const [rot, bin] of [[0, true], [180, false], [90, false], [270, false]]) { stage++; const t = await read(rot, bin); tries.push(t); if (t.score > best.score) best = t; if (good(t)) break; }
     }
-    let photoTop = -1;
-    try { const ph = await findDishPhoto(bmp, best.rot, best.ang, best.tsv); if (ph) { best.r._photoBlob = ph.blob; photoTop = ph.top; } } catch(e){}
     if (best.r._ingBox) { try { const more = await readIngredients(worker, best.cv, best.r._ingBox); const ok = i => i.name && (i.qty != null || OCR_VAGUE.test(ocrNorm(i.name)) || findProduct(i.name)); if (more.filter(ok).length > best.r.ingredients.length) best.r.ingredients = more.filter(ok); } catch(e){} }
     delete best.r._ingBox;
-    if (!best.r._titleTall) { try { const t = await readTitle(worker, best.cv, photoTop); if (t) best.r.title = t; } catch(e){} }
-    delete best.r._titleTall;
+    // titre en gros caractères : lu à part si la lecture de la page ne l'a pas trouvé
+    let titleBox = null;
+    if (!best.r._titleTall) {
+      try { const t = await readTitle(worker, best.cv); if (t) { best.r.title = t.text; titleBox = t.box; } else if (!best.r._titleSafe) best.r.title = ''; } catch(e){}
+    }
+    delete best.r._titleTall; delete best.r._titleSafe;
+    try { const ph = await findDishPhoto(bmp, best.rot, best.ang, best.tsv, titleBox); if (ph) best.r._photoBlob = ph.blob; } catch(e){}
     saveOcrSample(bmp, { rot: best.rot, resultat: {...best.r, _photoBlob: !!best.r._photoBlob}, lectures: tries.map(t => ({rot: t.rot, conf: t.conf, score: t.score, tsv: t.tsv})) });
     return best.r;
   } finally { try { await worker.terminate(); } catch(e){} }
@@ -1662,7 +1669,7 @@ function parseTSV(tsv){
   const titleCand = good.filter(l => !l.used && !isIng(l.text) && l.letters >= 4 && l.text.length <= 70 && l.top < pageH * 0.6);
   const tallest = titleCand.slice().sort((a,b) => (b.h - a.h) || (a.top - b.top))[0];
   const t0 = tallest && tallest.h >= medH * 1.2 ? tallest : titleCand.slice().sort((a,b)=>a.top-b.top)[0];
-  if (t0) { out.title = t0.text.replace(/[.:]+$/,'').trim(); t0.used = true; out._titleTall = t0.h >= medH * 1.35 && t0.conf >= 60; }
+  if (t0) { out.title = t0.text.replace(/[.:]+$/,'').trim(); t0.used = true; out._titleTall = t0.h >= medH * 1.35 && t0.conf >= 60; out._titleSafe = t0.top < pageH * 0.25 && !(twoCols && t0.col === 1) && !/[.!?]\s/.test(t0.text); }
   // 4. Ingrédients et texte, colonne par colonne, de haut en bas
   const rest = good.filter(l => !l.used).sort((a,b) => (a.col - b.col) || (a.top - b.top) || (a.left - b.left));
   const heads = good.filter(l => l.head);
