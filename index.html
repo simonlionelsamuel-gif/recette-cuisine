@@ -983,7 +983,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.38';
+const APP_VERSION = '1.0.39';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -2382,7 +2382,7 @@ function openSettings(){
     <label class="switch"><input type="checkbox" id="uiVibrate" ${ui().vibrate?'checked':''}><span><b>Vibration en cochant</b><small>Petite vibration quand un article va dans le caddie.</small></span></label>
     <p class="hint">Ces réglages ne concernent que ce téléphone.</p>
     <p class="hint">Dernière synchronisation : ${esc(when)}. Les données sont dans le dépôt privé ${esc(GH.owner)}/${esc(GH.repo)}.</p>
-    <div class="field"><label for="sAi">🤖 Lecture des photos de recettes par IA (clé Gemini)</label><input id="sAi" type="password" autocomplete="off" placeholder="Colle ici ta clé (commence par AIza…)" value="${esc(aiKey())}">
+    <div class="field"><label for="sAi">🤖 Lecture des photos de recettes par IA (clé Gemini)</label><input id="sAi" type="password" autocomplete="off" placeholder="Colle ici ta clé (AQ.… ou AIza…)" value="${esc(aiKey())}">
       <small class="hint">${aiKey() ? '✅ Clé enregistrée : les photos de recettes sont lues par l’IA (partagée avec les téléphones reliés).' : 'Sans clé, la lecture classique est utilisée.'} <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Créer une clé gratuite</a></small></div>
     <button class="btn" type="button" id="sInvite">👥 Inviter quelqu’un</button>
     <div class="opt"><span class="lab">Téléphones reliés</span><div class="devices">${devicesHtml()}</div></div>
