@@ -982,7 +982,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.34';
+const APP_VERSION = '1.0.35';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1475,6 +1475,30 @@ function colorLike(bmp, rot, ang, max=2200){
   const y = r.getContext('2d'); y.fillStyle = '#fff'; y.fillRect(0, 0, r.width, r.height); y.translate(r.width/2, r.height/2); y.rotate(-ang * Math.PI / 180); y.drawImage(c, -c.width/2, -c.height/2);
   return r;
 }
+// Cadre exact de la photo : on cherche, de chaque côté, la limite nette entre le papier et l'image
+function refineFrame(cv, b, cell){
+  const W = cv.width, H = cv.height, m = Math.round(cell * 3);
+  const X0 = Math.max(0, Math.floor(b.x0 - m)), Y0 = Math.max(0, Math.floor(b.y0 - m)), X1 = Math.min(W, Math.ceil(b.x1 + m)), Y1 = Math.min(H, Math.ceil(b.y1 + m));
+  const w = X1 - X0, h = Y1 - Y0, px = cv.getContext('2d', {willReadFrequently:true}).getImageData(X0, Y0, w, h).data;
+  // couleur du papier : la plus claire autour de la zone
+  const ring = []; for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) { const gx = x + X0, gy = y + Y0; if (gx < b.x0 || gx > b.x1 || gy < b.y0 || gy > b.y1) { const i = (y*w+x)*4; ring.push((px[i]*299+px[i+1]*587+px[i+2]*114)/1000); } }
+  ring.sort((a,c)=>a-c); const paper = ring.length ? ring[Math.floor(ring.length*0.6)] : 235;
+  const img = new Uint8Array(w*h);
+  for (let i = 0; i < w*h; i++) { const r = px[i*4], g = px[i*4+1], bl = px[i*4+2], mx = Math.max(r,g,bl), mn = Math.min(r,g,bl), v = (r*299+g*587+bl*114)/1000; img[i] = (Math.abs(v - paper) > 30 || (mx && (mx-mn)/mx > 0.22 && mx - mn > 25)) ? 1 : 0; }
+  const colFrac = (x, ya, yb) => { let n = 0, t = 0; for (let y = ya; y < yb; y += 2) { t++; n += img[y*w+x]; } return t ? n/t : 0; };
+  const rowFrac = (y, xa, xb) => { let n = 0, t = 0; for (let x = xa; x < xb; x += 2) { t++; n += img[y*w+x]; } return t ? n/t : 0; };
+  const iy0 = Math.round(b.y0 - Y0 + (b.y1-b.y0)*0.15), iy1 = Math.round(b.y1 - Y0 - (b.y1-b.y0)*0.15), ix0 = Math.round(b.x0 - X0 + (b.x1-b.x0)*0.15), ix1 = Math.round(b.x1 - X0 - (b.x1-b.x0)*0.15);
+  // de l'intérieur (sûrement dans la photo) vers l'extérieur : on s'arrête où commence le papier (3 lignes de papier de suite)
+  const grow = (from, limit, frac) => { const dir = limit > from ? 1 : -1; let last = from;
+    for (let p = from; p !== limit; p += dir) { if (frac(p) >= 0.08) last = p; else { let paperRun = true; for (let k2 = 1; k2 <= 3; k2++) { const q = p + k2*dir; if (q === limit + dir || (q >= 0 && frac(q) >= 0.08)) { paperRun = false; break; } } if (paperRun) return last; } }
+    return last; };
+  const L = grow(ix0, 0, x => colFrac(x, iy0, iy1)), Rr = grow(ix1, w-1, x => colFrac(x, iy0, iy1));
+  const T = grow(iy0, 0, y => rowFrac(y, ix0, ix1)), B = grow(iy1, h-1, y => rowFrac(y, ix0, ix1));
+  const inset = 2; // on rentre de 2 pixels : aucun liseré blanc
+  const res = { x0: X0 + L + inset, y0: Y0 + T + inset, x1: X0 + Rr - inset + 1, y1: Y0 + B - inset + 1 };
+  if (window.__dbgFrame) window.__dbgFrame = {res, b, W, H};
+  return res;
+}
 async function findDishPhoto(bmp, rot, ang, tsv, titleBox){
   const full = colorLike(bmp, rot, ang), k = 600 / Math.max(full.width, full.height);
   const W = Math.round(full.width*k), H = Math.round(full.height*k), sm = document.createElement('canvas'); sm.width = W; sm.height = H;
@@ -1514,8 +1538,9 @@ async function findDishPhoto(bmp, rot, ang, tsv, titleBox){
   if (!best) return null;
   const bw = best.x1 - best.x0 + 1, bh = best.y1 - best.y0 + 1;
   if (best.n < cw*ch*0.03 || bw*bh > cw*ch*0.6 || best.n / (bw*bh) < 0.5 || bw < 5 || bh < 5 || bw/bh > 3 || bh/bw > 3) return null;
-  const f = cs / k, out = document.createElement('canvas'); out.width = Math.round(bw*f); out.height = Math.round(bh*f);
-  out.getContext('2d').drawImage(full, best.x0*f, best.y0*f, out.width, out.height, 0, 0, out.width, out.height);
+  const f = cs / k, R = refineFrame(full, {x0: best.x0*f, y0: best.y0*f, x1: (best.x1+1)*f, y1: (best.y1+1)*f}, f);
+  const out = document.createElement('canvas'); out.width = Math.round(R.x1 - R.x0); out.height = Math.round(R.y1 - R.y0);
+  out.getContext('2d').drawImage(full, R.x0, R.y0, out.width, out.height, 0, 0, out.width, out.height);
   const blob = await new Promise(res => out.toBlob(b => res(b), 'image/jpeg', 0.85));
   return { blob, top: best.y0 * f };
 }
@@ -1537,6 +1562,20 @@ function titleFromTSV(tsv){
     if (!best || h > best.h) best = {text, h, conf, box: {left: l[0].left, top: Math.min(...l.map(w=>w.top)), right: Math.max(...l.map(w=>w.left+w.w)), bottom: Math.max(...l.map(w=>w.top+w.h))}};
   }
   return best && best.h >= med * 1.2 ? best : null;
+}
+// 2e lecture de la seule zone de la préparation (des bouts de lignes peuvent manquer à la lecture de la page entière)
+async function readSteps(worker, cv, box){
+  const h = box.h, x0 = Math.max(0, box.left - h, box.riverX > 0 && box.left >= box.riverX ? box.riverX : 0), y0 = Math.max(0, box.top - h*2), x1 = Math.min(cv.width, box.right + h*8), y1 = Math.min(cv.height, box.bottom + h*3);
+  const c = document.createElement('canvas'); c.width = x1 - x0; c.height = y1 - y0; c.getContext('2d').drawImage(cv, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
+  await worker.setParameters({ tessedit_pageseg_mode: '6' });
+  const { data } = await worker.recognize(c, {}, { tsv: true });
+  await worker.setParameters({ tessedit_pageseg_mode: '3' });
+  const lines = new Map();
+  for (const row of String(data.tsv||'').split('\n').slice(1)) { const q = row.split('\t'); if (q.length < 12 || q[0] !== '5' || +q[10] < 10) continue; const t = q.slice(11).join(' ').trim(); if (!t || (+q[10] < 30 && !/[a-zà-ÿ]{2}/i.test(t))) continue;
+    const k = q[2]+'.'+q[3]+'.'+q[4]; if (!lines.has(k)) lines.set(k, {top:+q[7], words:[]}); lines.get(k).words.push({left:+q[6], t}); }
+  const txt = [...lines.values()].sort((a,b) => a.top - b.top).map(l => l.words.sort((a,b) => a.left - b.left).map(w => w.t).join(' '))
+    .filter(t => !/^(comment c.?est fait|pr[ée]paration|instructions?|[ée]tapes?)\s*:?$/i.test(t.trim()) && (t.match(/[a-zà-ÿ]/gi)||[]).length >= 3);
+  const steps = splitSteps(txt); steps._ingLike = txt.filter(t => /^\s*(\d+([.,]\d+)?\s*(g|kg|dl|cl|ml|l|cs|cc|c\.)\b|un peu de)/i.test(t)).length; return steps;
 }
 // 2e lecture de la seule colonne des ingrédients (une ligne peut manquer à la lecture de la page entière)
 async function readIngredients(worker, cv, box){
@@ -1588,12 +1627,20 @@ async function ocrImage(file, onProgress){
       stages = 5;
       for (const [rot, bin] of [[0, true], [180, false], [90, false], [270, false]]) { stage++; const t = await read(rot, bin); tries.push(t); if (t.score > best.score) best = t; if (good(t)) break; }
     }
-    if (best.r._ingBox) { try { const more = await readIngredients(worker, best.cv, best.r._ingBox); const ok = i => i.name && (i.qty != null || OCR_VAGUE.test(ocrNorm(i.name)) || findProduct(i.name)); if (more.filter(ok).length > best.r.ingredients.length) best.r.ingredients = more.filter(ok); } catch(e){} }
+    if (best.r._ingBox) { try { const more = await readIngredients(worker, best.cv, best.r._ingBox); const ok = i => i.name && (i.qty != null || OCR_VAGUE.test(ocrNorm(i.name)) || findProduct(i.name)); const avg = a => a.reduce((t,i) => t + i.name.length, 0) / Math.max(1, a.length); const m2 = more.filter(ok); if (m2.length > best.r.ingredients.length && avg(m2) <= avg(best.r.ingredients) * 1.3 + 3) best.r.ingredients = m2; } catch(e){} }
     delete best.r._ingBox;
+    if (best.r._stepBox) { try { const st = await readSteps(worker, best.cv, best.r._stepBox); const len = a => a.join(' ').length, wordsOf = a => ocrNorm(a.join(' ')).split(/[^a-z]+/).filter(w => w.length > 3).map(w => w.slice(0, 4));
+      const w1 = wordsOf(best.r.steps), w2 = new Set(wordsOf(st)), kept = w1.filter(w => w2.has(w)).length / Math.max(1, w1.length);
+      const extra = wordsOf(st).filter(w => !new Set(w1).has(w)).length;
+      // la 2e lecture doit retrouver le texte de la 1re et ajouter peu de mots inconnus (pas d'ingrédients mélangés)
+      if (len(st) > len(best.r.steps) * 1.03 && kept >= 0.8 && st._ingLike <= 1) best.r.steps = st; } catch(e){} }
+    delete best.r._stepBox;
     // titre en gros caractères : lu à part si la lecture de la page ne l'a pas trouvé
     let titleBox = null;
     if (!best.r._titleTall) {
+      const old = best.r.title, wasStep = old && /[.!?,]/.test(old) && old.split(' ').length >= 5;
       try { const t = await readTitle(worker, best.cv); if (t) { best.r.title = t.text; titleBox = t.box; } else if (!best.r._titleSafe) best.r.title = ''; } catch(e){}
+      if (wasStep && best.r.title !== old && (() => { const w = t => ocrNorm(t).split(/[^a-z]+/).filter(x => x.length > 2).map(x => x.slice(0,4)); const o = w(old).slice(0, 4), f = new Set(w(best.r.steps.join(' ')).slice(0, 10)); return o.filter(x => f.has(x)).length < 2; })()) best.r.steps = splitSteps([old, ...best.r.steps]); // la phrase prise pour un titre revient dans la préparation
     }
     delete best.r._titleTall; delete best.r._titleSafe;
     try { const ph = await findDishPhoto(bmp, best.rot, best.ang, best.tsv, titleBox); if (ph) best.r._photoBlob = ph.blob; } catch(e){}
@@ -1621,15 +1668,31 @@ function parseTSV(tsv){
   // 2. Colonnes : on cherche la « rivière » blanche verticale que traversent de nombreuses lignes
   const byLine = new Map(); for (const w of words) { if (!byLine.has(w.k)) byLine.set(w.k, []); byLine.get(w.k).push(w); }
   for (const ws of byLine.values()) ws.sort((a,b) => a.left - b.left);
-  const step = 4, cov = new Uint16Array(Math.ceil(pageW / step) + 2);
+  // pour chaque position x : lignes qui ont un blanc à cet endroit (et à quelle hauteur), mots qui le traversent
+  const step = 4, nx = Math.ceil(pageW / step) + 2, gapTops = Array.from({length: nx}, () => []);
   for (const ws of byLine.values()) for (let i = 1; i < ws.length; i++) {
-    const a = ws[i-1].left + ws[i-1].w, b = ws[i].left; if (b - a > medH * 1.3) for (let x = Math.ceil(a/step); x <= Math.floor(b/step); x++) cov[x]++;
+    const a = ws[i-1].left + ws[i-1].w, b = ws[i].left; if (b - a > medH * 1.3) for (let x = Math.ceil(a/step); x <= Math.floor(b/step); x++) gapTops[x].push(ws[i].top);
   }
-  // une vraie rivière n'est traversée par (presque) aucun mot
-  const blk = new Uint16Array(cov.length);
-  for (const w of words) if (!w.drop && w.h < medH * 1.6) for (let x = Math.ceil(w.left/step); x <= Math.floor((w.left + w.w)/step); x++) blk[x]++;
   let riverX = -1, riverN = 0;
-  for (let x = Math.floor(pageW*0.25/step); x < pageW*0.75/step; x++) { const sc = cov[x] - blk[x] * 3; if (sc > riverN) { riverN = sc; riverX = x*step; } }
+  for (let x = Math.floor(pageW*0.25/step); x < pageW*0.75/step; x++) {
+    const g = gapTops[x]; if (g.length < 3) continue;
+    const y0 = Math.min(...g) - medH, y1 = Math.max(...g) + medH, X = x*step;
+    let blk = 0; for (const w of words) if (!w.drop && w.h < medH * 1.6 && w.top >= y0 && w.top <= y1 && w.left < X && w.left + w.w > X) blk++;
+    const sc = g.length - blk * 3; if (sc > riverN) { riverN = sc; riverX = X; }
+  }
+  if (riverN < 4) {
+    // colonnes déjà séparées en blocs par la lecture : on cherche le grand saut entre les débuts de lignes
+    const ls = []; for (const ws of byLine.values()) { const v = ws.filter(w => !w.drop); if (v.length && v.reduce((t,w)=>t+w.text.length,0) > 3) ls.push({l: v[0].left, r: v[v.length-1].left + v[v.length-1].w, t: v[0].top}); }
+    const xs = ls.map(o => o.l).sort((a,b)=>a-b);
+    for (let i = 1; i < xs.length; i++) {
+      const B = xs[i], gap = xs[i] - xs[i-1]; if (gap < medH * 4 || B < pageW*0.25 || B > pageW*0.75) continue;
+      const right = ls.filter(o => o.l >= B), left = ls.filter(o => o.r <= B - medH*0.5);
+      if (right.length < 4 || left.length < 4) continue;
+      const y0 = Math.min(...right.map(o=>o.t)) - medH, y1 = Math.max(...right.map(o=>o.t)) + medH;
+      const cross = ls.filter(o => o.l < B - medH && o.r > B + medH && o.t > y0 && o.t < y1).length;
+      if (cross <= 2) { riverX = B - Math.round(medH*0.5); riverN = 4; break; }
+    }
+  }
   const twoCols = riverN >= 4;
   const segs = [];
   for (const ws of byLine.values()) {
@@ -1659,7 +1722,7 @@ function parseTSV(tsv){
   for (const l of good) {
     const n = ocrNorm(l.text).replace(/^[^a-z0-9]+/,'');
     const pm = n.match(/(\d+)\s*(?:personnes?|pers\b|portions?|parts?)/); if (pm && n.length < 45) { out.persons = +pm[1]; l.used = true; }
-    const tm = n.match(/(\d+)\s*(?:min\b|minutes?|mn\b)\.?\s*$/) || (n.length < 30 && n.match(/(\d+)\s*(?:min\b|minutes?|mn\b)/)); if (tm && n.length < 70 && !out.time) { out.time = tm[1]; l.used = true; }
+    const tm = n.match(/(\d+)\s*(?:min\b|minutes?|mn\b)\.?\s*$/) || (n.length < 30 && n.match(/(\d+)\s*(?:min\b|minutes?|mn\b)/)); if (tm && n.length < 70 && !out.time && !(/\.\s*$/.test(n) && n.length > 12)) { out.time = tm[1]; l.used = true; }
     if (NUTRI.test(n) && n.length < 40) l.used = true;
     if (/^(personnes?|pers\.?|portions?)$/.test(n)) { // « 4 » et « personnes » lus séparément
       const num = good.find(o => o !== l && /^\d{1,2}$/.test(o.text.trim()) && Math.abs(o.top - l.top) < l.h * 1.2 && o.left < l.left && l.left - o.right < l.h * 3);
@@ -1674,35 +1737,46 @@ function parseTSV(tsv){
   const rest = good.filter(l => !l.used).sort((a,b) => (a.col - b.col) || (a.top - b.top) || (a.left - b.left));
   const heads = good.filter(l => l.head);
   const sectionOf = l => { let h = null; for (const x of heads) if (x.top < l.top && (x.col === l.col || !twoCols) && (!h || x.top > h.top)) h = x; return h ? h.head : ''; };
-  const stepLines = [], ingSegs = []; let lastIng = null;
+  const stepLines = [], ingSegs = [], stepSegs = []; let lastIng = null;
+  // colonne des ingrédients : celle qui a le plus de lignes « quantité + produit »
+  const ingCount = [0, 0]; for (const l of rest) if (isIng(l.text)) ingCount[l.col]++;
+  const ingCol = twoCols ? (ingCount[1] > ingCount[0] ? 1 : 0) : -1;
+  const ingTop = Math.min(...rest.filter(l => isIng(l.text) && (ingCol < 0 || l.col === ingCol)).map(l => l.top), Infinity);
   for (const l of rest) {
     const qe = l.text.match(QEND); if (qe && l.text.length < 60 && !isIng(l.text)) l.text = qe[2] + ' ' + qe[1]; // « Farine 200 g » → « 200 g Farine »
-    const ingLike = isIng(l.text) && l.text.length < 70;
+    const ingLike = isIng(l.text) && l.text.length < 70 && (ingCol < 0 || l.col === ingCol);
     if (ingLike) {
       const ing = parseIngredientLine(l.text);
       if (!/[a-zà-ÿ]{2}/i.test(ing.name)) { if (lastIng && l.top - lastIng.seg.top < l.h * 2.5) { lastIng.ing.name += ' ' + l.text; lastIng.seg = l; } continue; } // « 300g) » suite de la ligne d'avant
       out.ingredients.push(ing); lastIng = {ing, seg:l}; ingSegs.push(l); continue;
     }
+    // page en deux colonnes : une ligne courte de la colonne des ingrédients, sous le début de la liste, est un ingrédient (quantité mal lue)
+    if (ingCol >= 0 && l.col === ingCol && l.top >= ingTop && l.text.length < 45 && (!/[.!?]$/.test(l.text) || /\b(env|p\.ex|ex|etc|approx)\.$/i.test(l.text)) && l.letters >= 4 && !(lastIng && l.top - lastIng.seg.top < l.h * 1.1)) { const ing = parseIngredientLine(l.text); out.ingredients.push(ing); lastIng = {ing, seg:l}; ingSegs.push(l); continue; }
     // ligne sans quantité dans la liste d'ingrédients (« Poivre du moulin », « Sel »)
     if (sectionOf(l) === 'ing' && l.text.length < 45 && !/[.!?]$/.test(l.text) && l.letters >= 3) { const ing = parseIngredientLine(l.text); out.ingredients.push(ing); lastIng = {ing, seg:l}; ingSegs.push(l); continue; }
     // suite d'un ingrédient sur la ligne suivante (même colonne, juste en dessous, court)
     if (lastIng && !/\d/.test(l.text) && l.col === lastIng.seg.col && l.top > lastIng.seg.top && l.top - lastIng.seg.top < l.h * 2.2 && l.text.length < 30 && l.left >= lastIng.seg.left - medH && !/[.!?]$/.test(l.text) && !/^[A-ZÀ-Ü][a-zà-ÿ]+ (le|la|les|l')/.test(l.text)) { lastIng.ing.name += ' ' + l.text; lastIng.seg = l; continue; }
     if (l.text.length < 12 && !/[.!?]$/.test(l.text) && l.letters < 6) continue; // bribes isolées
-    stepLines.push(l.text); lastIng = null;
+    stepLines.push(l.text); stepSegs.push(l); lastIng = null;
   }
   if (ingSegs.length >= 2) out._ingBox = {left: Math.min(...ingSegs.map(l=>l.left)), right: Math.max(...ingSegs.map(l=>l.right)), top: Math.min(...ingSegs.map(l=>l.top)), bottom: Math.max(...ingSegs.map(l=>l.top + l.h)), h: medH, col: ingSegs[0].col, riverX: twoCols ? riverX : -1};
-  // 5. Étapes : on recolle les lignes, puis on découpe en étapes de 1 à 3 phrases
-  const ABBR = /\b(env|p\.ex|ex|c\.-à-d|cf|min|max|approx|etc|nb|n°)\.$/i;
-  const all = stepLines.join('\n').replace(/-\n(?=[a-zà-ÿ])/g,'').replace(/\n/g,' ').replace(/\s+/g,' ').trim();
+  out.steps = splitSteps(stepLines);
+  if (stepSegs.length >= 2) { const ss = stepSegs.filter(l => l.text.length > 25); if (ss.length >= 2) out._stepBox = {left: Math.min(...ss.map(l=>l.left)), right: Math.max(...ss.map(l=>l.right)), top: Math.min(...ss.map(l=>l.top)), bottom: Math.max(...ss.map(l=>l.top + l.h)), h: medH, riverX: twoCols ? riverX : -1}; }
+  out.ingredients = out.ingredients.map(i => ({...i, name: i.name.replace(/\s+/g,' ').replace(/\(\s*/g,'(').replace(/\s+\)/g,')').trim()})).filter(i => i.name.length > 1 && !/^(g[il1]u|lip|pro[t ]|kcal|kj|cal)/i.test(i.name) && ((i.name.match(/[a-zà-ÿ]/gi)||[]).length >= 3 || (typeof findProduct === 'function' && findProduct(i.name))));
+  return out;
+}
+// Préparation : on recolle les lignes en phrases, puis on découpe en étapes de 1 à 3 phrases
+function splitSteps(lines){
+  const steps = [], ABBR = /\b(env|p\.ex|ex|c\.-à-d|cf|min|max|approx|etc|nb|n°)\.$/i;
+  const all = lines.join('\n').replace(/-\n(?=[a-zà-ÿ])/g,'').replace(/\n/g,' ').replace(/\s+/g,' ').trim();
   const numbered = all.split(/\s(?=\d+\s*[.)]\s+[A-ZÀ-Ü])/);
   let pieces;
   if (numbered.length > 1) pieces = numbered.map(s => s.replace(/^\d+\s*[.)]\s+/,''));
   else { pieces = []; let buf = ''; for (const part of all.split(/(?<=[.!?])\s+/)) { buf = buf ? buf + ' ' + part : part; if (!ABBR.test(buf) && !/\d\.$/.test(buf)) { pieces.push(buf); buf = ''; } } if (buf) pieces.push(buf); }
   let cur = '';
-  for (const s of pieces) { if (!s) continue; cur = cur ? cur + ' ' + s : s; if (numbered.length > 1 || cur.length >= 90) { out.steps.push(cur.trim()); cur = ''; } }
-  if (cur.trim()) { if (out.steps.length && cur.length < 40) out.steps[out.steps.length-1] += ' ' + cur.trim(); else out.steps.push(cur.trim()); }
-  out.ingredients = out.ingredients.map(i => ({...i, name: i.name.replace(/\s+/g,' ').replace(/\(\s*/g,'(').replace(/\s+\)/g,')').trim()})).filter(i => i.name.length > 1 && !/^(g[il1]u|lip|pro[t ]|kcal|kj|cal)/i.test(i.name) && ((i.name.match(/[a-zà-ÿ]/gi)||[]).length >= 3 || (typeof findProduct === 'function' && findProduct(i.name))));
-  return out;
+  for (const s of pieces) { if (!s) continue; cur = cur ? cur + ' ' + s : s; if (numbered.length > 1 || cur.length >= 90) { steps.push(cur.trim()); cur = ''; } }
+  if (cur.trim()) { if (steps.length && cur.length < 40) steps[steps.length-1] += ' ' + cur.trim(); else steps.push(cur.trim()); }
+  return steps;
 }
 function parseIngredientLine(t){
   let s = t.replace(/^(\d+(?:[.,]\d+)?)(d[lIi1]|cl|ml|kg|g|cs|cc)\b/i, (m, q, u) => q + ' ' + (/^d[lIi1]$/i.test(u) ? 'dl' : u)).replace(/^[\s•\-–*·]+/,'').replace(/[½¼¾⅓⅔]/g, m => ' ' + {'½':0.5,'¼':0.25,'¾':0.75,'⅓':0.33,'⅔':0.67}[m] + ' ').trim();
