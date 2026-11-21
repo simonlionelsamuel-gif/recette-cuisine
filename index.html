@@ -291,6 +291,8 @@ html.edge .sheet.full{max-height:100%}
 .rhero{height:190px;border-radius:18px;background:var(--accent-soft) center/cover no-repeat;display:grid;place-items:center}
 .rhero .remoji{font-size:72px}
 .rhero.small{height:120px}
+.rhero.has{height:auto;max-height:62vh;background-size:contain;background-color:transparent}
+[hidden]{display:none!important}
 .rhero.small .remoji{font-size:40px}
 .close{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.92);font-size:16px;font-weight:900}
 .rtitle-big{font-size:24px!important}
@@ -980,7 +982,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.32';
+const APP_VERSION = '1.0.33';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1343,9 +1345,11 @@ async function photoURL(path){
   }
   const url = URL.createObjectURL(blob); photoUrls.set(path, url); return url;
 }
+// grande photo : le cadre prend la forme de la photo (rien n'est coupé)
+function fitHero(el, url){ if (!el.classList.contains('rhero')) return; const im = new Image(); im.onload = () => { el.style.aspectRatio = im.naturalWidth + ' / ' + im.naturalHeight; el.classList.add('has'); }; im.src = url; }
 function hydratePhotos(root){
-  root.querySelectorAll('[data-img]').forEach(el => { const img = new Image(); img.onload = () => { el.style.backgroundImage = `url("${el.dataset.img}")`; el.classList.add('has'); }; img.src = el.dataset.img; });
-  root.querySelectorAll('[data-photo]').forEach(async el => { const u = await photoURL(el.dataset.photo); if (u) { el.style.backgroundImage = `url("${u}")`; el.classList.add('has'); } });
+  root.querySelectorAll('[data-img]').forEach(el => { const img = new Image(); img.onload = () => { el.style.backgroundImage = `url("${el.dataset.img}")`; el.classList.add('has'); if (el.classList.contains('rhero')) el.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight; }; img.src = el.dataset.img; });
+  root.querySelectorAll('[data-photo]').forEach(async el => { const u = await photoURL(el.dataset.photo); if (u) { el.style.backgroundImage = `url("${u}")`; el.classList.add('has'); fitHero(el, u); } });
 }
 function shrink(file, max=1280, quality=0.82){
   return new Promise((res, rej) => {
@@ -1484,7 +1488,10 @@ async function findDishPhoto(bmp, rot, ang, tsv){
     cont[cy*cw+cx] = (dark/n > 0.25 || colr/n > 0.3) ? 1 : 0;
   }
   // cases occupées par du texte lu
-  for (const row of String(tsv||'').split('\n').slice(1)) { const c = row.split('\t'); if (c.length < 12 || c[0] !== '5' || +c[10] < 50 || (c[11].match(/[a-zà-ÿ]/gi)||[]).length < 2) continue;
+  const wh = String(tsv||'').split('\n').slice(1).map(r => r.split('\t')).filter(c => c.length >= 12 && c[0] === '5' && +c[10] >= 50).map(c => +c[9]).sort((a,b)=>a-b), mh = wh[wh.length >> 1] || 20;
+  for (const row of String(tsv||'').split('\n').slice(1)) { const c = row.split('\t'); if (c.length < 12 || c[0] !== '5') continue;
+    const lt = (c[11].match(/[a-zà-ÿ]/gi)||[]).length; // mots bien lus, ou mots mal lus mais de taille « texte » (un titre en gras)
+    if (!(+c[10] >= 50 && lt >= 2) && !(lt >= 3 && +c[9] >= mh * 0.6 && +c[9] <= mh * 3.5)) continue;
     const x0 = Math.max(0, Math.floor(+c[6]*k/cs - 0.3)), y0 = Math.max(0, Math.floor(+c[7]*k/cs - 0.3)), x1 = Math.min(cw-1, Math.floor((+c[6] + +c[8])*k/cs + 1.3)), y1 = Math.min(ch-1, Math.floor((+c[7] + +c[9])*k/cs + 1.3));
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) txt[y*cw+x] = 1; }
   let ph = cont.map((v,i) => v && !txt[i] ? 1 : 0);
@@ -1506,7 +1513,52 @@ async function findDishPhoto(bmp, rot, ang, tsv){
   if (best.n < cw*ch*0.03 || bw*bh > cw*ch*0.6 || best.n / (bw*bh) < 0.5 || bw < 5 || bh < 5 || bw/bh > 3 || bh/bw > 3) return null;
   const f = cs / k, out = document.createElement('canvas'); out.width = Math.round(bw*f); out.height = Math.round(bh*f);
   out.getContext('2d').drawImage(full, best.x0*f, best.y0*f, out.width, out.height, 0, 0, out.width, out.height);
-  return await new Promise(res => out.toBlob(b => res(b), 'image/jpeg', 0.85));
+  const blob = await new Promise(res => out.toBlob(b => res(b), 'image/jpeg', 0.85));
+  return { blob, top: best.y0 * f };
+}
+// Titre lu à part : bande du haut de la page, où il est écrit en gros
+function titleFromTSV(tsv){
+  const ws = [];
+  for (const row of String(tsv||'').split('\n').slice(1)) { const c = row.split('\t'); if (c.length < 12 || c[0] !== '5') continue; const t = c.slice(11).join(' ').trim(); if (!t || +c[10] < 40) continue;
+    ws.push({t, left:+c[6], top:+c[7], w:+c[8], h:+c[9], conf:+c[10], k:c[2]+'.'+c[3]+'.'+c[4]}); }
+  if (!ws.length) return null;
+  const lines = new Map(); for (const w of ws) { if (!lines.has(w.k)) lines.set(w.k, []); lines.get(w.k).push(w); }
+  const hs = ws.map(w => w.h).sort((a,b)=>a-b), med = hs[hs.length >> 1];
+  let best = null;
+  for (const l of lines.values()) {
+    l.sort((a,b) => a.left - b.left);
+    const text = l.map(w => w.t).join(' ').replace(/\s+/g,' ').trim(), letters = (text.match(/[a-zà-ÿ]/gi)||[]).length;
+    const h = l.map(w => w.h).sort((a,b)=>a-b)[l.length >> 1], conf = l.reduce((s,w)=>s+w.conf,0)/l.length;
+    if (letters < 4 || text.length > 70 || conf < 55) continue;
+    if (/^(preparation|ingredients?|recette|profil|valeurs)/.test(ocrNorm(text))) continue;
+    if (!best || h > best.h) best = {text, h, conf};
+  }
+  return best && best.h >= med * 1.2 ? best : null;
+}
+// 2e lecture de la seule colonne des ingrédients (une ligne peut manquer à la lecture de la page entière)
+async function readIngredients(worker, cv, box){
+  const h = box.h, x0 = Math.max(0, box.left - h*3), y0 = Math.max(0, box.top - h), x1 = box.riverX > box.right ? box.riverX : Math.min(cv.width, box.right + h*6), y1 = Math.min(cv.height, box.bottom + h*5);
+  const c = document.createElement('canvas'); c.width = x1 - x0; c.height = y1 - y0; c.getContext('2d').drawImage(cv, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
+  await worker.setParameters({ tessedit_pageseg_mode: '6' });
+  const { data } = await worker.recognize(c, {}, { tsv: true });
+  await worker.setParameters({ tessedit_pageseg_mode: '3' });
+  const tsv = String(data.tsv||'').split('\n').map(r => r.replace(/^5\t/, '5\t')).join('\n');
+  const r = parseTSV(tsv);
+  return r.ingredients;
+}
+async function readTitle(worker, cv, photoTop){
+  const H = Math.round(Math.min(cv.height * 0.3, photoTop > cv.height * 0.04 ? photoTop + 10 : cv.height * 0.3));
+  const band = document.createElement('canvas'); band.width = cv.width; band.height = H; band.getContext('2d').drawImage(cv, 0, 0, cv.width, H, 0, 0, cv.width, H);
+  let found = null;
+  for (const [psm, sc] of [['6', 1], ['11', 0.6]]) {
+    let c = band; if (sc !== 1) { c = document.createElement('canvas'); c.width = Math.round(band.width*sc); c.height = Math.round(band.height*sc); c.getContext('2d').drawImage(band, 0, 0, c.width, c.height); }
+    await worker.setParameters({ tessedit_pageseg_mode: psm });
+    const { data } = await worker.recognize(c, {}, { tsv: true });
+    const t = titleFromTSV(data.tsv); if (t && (!found || t.conf > found.conf)) found = t;
+    if (found && found.conf >= 80) break;
+  }
+  await worker.setParameters({ tessedit_pageseg_mode: '3' });
+  return found ? found.text.replace(/[.:]+$/,'') : '';
 }
 function ocrScore(r, conf){ return (conf || 0) + Math.min(r.ingredients.length, 12) * 2 + (r.title ? 4 : 0); }
 async function ocrImage(file, onProgress){
@@ -1521,7 +1573,7 @@ async function ocrImage(file, onProgress){
       const cv = prepForOcr(bmp, rot, bin);
       const { data } = await worker.recognize(cv, {}, { text: true, tsv: true });
       const r = data.tsv ? parseTSV(data.tsv) : parseRecipeText(data.text || '');
-      return { r, rot, ang: cv._ang || 0, tsv: data.tsv, score: ocrScore(r, data.confidence), conf: data.confidence || 0 };
+      return { r, rot, cv, ang: cv._ang || 0, tsv: data.tsv, score: ocrScore(r, data.confidence), conf: data.confidence || 0 };
     };
     const tries = [];
     let best = await read(0); tries.push(best);
@@ -1532,7 +1584,12 @@ async function ocrImage(file, onProgress){
       stages = 5;
       for (const [rot, bin] of [[0, true], [180, false], [90, false], [270, false]]) { stage++; const t = await read(rot, bin); tries.push(t); if (t.score > best.score) best = t; if (good(t)) break; }
     }
-    try { const ph = await findDishPhoto(bmp, best.rot, best.ang, best.tsv); if (ph) best.r._photoBlob = ph; } catch(e){}
+    let photoTop = -1;
+    try { const ph = await findDishPhoto(bmp, best.rot, best.ang, best.tsv); if (ph) { best.r._photoBlob = ph.blob; photoTop = ph.top; } } catch(e){}
+    if (best.r._ingBox) { try { const more = await readIngredients(worker, best.cv, best.r._ingBox); const ok = i => i.name && (i.qty != null || OCR_VAGUE.test(ocrNorm(i.name)) || findProduct(i.name)); if (more.filter(ok).length > best.r.ingredients.length) best.r.ingredients = more.filter(ok); } catch(e){} }
+    delete best.r._ingBox;
+    if (!best.r._titleTall) { try { const t = await readTitle(worker, best.cv, photoTop); if (t) best.r.title = t; } catch(e){} }
+    delete best.r._titleTall;
     saveOcrSample(bmp, { rot: best.rot, resultat: {...best.r, _photoBlob: !!best.r._photoBlob}, lectures: tries.map(t => ({rot: t.rot, conf: t.conf, score: t.score, tsv: t.tsv})) });
     return best.r;
   } finally { try { await worker.terminate(); } catch(e){} }
@@ -1605,27 +1662,28 @@ function parseTSV(tsv){
   const titleCand = good.filter(l => !l.used && !isIng(l.text) && l.letters >= 4 && l.text.length <= 70 && l.top < pageH * 0.6);
   const tallest = titleCand.slice().sort((a,b) => (b.h - a.h) || (a.top - b.top))[0];
   const t0 = tallest && tallest.h >= medH * 1.2 ? tallest : titleCand.slice().sort((a,b)=>a.top-b.top)[0];
-  if (t0) { out.title = t0.text.replace(/[.:]+$/,'').trim(); t0.used = true; }
+  if (t0) { out.title = t0.text.replace(/[.:]+$/,'').trim(); t0.used = true; out._titleTall = t0.h >= medH * 1.35 && t0.conf >= 60; }
   // 4. Ingrédients et texte, colonne par colonne, de haut en bas
   const rest = good.filter(l => !l.used).sort((a,b) => (a.col - b.col) || (a.top - b.top) || (a.left - b.left));
   const heads = good.filter(l => l.head);
   const sectionOf = l => { let h = null; for (const x of heads) if (x.top < l.top && (x.col === l.col || !twoCols) && (!h || x.top > h.top)) h = x; return h ? h.head : ''; };
-  const stepLines = []; let lastIng = null;
+  const stepLines = [], ingSegs = []; let lastIng = null;
   for (const l of rest) {
     const qe = l.text.match(QEND); if (qe && l.text.length < 60 && !isIng(l.text)) l.text = qe[2] + ' ' + qe[1]; // « Farine 200 g » → « 200 g Farine »
     const ingLike = isIng(l.text) && l.text.length < 70;
     if (ingLike) {
       const ing = parseIngredientLine(l.text);
       if (!/[a-zà-ÿ]{2}/i.test(ing.name)) { if (lastIng && l.top - lastIng.seg.top < l.h * 2.5) { lastIng.ing.name += ' ' + l.text; lastIng.seg = l; } continue; } // « 300g) » suite de la ligne d'avant
-      out.ingredients.push(ing); lastIng = {ing, seg:l}; continue;
+      out.ingredients.push(ing); lastIng = {ing, seg:l}; ingSegs.push(l); continue;
     }
     // ligne sans quantité dans la liste d'ingrédients (« Poivre du moulin », « Sel »)
-    if (sectionOf(l) === 'ing' && l.text.length < 45 && !/[.!?]$/.test(l.text) && l.letters >= 3) { const ing = parseIngredientLine(l.text); out.ingredients.push(ing); lastIng = {ing, seg:l}; continue; }
+    if (sectionOf(l) === 'ing' && l.text.length < 45 && !/[.!?]$/.test(l.text) && l.letters >= 3) { const ing = parseIngredientLine(l.text); out.ingredients.push(ing); lastIng = {ing, seg:l}; ingSegs.push(l); continue; }
     // suite d'un ingrédient sur la ligne suivante (même colonne, juste en dessous, court)
     if (lastIng && !/\d/.test(l.text) && l.col === lastIng.seg.col && l.top > lastIng.seg.top && l.top - lastIng.seg.top < l.h * 2.2 && l.text.length < 30 && l.left >= lastIng.seg.left - medH && !/[.!?]$/.test(l.text) && !/^[A-ZÀ-Ü][a-zà-ÿ]+ (le|la|les|l')/.test(l.text)) { lastIng.ing.name += ' ' + l.text; lastIng.seg = l; continue; }
     if (l.text.length < 12 && !/[.!?]$/.test(l.text) && l.letters < 6) continue; // bribes isolées
     stepLines.push(l.text); lastIng = null;
   }
+  if (ingSegs.length >= 2) out._ingBox = {left: Math.min(...ingSegs.map(l=>l.left)), right: Math.max(...ingSegs.map(l=>l.right)), top: Math.min(...ingSegs.map(l=>l.top)), bottom: Math.max(...ingSegs.map(l=>l.top + l.h)), h: medH, col: ingSegs[0].col, riverX: twoCols ? riverX : -1};
   // 5. Étapes : on recolle les lignes, puis on découpe en étapes de 1 à 3 phrases
   const ABBR = /\b(env|p\.ex|ex|c\.-à-d|cf|min|max|approx|etc|nb|n°)\.$/i;
   const all = stepLines.join('\n').replace(/-\n(?=[a-zà-ÿ])/g,'').replace(/\n/g,' ').replace(/\s+/g,' ').trim();
@@ -1978,7 +2036,7 @@ function openRecipeForm(id, prefill){
   const isNew = !id;
   const r = isNew ? {title:'', persons:4, time:'', ingredients:[], steps:[], photo:null, fav:false, note:'', source:null, ...(prefill||{})} : JSON.parse(JSON.stringify(R().recipes[id]));
   if (!r.ingredients.length) r.ingredients.push({name:'', qty:null, unit:''});
-  let photoBlob = (prefill && prefill._photoBlob) || null; delete r._photoBlob;
+  let photoBlob = (prefill && prefill._photoBlob) || null, photoBlobUrl = null; delete r._photoBlob;
   const ingRow = (i, ix) => { const [v,u] = toEdit(i.qty, i.unit); return `<div class="ingrow" data-ix="${ix}">
       <input class="iq" inputmode="decimal" placeholder="Qté" value="${v===''?'':esc(String(Math.round(v*100)/100))}" aria-label="Quantité">
       <select class="iu" aria-label="Unité">${unitOptions(u)}</select>
@@ -1992,10 +2050,8 @@ function openRecipeForm(id, prefill){
   };
   const draw = () => {
     openSheet(`<h3>${isNew ? 'Nouvelle recette' : 'Modifier la recette'}</h3>
-      <div class="rhero small" ${r.photo && !photoBlob ? `data-photo="${esc(r.photo)}"` : ''} id="fHero" ${photoBlob ? `style="background-image:url('${URL.createObjectURL(photoBlob)}')"` : ''}><span class="remoji" aria-hidden="true">📷</span></div>
+      <div class="rhero small" ${r.photo && !photoBlob ? `data-photo="${esc(r.photo)}"` : ''} id="fHero" ${photoBlob ? `data-blob="1" style="background-image:url('${(photoBlobUrl = photoBlobUrl || URL.createObjectURL(photoBlob))}')"` : ''}><span class="remoji" aria-hidden="true">📷</span></div>
       <label class="btn ghost filebtn">Photo du plat (facultatif)<input type="file" accept="image/*" id="fPhoto" hidden></label>
-      <div class="field"><span class="lab">Icône de la recette</span><button type="button" class="iconpick" id="fIconBtn"><span id="fIcon">${ICH(r.icon || recipeIcon({...r, icon:null}))}</span> Changer l’icône</button>
-      <div class="icongrid" id="fIcons" hidden>${[...new Set([...DISH_ICONS.map(d => d.icon), ...ICON_CHOICES])].map(e => `<button type="button" data-fic="${e}">${ICH(e)}</button>`).join('')}</div></div>
       <div class="field"><label for="fTitle">Nom de la recette</label><input id="fTitle" value="${esc(r.title)}" placeholder="ex. Papet vaudois"></div>
       <div class="row"><div class="field"><label for="fPers">Personnes</label><input id="fPers" inputmode="numeric" value="${esc(String(r.persons||4))}"></div>
       <div class="field"><label for="fTime">Temps (min)</label><input id="fTime" inputmode="numeric" value="${esc(String(r.time||''))}"></div></div>
@@ -2005,9 +2061,8 @@ function openRecipeForm(id, prefill){
       <div class="field"><label for="fNote">Note perso</label><input id="fNote" value="${esc(r.note||'')}" placeholder="ex. un peu moins de sel"></div>
       <div class="actions">${isNew ? '<button class="btn ghost" type="button" data-close>Annuler</button>' : '<button class="btn danger" type="button" id="fDel">Supprimer</button>'}<button class="btn" type="button" id="fSave">Enregistrer</button></div>`, true);
     hydratePhotos($('#sheet'));
-    $('#fIconBtn').onclick = () => { $('#fIcons').hidden = !$('#fIcons').hidden; };
-    $('#fIcons').onclick = e => { const b = e.target.closest('[data-fic]'); if (!b) return; r.icon = b.dataset.fic; $('#fIcon').innerHTML = ICH(r.icon); $('#fIcons').hidden = true; };
-    $('#fPhoto').onchange = async e => { const f = e.target.files[0]; if (!f) return; collect(); try { photoBlob = await shrink(f); draw(); } catch(_) { toast('Cette image ne peut pas être lue.'); } };
+    { const h = $('#fHero'); if (h && h.dataset.blob && photoBlobUrl) fitHero(h, photoBlobUrl); }
+    $('#fPhoto').onchange = async e => { const f = e.target.files[0]; if (!f) return; collect(); try { photoBlob = await shrink(f); photoBlobUrl = null; draw(); } catch(_) { toast('Cette image ne peut pas être lue.'); } };
     $('#sheet').onclick = async e => {
       if (e.target.id === 'fAddIng') { collect(); r.ingredients.push({name:'', qty:null, unit:''}); draw(); const rows = document.querySelectorAll('.ingrow .iq'); rows[rows.length-1].focus(); return; }
       const rm = e.target.closest('[data-rmi]'); if (rm) { collect(); r.ingredients.splice(+rm.dataset.rmi, 1); if (!r.ingredients.length) r.ingredients.push({name:'',qty:null,unit:''}); draw(); return; }
