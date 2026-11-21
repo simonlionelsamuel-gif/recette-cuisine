@@ -103,9 +103,12 @@ li.done .check span{background:var(--fresh);border-color:var(--fresh)}
 li.done .check span::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .tint{font-style:normal;display:inline-block}
 .cic{width:1.25em;height:1.25em;display:inline-block;vertical-align:-.2em}
-.icon{flex:none;width:50px;height:50px;border-radius:15px;display:grid;place-items:center;font-size:31px;margin-right:10px}
+.icon{flex:none;width:56px;height:56px;border-radius:15px;display:grid;place-items:center;font-size:37px;margin-right:8px}
+/* contour un peu marqué pour que l'icône se détache du fond coloré */
+#app .icon{filter:drop-shadow(0 0 .6px rgba(0,0,0,.55)) drop-shadow(0 .5px .4px rgba(0,0,0,.25))}
+:root[data-mode="dark"] #app .icon{filter:drop-shadow(0 0 .7px rgba(255,255,255,.55)) drop-shadow(0 0 .3px rgba(255,255,255,.4))}
 .body{flex:1;min-width:0;border:0;background:none;text-align:left;padding:10px 0;display:grid;gap:3px}
-.name{font-weight:800;font-size:16.5px;overflow-wrap:anywhere}
+.name{font-weight:600;font-size:18.5px;line-height:1.15;overflow-wrap:anywhere}
 .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-weight:600}
 .qty{color:var(--qty-ink);font-weight:800;font-variant-numeric:tabular-nums;background:var(--accent-soft);border-radius:8px;padding:1px 7px}
 .tag{border:1.5px solid var(--line);border-radius:8px;padding:0 6px;font-size:12px}
@@ -220,9 +223,9 @@ html.edge .setup{padding-top:calc(var(--top-inset) + 20px)}
 :root[data-compact="1"] #app li{min-height:42px}
 :root[data-compact="1"] #app .check{height:42px;width:42px}
 :root[data-compact="1"] #app .check span{width:22px;height:22px}
-:root[data-compact="1"] #app .icon{width:34px;height:34px;font-size:22px;border-radius:10px;margin-right:8px}
+:root[data-compact="1"] #app .icon{width:38px;height:38px;font-size:27px;border-radius:10px;margin-right:6px}
 :root[data-compact="1"] #app .body{padding:4px 0;gap:1px}
-:root[data-compact="1"] #app .name{font-size:15px}
+:root[data-compact="1"] #app .name{font-size:17px;line-height:1.1}
 :root[data-compact="1"] #app .meta{font-size:12px}
 :root[data-compact="1"] #app .who{width:22px;height:22px;font-size:10px}
 :root[data-compact="1"] .aisle{margin-top:6px}
@@ -291,6 +294,7 @@ html.edge .sheet.full{max-height:100%}
 .rhero{height:190px;border-radius:18px;background:var(--accent-soft) center/cover no-repeat;display:grid;place-items:center}
 .rhero .remoji{font-size:72px}
 .rhero.small{height:120px}
+.webgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.webimg{padding:0;border:0;border-radius:12px;overflow:hidden;aspect-ratio:1;background:var(--line)}.webimg img{width:100%;height:100%;object-fit:cover;display:block}
 .photobtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.photobtns .btn{font-size:14px;padding:12px 8px}
 .rhero.has{height:auto;max-height:62vh;background-size:contain;background-color:transparent}
 [hidden]{display:none!important}
@@ -983,7 +987,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.39';
+const APP_VERSION = '1.0.41';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1386,7 +1390,8 @@ async function saveOcrSample(bmp, info){
 }
 
 /* ---------- Lecture de recette par IA (Gemini) ---------- */
-const AI_MODELS = ['gemini-3.5-flash', 'gemini-2.5-flash'];
+// modèle principal avec peu de réflexion (≈ 15 s au lieu de ≈ 40 s, même résultat en test), puis modèle léger en secours
+const AI_MODELS = [['gemini-3.5-flash', {thinkingConfig: {thinkingLevel: 'low'}}], ['gemini-3.1-flash-lite', {}], ['gemini-3.5-flash', {}]];
 const aiKey = () => ((L().config || {}).geminiKey || '').trim();
 const AI_PROMPT = `Tu lis la photo d'une recette de cuisine (page imprimée, livre, écran ou fiche manuscrite), en français.
 Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, de cette forme exacte :
@@ -1407,14 +1412,14 @@ async function aiReadRecipe(bmp){
   const key = aiKey(); if (!key) throw new Error('pas de clé');
   const c = colorLike(bmp, 0, 0, 1600), b64 = c.toDataURL('image/jpeg', 0.85).split(',')[1];
   let lastErr = null;
-  for (const model of AI_MODELS) {
+  for (const [model, extra] of AI_MODELS) {
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 60000);
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, { method: 'POST', signal: ctl.signal,
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
         body: JSON.stringify({ contents: [{ parts: [{ text: AI_PROMPT }, { inline_data: { mime_type: 'image/jpeg', data: b64 } }] }],
-          generationConfig: { responseMimeType: 'application/json', temperature: 0 } }) });
-      if (res.status === 404) { lastErr = new Error('modèle ' + model + ' indisponible'); continue; }
+          generationConfig: { responseMimeType: 'application/json', temperature: 0, ...extra } }) });
+      if (res.status === 404 || res.status === 400 || res.status === 429 || res.status >= 500) { lastErr = new Error('modèle ' + model + ' indisponible (' + res.status + ')'); continue; }
       if (!res.ok) { const tx = await res.text().catch(() => ''); throw new Error('IA ' + res.status + ' ' + tx.slice(0, 200)); }
       const data = await res.json();
       const txt = ((((data.candidates || [])[0] || {}).content || {}).parts || []).map(p => p.text || '').join('');
@@ -1466,6 +1471,57 @@ async function readRecipePhoto(file, onProgress, onInfo){
     } catch (e) { console.warn('IA', e); onInfo && onInfo('IA indisponible, lecture classique…'); }
   }
   return { rec: await ocrImage(file, onProgress), via: 'classique' };
+}
+
+/* ---------- Photo du plat trouvée sur internet (Wikimedia Commons, images libres) ---------- */
+async function aiSearchTerms(r){
+  // l'IA propose des mots de recherche à partir du titre, des ingrédients et de la préparation
+  const key = aiKey(); if (!key) return [];
+  const txt = `Recette : ${r.title || ''}\nIngrédients : ${(r.ingredients||[]).map(i => i.name).join(', ')}\nPréparation : ${(r.steps||[]).join(' ').slice(0, 600)}\n\nDonne 4 recherches courtes (2 à 4 mots) pour trouver une PHOTO de ce plat terminé sur Wikimedia Commons : le nom du plat en français, en anglais, et le type de plat avec son ingrédient principal. Réponds uniquement par un tableau JSON de chaînes.`;
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 20000);
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent', { method: 'POST', signal: ctl.signal,
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: JSON.stringify({ contents: [{ parts: [{ text: txt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0 } }) });
+    if (!res.ok) return [];
+    const d = await res.json(), a = JSON.parse(((d.candidates||[])[0]||{}).content.parts.map(p => p.text||'').join(''));
+    return Array.isArray(a) ? a.map(String).filter(Boolean).slice(0, 4) : [];
+  } catch(e) { return []; } finally { clearTimeout(t); }
+}
+async function commonsSearch(q){
+  const u = 'https://commons.wikimedia.org/w/api.php?' + new URLSearchParams({ action: 'query', format: 'json', origin: '*', generator: 'search', gsrsearch: q + ' filetype:bitmap', gsrnamespace: '6', gsrlimit: '12', prop: 'imageinfo', iiprop: 'url|size', iiurlwidth: '900' });
+  const res = await fetch(u); if (!res.ok) return [];
+  const d = await res.json();
+  return Object.values((d.query || {}).pages || {}).sort((a,b) => (a.index||0) - (b.index||0)).map(p => { const ii = (p.imageinfo||[])[0] || {}; return { url: ii.thumburl || ii.url, page: ii.descriptionurl, title: p.title.replace(/^File:/,'').replace(/\.[a-z]+$/i,'') }; }).filter(x => x.url);
+}
+function openWebPhoto(r, onPick, onBack){
+  let q = r.title || '', results = [], busy = false, msg = '', pasted = '';
+  const draw = () => {
+    openSheet(`<h3>Photo du plat depuis internet</h3>
+      <p class="hint">Images libres de Wikimedia Commons${aiKey() ? ', recherchées avec l’aide de l’IA d’après le titre, les ingrédients et la préparation' : ''}. Touche une image pour la choisir.</p>
+      <div class="row"><input id="wq" value="${esc(q)}" placeholder="ex. papet vaudois"><button class="btn" type="button" id="wGo">🔎</button></div>
+      ${busy ? '<p class="hint">Recherche…</p>' : msg ? `<p class="hint">${esc(msg)}</p>` : ''}
+      <div class="webgrid">${results.map((x, k) => `<button type="button" class="webimg" data-k="${k}" title="${esc(x.title)}"><img src="${esc(x.url)}" alt="${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer"></button>`).join('')}</div>
+      <div class="field"><label for="wUrl">Ou colle l’adresse d’une image trouvée ailleurs</label><div class="row"><input id="wUrl" inputmode="url" placeholder="https://…jpg" value="${esc(pasted)}"><button class="btn ghost" type="button" id="wUse">OK</button></div></div>
+      <button class="btn ghost" type="button" id="wBack">Retour</button>`, true);
+    $('#wq').oninput = e => { q = e.target.value; }; $('#wUrl').oninput = e => { pasted = e.target.value; };
+    $('#wGo').onclick = () => { q = $('#wq').value.trim(); search(false); };
+    $('#wq').onkeydown = e => { if (e.key === 'Enter') { q = $('#wq').value.trim(); search(false); } };
+    $('#wBack').onclick = () => onBack();
+    $('#wUse').onclick = () => { const u = $('#wUrl').value.trim(); if (!/^https:\/\//.test(u)) return toast('Adresse invalide (elle doit commencer par https://)');
+      const im = new Image(); im.onload = () => onPick(u); im.onerror = () => toast('Cette adresse ne mène pas à une image.'); im.src = u; };
+    $('.webgrid').onclick = e => { const b = e.target.closest('[data-k]'); if (b) onPick(results[+b.dataset.k].url); };
+  };
+  const search = async (withAi) => {
+    busy = true; msg = ''; draw();
+    try {
+      const terms = [q, ...(withAi ? await aiSearchTerms(r) : [])].filter(Boolean);
+      const seen = new Set(); results = [];
+      for (const t of terms) { for (const x of await commonsSearch(t).catch(() => [])) if (!seen.has(x.url)) { seen.add(x.url); results.push(x); } if (results.length >= 24) break; }
+      msg = results.length ? '' : 'Aucune image trouvée. Essaie d’autres mots (ex. le nom du plat en anglais).';
+    } catch(e) { msg = 'Recherche impossible (connexion ?)'; }
+    busy = false; draw();
+  };
+  search(true);
 }
 
 /* ---------- Lecture d'une recette sur photo (OCR) ---------- */
@@ -2177,13 +2233,15 @@ function openRecipe(id){
       ${(r.steps||[]).length ? `<ol class="steps">${r.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : r.source && r.source.url ? `<a class="btn ghost linkbtn" href="${esc(r.source.url)}" target="_blank" rel="noopener">Voir la préparation sur ${esc(r.source.name)} ↗</a><p class="hint">Les étapes restent sur le site d’origine. Tu peux les ajouter à la fiche avec « Modifier ».</p>` : '<p class="hint">Pas encore d’étapes. Ajoute-les avec « Modifier ».</p>'}
       ${r.note ? `<p class="hint">📝 ${esc(r.note)}</p>` : ''}
       <div class="actions"><button class="btn ghost" type="button" id="rFav">${r.fav ? '❤ Favori' : '♡ Ajouter aux favoris'}</button><button class="btn ghost" type="button" id="rEdit">✏️ Modifier</button></div>
-      <div class="row2 photobtns"><label class="btn ghost filebtn">📷 ${r.photo ? 'Reprendre la photo du plat' : 'Photo du plat'}<input type="file" accept="image/*" capture="environment" class="rPhotoIn" hidden></label><label class="btn ghost filebtn">🖼️ Choisir une image<input type="file" accept="image/*" class="rPhotoIn" hidden></label></div>`, true);
+      <div class="row2 photobtns"><label class="btn ghost filebtn">📷 ${r.photo ? 'Reprendre la photo du plat' : 'Photo du plat'}<input type="file" accept="image/*" capture="environment" class="rPhotoIn" hidden></label><label class="btn ghost filebtn">🖼️ Choisir une image<input type="file" accept="image/*" class="rPhotoIn" hidden></label></div>
+      <button class="btn ghost" type="button" id="rWeb">🔎 Trouver une photo sur internet</button>`, true);
     hydratePhotos($('#sheet'));
     document.querySelectorAll('#sheet .rPhotoIn').forEach(inp => inp.onchange = async e => {
       const f = e.target.files[0]; if (!f) return;
       try { toast('Enregistrement de la photo…'); const blob = await shrink(f); const path = await uploadPhoto(blob, id); r.photo = path; r.updatedAt = Date.now(); putRecipe(id, r); toast('Photo enregistrée'); draw(); }
       catch(err) { toast('La photo n’a pas pu être enregistrée (connexion ?)'); }
     });
+    $('#rWeb').onclick = () => openWebPhoto(r, url => { r.imageUrl = url; r.photo = ''; putRecipe(id, r); toast('Photo choisie'); draw(); }, () => draw());
     $('#sheet').onclick = e => {
       const p = e.target.closest('[data-p]');
       if (p) { const np = Math.max(1, Math.round(base*factor) + (+p.dataset.p)); factor = np / base; byIng = -1; haveQty = ''; draw(); return; }
@@ -2248,9 +2306,10 @@ function openRecipeForm(id, prefill){
   };
   const draw = () => {
     openSheet(`<h3>${isNew ? 'Nouvelle recette' : 'Modifier la recette'}</h3>
-      <div class="rhero small" ${r.photo && !photoBlob ? `data-photo="${esc(r.photo)}"` : ''} id="fHero" ${photoBlob ? `data-blob="1" style="background-image:url('${(photoBlobUrl = photoBlobUrl || URL.createObjectURL(photoBlob))}')"` : ''}><span class="remoji" aria-hidden="true">📷</span></div>
+      <div class="rhero small" ${r.photo && !photoBlob ? `data-photo="${esc(r.photo)}"` : (!photoBlob && r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : '')} id="fHero" ${photoBlob ? `data-blob="1" style="background-image:url('${(photoBlobUrl = photoBlobUrl || URL.createObjectURL(photoBlob))}')"` : ''}><span class="remoji" aria-hidden="true">📷</span></div>
       <div class="row2 photobtns"><label class="btn ghost filebtn">📷 Prendre la photo du plat<input type="file" accept="image/*" capture="environment" id="fPhotoCam" hidden></label><label class="btn ghost filebtn">🖼️ Choisir une image<input type="file" accept="image/*" id="fPhoto" hidden></label></div>
-      ${photoBlob || r.photo ? '<button class="link" type="button" id="fPhotoDel">Retirer la photo</button>' : ''}
+      <button class="btn ghost" type="button" id="fWeb">🔎 Trouver une photo sur internet</button>
+      ${photoBlob || r.photo || r.imageUrl ? '<button class="link" type="button" id="fPhotoDel">Retirer la photo</button>' : ''}
       <div class="field"><label for="fTitle">Nom de la recette</label><input id="fTitle" value="${esc(r.title)}" placeholder="ex. Papet vaudois"></div>
       <div class="row"><div class="field"><label for="fPers">Personnes</label><input id="fPers" inputmode="numeric" value="${esc(String(r.persons||4))}"></div>
       <div class="field"><label for="fTime">Temps (min)</label><input id="fTime" inputmode="numeric" value="${esc(String(r.time||''))}"></div></div>
@@ -2262,6 +2321,7 @@ function openRecipeForm(id, prefill){
     hydratePhotos($('#sheet'));
     { const h = $('#fHero'); if (h && h.dataset.blob && photoBlobUrl) fitHero(h, photoBlobUrl); }
     $('#fPhotoCam').onchange = e => $('#fPhoto').onchange(e);
+    $('#fWeb').onclick = () => { collect(); openWebPhoto(r, url => { r.imageUrl = url; r.photo = ''; photoBlob = null; photoBlobUrl = null; draw(); }, () => draw()); };
     if ($('#fPhotoDel')) $('#fPhotoDel').onclick = () => { collect(); photoBlob = null; photoBlobUrl = null; r.photo = ''; r.imageUrl = ''; draw(); };
     $('#fPhoto').onchange = async e => { const f = e.target.files[0]; if (!f) return; collect(); try { photoBlob = await shrink(f); photoBlobUrl = null; draw(); } catch(_) { toast('Cette image ne peut pas être lue.'); } };
     $('#sheet').onclick = async e => {
