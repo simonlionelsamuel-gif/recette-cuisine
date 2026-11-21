@@ -100,6 +100,7 @@ header .btn{background:var(--sun);color:#4A2A00}
 .check span{width:26px;height:26px;border-radius:50%;border:2.5px solid #C9D6CE;display:grid;place-items:center;transition:background .15s,border-color .15s}
 li.done .check span{background:var(--fresh);border-color:var(--fresh)}
 li.done .check span::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.tint{font-style:normal;display:inline-block}
 .icon{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:24px;margin-right:10px}
 .body{flex:1;min-width:0;border:0;background:none;text-align:left;padding:10px 0;display:grid;gap:3px}
 .name{font-weight:800;font-size:16.5px;overflow-wrap:anywhere}
@@ -571,7 +572,11 @@ gourde|bouteille isotherme;🥤;men;pce
 lait de coco|creme de coco;🥥;epi;boîte
 noix de coco;🥥;fl;pce
 tomates pelees|tomate pelee|tomates concassees|coulis|concentre de tomate|puree de tomate|passata|sauce tomate;🥫;epi;boîte
-pois chiche|haricots rouges|haricot rouge|haricots blancs|lentille;🫘;fec;g
+haricot rouge|lentille|lentille corail;🫘;fec;g
+pois chiche;🫘~beige;fec;g
+haricot blanc;🫘~blanc;fec;g
+haricot noir;🫘~noir;fec;g
+lentille verte|lentille du puy;🫘~vert;fec;g
 pate feuilletee;🥐;epi;pce
 pate brisee|pate sablee|fond de tarte;🥧;epi;pce
 pate a pizza;🍕;epi;pce
@@ -580,11 +585,14 @@ confiture|gelee;🍓;epi;pot
 miel;🍯;epi;pot
 patate douce;🍠;fl;g
 pomme de terre|patate;🥔;fl;kg
+pomme verte|granny smith|granny;🍏;fl;kg
 pomme;🍎;fl;kg
 poire;🍐;fl;kg
 banane;🍌;fl;kg
 mandarine|clementine|orange|pamplemousse;🍊;fl;kg
-citron|lime;🍋;fl;pce
+citron vert|lime|limette;🍋~vert;fl;pce
+citron;🍋;fl;pce
+raisin blanc|raisin vert;🍇~blanc;fl;g
 raisin;🍇;fl;g
 fraise;🍓;fl;g
 framboise;🍓;fl;g
@@ -597,27 +605,39 @@ pasteque;🍉;fl;pce
 melon;🍈;fl;pce
 kiwi;🥝;fl;pce
 avocat;🥑;fl;pce
+tomate verte;🍅~vert;fl;g
+tomate jaune;🍅~jaune;fl;g
 tomate;🍅;fl;g
+poivron rouge;🫑~rouge;fl;pce
+poivron jaune;🫑~jaune;fl;pce
+poivron orange;🫑~orange;fl;pce
 poivron;🫑;fl;pce
+piment vert|jalapeno;🌶️~vert;fl;pce
 piment;🌶️;fl;pce
 concombre|cornichon;🥒;fl;pce
+courgette jaune;🥒~jaune;fl;pce
 courgette;🥒;fl;pce
 aubergine;🍆;fl;pce
 carotte;🥕;fl;kg
 radis|navet|panais|topinambour;🥕;fl;g
-betterave;🍠;fl;g
+betterave;🍠~betterave;fl;g
+oignon rouge;🧅~rouge;fl;pce
 oignon|echalote;🧅;fl;pce
 ail;🧄;fl;pce
 gingembre;🫚;fl;g
-brocoli|chou fleur|chou-fleur|romanesco;🥦;fl;pce
+chou fleur|chou-fleur;🥦~blanc;fl;pce
+brocoli|romanesco;🥦;fl;pce
 salade|laitue|batavia|iceberg|doucette|mache|rucola|roquette|endive|cresson|epinard|blette|cote de bette;🥬;fl;pce
-chou|chou rouge|chou frise|chou de bruxelles|chou blanc;🥬;fl;g
+chou rouge|salade rouge|trevise|radicchio;🥬~rouge;fl;g
+chou|chou frise|chou de bruxelles|chou blanc;🥬;fl;g
 poireau|celeri|fenouil|rhubarbe;🥬;fl;pce
+asperge blanche;🌱~blanc;fl;g
 asperge;🌱;fl;g
 artichaut;🥬;fl;pce
 petit pois|pois mange-tout|pois gourmand|haricot vert|haricot;🫛;fl;g
 mais;🌽;epi;boîte
-champignon|bolet|chanterelle;🍄;fl;g
+champignon|champignon de paris|bolet|cepe;🍄~brun;fl;g
+chanterelle|girolle;🍄;fl;g
 courge|potiron|butternut;🎃;fl;pce
 herbes de provence|herbe de provence;🌿;epi;pot
 tige de citronnelle|citronnelle|herbe|persil|basilic|coriandre|ciboulette|menthe|thym|romarin|aneth|sauge|laurier|estragon;🌿;fl;botte
@@ -625,6 +645,7 @@ croissant;🥐;bou;pce
 baguette;🥖;bou;pce
 bagel;🥯;bou;pce
 tresse|zopf;🥨;bou;pce
+pain complet|pain noir|pain bis|pain de seigle|pain aux cereales;🍞~complet;bou;pce
 pain|toast|brioche|petit pain|ballon|pain de mie;🍞;bou;pce
 gaufre;🧇;bou;paquet
 crepe|pancake;🥞;bou;paquet
@@ -664,15 +685,20 @@ fromage|gruyere|emmental|tete de moine|tomme|reblochon|appenzeller|parmesan|feta
 nouille|ramen|vermicelle|nouilles chinoises|udon|knopfli|knoepfli|spatzli|spaetzli;🍜;fec;g
 pate|spaghetti|penne|tagliatelle|fusilli|lasagne|macaroni|cornette|linguine|farfalle|tortellini|ravioli;🍝;fec;g
 gnocchi;🥟;fec;g
+riz complet|riz brun|riz sauvage;🍚~complet;fec;kg
 riz|risotto|riz basmati;🍚;fec;kg
 polenta;🌽;fec;g
 houmous|hummus;🫘;epi;pot
 quinoa|couscous|boulgour|semoule|farine|maizena|epeautre;🌾;fec;kg
 cereale|muesli|flocon|avoine|granola|cornflakes|porridge;🥣;fec;paquet
+olive noire|olive noir;🫒~noir;epi;pot
+olive verte;🫒;epi;pot
 huile|olive;🫒;epi;bouteille
 vinaigre|sauce soja|soja;🍶;epi;bouteille
 sel;🧂;epi;paquet
 poivre|muscade|clou de girofle|cumin|curcuma|garam;🫙;epi;pot
+curry vert|pate de curry vert;🍛~vert;epi;pot
+curry rouge|pate de curry rouge;🍛~rouge;epi;pot
 curry;🍛;epi;pot
 paprika|chili|harissa|tabasco;🌶️;epi;pot
 cannelle;🪵;epi;pot
@@ -681,6 +707,7 @@ vanille|sucre vanille;🍦;epi;paquet
 sucre|sucre glace|cassonade;🍬;epi;kg
 cafe|capsule;☕;epi;paquet
 coca|limonade|rivella|ice tea|the froid|soda|cola;🥤;boi;bouteille
+the noir|earl grey;🍵~noir;epi;paquet
 the;🍵;epi;paquet
 tisane|infusion;🫖;epi;paquet
 ketchup;🍅;epi;pce
@@ -692,8 +719,11 @@ noix|amande|noisette|chataigne|marron|pignon|pistache|noix de cajou;🌰;epi;sac
 cacahuete|beurre de cacahuete;🥜;epi;sachet
 tournesol|graine de tournesol;🌻;epi;sachet
 graine de courge;🎃;epi;sachet
-sesame|graine|lin|chia|pavot;🫘;epi;sachet
+sesame noir|sesame noire|graine de sesame noir;🫘~noir;epi;sachet
+sesame|sesame blanc|graine de sesame|graine de sesame blanc;🫘~blanc;epi;sachet
+graine|lin|chia|pavot;🫘;epi;sachet
 raisin sec|abricot sec|datte|figue seche|fruit sec;🍇;epi;sachet
+chocolat blanc;🍫~blanc;dou;pce
 chocolat;🍫;dou;pce
 biscuit|cookie|petit beurre|gaufrette|madeleine|biscotte;🍪;dou;paquet
 cracker|crackers|galette de riz;🍘;dou;paquet
@@ -709,8 +739,10 @@ eau gazeuse|eau petillante|eau minerale gazeuse;🫧;boi;bouteille
 eau;💧;boi;bouteille
 jus|nectar|smoothie;🧃;boi;l
 sirop;🍹;boi;bouteille
+biere brune|biere ambree;🍺~brune;boi;bouteille
 biere;🍺;boi;bouteille
 champagne|prosecco|mousseux;🍾;boi;bouteille
+vin blanc;🥂;boi;bouteille
 vin;🍷;boi;bouteille
 lait d'avoine|lait d avoine|lait d'amande|lait de soja|boisson vegetale;🥛;boi;l
 croquette|patee;🐶;aut;paquet
@@ -747,6 +779,16 @@ function findProduct(name){
   prodCache.set(n0, hit);
   return hit;
 }
+// Variantes de couleur : « 🍋~vert » = emoji de base teinté (ou emoji officiel quand le téléphone l'a)
+const TINTS = {'🍋~vert':'hue-rotate(60deg) saturate(1.4) brightness(.9)','🫑~rouge':'hue-rotate(-90deg) saturate(2.5) brightness(.85)','🫑~jaune':'hue-rotate(-55deg) saturate(1.6) brightness(1.15)','🫑~orange':'hue-rotate(-65deg) saturate(2.5)','🍇~blanc':'hue-rotate(170deg) saturate(.9) brightness(1.15)','🧅~rouge':'hue-rotate(-70deg) saturate(2.2) brightness(.85)','🥬~rouge':'hue-rotate(175deg) saturate(1.3) brightness(.85)','🫒~noir':'brightness(.35) saturate(.5)','🫘~noir':'brightness(.3) saturate(.3)','🫘~blanc':'grayscale(1) brightness(3) contrast(.7)','🫘~vert':'hue-rotate(80deg) saturate(1.1)','🫘~beige':'sepia(1) saturate(.8) brightness(1.4)','🍫~blanc':'grayscale(1) sepia(.3) brightness(2.2) contrast(.8)','🍚~complet':'sepia(.9) saturate(1.4) brightness(.85)','🍞~complet':'brightness(.7) saturate(1.3)','🍅~vert':'hue-rotate(95deg) saturate(1.2)','🍅~jaune':'hue-rotate(45deg) saturate(1.3) brightness(1.15)','🥒~jaune':'hue-rotate(-55deg) saturate(1.5) brightness(1.15)','🌶️~vert':'hue-rotate(100deg) saturate(1.1)','🍠~betterave':'hue-rotate(-50deg) saturate(1.8) brightness(.75)','🥦~blanc':'grayscale(1) sepia(.25) brightness(1.7) contrast(.9)','🌱~blanc':'grayscale(1) sepia(.6) brightness(1.05) contrast(1.3)','🍵~noir':'sepia(1) saturate(1.5) hue-rotate(-15deg) brightness(.65)','🍛~vert':'hue-rotate(70deg) saturate(1.1)','🍛~rouge':'hue-rotate(-30deg) saturate(1.5)','🍺~brune':'sepia(.6) brightness(.55) saturate(1.5)','🍄~brun':'sepia(1) saturate(1.2) brightness(.8)'};
+const NATIVE = {'🍋~vert':'🍋\u200d🟩','🍄~brun':'🍄\u200d🟫'};
+const emojiOk = (() => { const m = {}; return e => { if (e in m) return m[e]; try { const c = document.createElement('canvas').getContext('2d'); c.font = '32px sans-serif'; m[e] = c.measureText(e).width < c.measureText(e.split('\u200d')[0]).width * 1.4; } catch(x){ m[e] = false; } return m[e]; }; })();
+function ICH(code){
+  code = String(code || ''); if (!code.includes('~')) return code;
+  if (NATIVE[code] && emojiOk(NATIVE[code])) return NATIVE[code];
+  const base = code.split('~')[0], f = TINTS[code];
+  return f ? `<i class="tint" style="filter:${f}">${base}</i>` : base;
+}
 const iconFor = i => {
   try { const c = (typeof listFile !== 'undefined') && catalogs()[slug(keyOf(i.name))]; if (c && c.icon) return c.icon; } catch(e){}
   const p = findProduct(i.name); return p ? p.icon : (CAT_ICON[i.cat] || '🛒');
@@ -762,7 +804,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.23';
+const APP_VERSION = '1.0.24';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -974,7 +1016,7 @@ function attachSuggest(input, box, onPick, enabled){
     const words = p ? suggestions(p.name) : [];
     if (!words.length) { box.hidden = true; box.innerHTML = ''; return; }
     box.innerHTML = words.map(w => { const d = withDefaults({...p, name:w}); const q = p.qty != null ? fmtQty(d.qty, d.unit) : (d.unit && d.unit !== 'pce' ? d.unit : '');
-      return `<button type="button" data-w="${esc(w)}"><span class="em" aria-hidden="true">${iconFor({name:w, cat:guessCat(w)})}</span>${esc(w)}<small>${esc(q)}</small></button>`; }).join('');
+      return `<button type="button" data-w="${esc(w)}"><span class="em" aria-hidden="true">${ICH(iconFor({name:w, cat:guessCat(w)}))}</span>${esc(w)}<small>${esc(q)}</small></button>`; }).join('');
     box.hidden = false;
   };
   input.addEventListener('input', draw);
@@ -1222,7 +1264,7 @@ function rowHtml([id, i]){
   const who = i.by ? `<span class="who" title="Ajouté par ${esc(i.by)}">${esc(i.by.trim().charAt(0).toUpperCase())}</span>` : '';
   const col = (CAT[i.cat]||CAT.aut).color;
   return `<li class="${i.done?'done':''}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
-    <span class="icon" style="background:${col}1f" aria-hidden="true">${iconFor(i)}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
+    <span class="icon" style="background:${col}1f" aria-hidden="true">${ICH(iconFor(i))}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
 }
 function renderRecipes(){
   const noFilter = (state.recMode === 'search' ? !state.recQuery : !state.have.length) && !state.favOnly && !state.basesOnly;
@@ -1230,7 +1272,7 @@ function renderRecipes(){
   $('#modeHave').setAttribute('aria-pressed', state.recMode === 'have');
   $('#modeSearch').setAttribute('aria-pressed', state.recMode === 'search');
   $('#haveChips').hidden = state.recMode === 'search';
-  $('#haveChips').innerHTML = (false ? `<button type="button" class="hchip" data-rmquery="1"><span aria-hidden="true">🔎</span>« ${esc(state.recQuery)} »<b aria-label="retirer">×</b></button>` : '') + state.have.map((h,ix) => `<button type="button" class="hchip" data-rmhave="${ix}"><span aria-hidden="true">${iconFor({name:h, cat:guessCat(h)})}</span>${esc(h)}<b aria-label="retirer">×</b></button>`).join('');
+  $('#haveChips').innerHTML = (false ? `<button type="button" class="hchip" data-rmquery="1"><span aria-hidden="true">🔎</span>« ${esc(state.recQuery)} »<b aria-label="retirer">×</b></button>` : '') + state.have.map((h,ix) => `<button type="button" class="hchip" data-rmhave="${ix}"><span aria-hidden="true">${ICH(iconFor({name:h, cat:guessCat(h)}))}</span>${esc(h)}<b aria-label="retirer">×</b></button>`).join('');
   $('#favOnly').setAttribute('aria-pressed', state.favOnly);
   const searching = state.recMode === 'search';
   const roots = searching ? [] : state.have.map(rootOf);
@@ -1247,7 +1289,7 @@ function renderRecipes(){
   const total = list.length; list = list.slice(0, state.shown);
   html += `<p class="count">${total} recette${total>1?'s':''}${!noFilter ? ' trouvée'+(total>1?'s':'') : ''}</p>`;
   html += `<div class="cards">` + list.map(({id, r, m}) => `<button class="rcard" type="button" data-rec="${id}">
-      <span class="rphoto" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></span>
+      <span class="rphoto" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${ICH(recipeIcon(r))}</span></span>
       <span class="rbody"><span class="rtitle">${esc(r.title)}</span>
       <span class="rmeta">${r.time ? `<span>⏱ ${esc(r.time)} min</span>` : ''}<span>👥 ${r.persons||4}</span>${r.fav ? '<span class="fav">❤</span>' : ''}${r.source && r.source.url ? `<span>${esc(r.source.name)}</span>` : ''}</span>
       ${roots.length ? `<span class="rmatch ${m.missing.length===0?'full':''}">${m.missing.length===0 ? 'Tu as tout ✓' : `Tu as ${m.have}/${m.total} · manque ${esc(m.missing.slice(0,3).map(i=>i.name.toLowerCase()).join(', '))}${m.missing.length>3?'…':''}`}</span>` : ''}
@@ -1293,19 +1335,19 @@ function openEdit(id){
   const i = CUR().items[id]; if (!i || i.deleted) return;
   let [v,u] = toEdit(i.qty, i.unit);
   if (i.qty == null && !u) { const pr = findProduct(i.name); if (pr) u = pr.u; }
-  openSheet(`<h3><span aria-hidden="true">${iconFor(i)}</span>${esc(i.name)}</h3>
+  openSheet(`<h3><span aria-hidden="true">${ICH(iconFor(i))}</span>${esc(i.name)}</h3>
   <div class="field"><label for="eName">Article</label><input id="eName" value="${esc(i.name)}"></div>
   <div class="row"><div class="field"><label for="eQty">Quantité</label><input id="eQty" inputmode="decimal" value="${v===''?'':esc(String(Math.round(v*100)/100))}"></div>
   <div class="field"><label for="eUnit">Unité</label><select id="eUnit">${unitOptions(u)}</select></div></div>
   <div class="field"><label for="eCat">Rayon</label><select id="eCat">${CATS.map(([c,n])=>`<option value="${c}" ${c===i.cat?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
   <div class="field"><label for="eNote">Note</label><input id="eNote" value="${esc(i.note||'')}" placeholder="ex. bio si possible"></div>
-  <div class="field"><span class="lab">Icône (gardée pour les prochaines fois)</span><button type="button" class="iconpick" id="eIconBtn"><span id="eIcon">${iconFor(i)}</span> Changer l’icône</button>
-  <div class="icongrid" id="eIcons" hidden>${ICON_CHOICES.map(e => `<button type="button" data-ic="${e}" aria-label="Icône ${e}">${e}</button>`).join('')}</div></div>
+  <div class="field"><span class="lab">Icône (gardée pour les prochaines fois)</span><button type="button" class="iconpick" id="eIconBtn"><span id="eIcon">${ICH(iconFor(i))}</span> Changer l’icône</button>
+  <div class="icongrid" id="eIcons" hidden>${ICON_CHOICES.map(e => `<button type="button" data-ic="${e}" aria-label="Icône">${ICH(e)}</button>`).join('')}</div></div>
   ${i.by ? `<p class="hint">Ajouté par ${esc(i.by)}</p>` : ''}
   <div class="actions"><button class="btn danger" type="button" id="eDel">Supprimer</button><button class="btn" type="button" id="eSave">Enregistrer</button></div>`);
   let pickedIcon = null;
   $('#eIconBtn').onclick = () => { $('#eIcons').hidden = !$('#eIcons').hidden; };
-  $('#eIcons').onclick = e => { const b = e.target.closest('[data-ic]'); if (!b) return; pickedIcon = b.dataset.ic; $('#eIcon').textContent = pickedIcon; $('#eIcons').hidden = true; };
+  $('#eIcons').onclick = e => { const b = e.target.closest('[data-ic]'); if (!b) return; pickedIcon = b.dataset.ic; $('#eIcon').innerHTML = ICH(pickedIcon); $('#eIcons').hidden = true; };
   $('#eDel').onclick = () => { const before = {...CUR().items[id]}; delItem(id); closeSheet(); toast(`${before.name} supprimé`, () => putItem(id, before)); };
   $('#eSave').onclick = () => {
     const name = cap($('#eName').value.trim()) || i.name;
@@ -1378,7 +1420,7 @@ function openRecipe(id){
   const draw = () => {
     const persons = Math.round(base * factor * 10) / 10;
     openSheet(`<div class="rhead">
-        <div class="rhero" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${recipeIcon(r)}</span></div>
+        <div class="rhero" ${r.photo ? `data-photo="${esc(r.photo)}"` : r.imageUrl ? `data-img="${esc(r.imageUrl)}"` : ''}><span class="remoji" aria-hidden="true">${ICH(recipeIcon(r))}</span></div>
         <button class="close" type="button" data-close aria-label="Fermer">✕</button>
       </div>
       <h3 class="rtitle-big">${esc(r.title)}</h3>
@@ -1390,7 +1432,7 @@ function openRecipe(id){
           <input id="rHave" inputmode="decimal" placeholder="${byIng>=0 ? esc(toEdit(r.ingredients[byIng].qty, r.ingredients[byIng].unit)[1]||'qté') : 'qté'}" value="${esc(haveQty)}"></div></div>
       </div>
       <h4>Ingrédients</h4>
-      <ul class="ings">${(r.ingredients||[]).map(i => { const q = scaleQty(i.qty, i.unit, factor); return `<li><span class="em" aria-hidden="true">${iconFor({name:i.name, cat:guessCat(i.name)})}</span><b>${esc(fmtQty(q, i.unit).replace(/^× /,''))}</b><span>${esc(i.name)}</span></li>`; }).join('')}</ul>
+      <ul class="ings">${(r.ingredients||[]).map(i => { const q = scaleQty(i.qty, i.unit, factor); return `<li><span class="em" aria-hidden="true">${ICH(iconFor({name:i.name, cat:guessCat(i.name)}))}</span><b>${esc(fmtQty(q, i.unit).replace(/^× /,''))}</b><span>${esc(i.name)}</span></li>`; }).join('')}</ul>
       <button class="btn" type="button" id="rToList">🛒 Ajouter à la liste de courses</button>
       <h4>Préparation</h4>
       ${(r.steps||[]).length ? `<ol class="steps">${r.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : r.source && r.source.url ? `<a class="btn ghost linkbtn" href="${esc(r.source.url)}" target="_blank" rel="noopener">Voir la préparation sur ${esc(r.source.name)} ↗</a><p class="hint">Les étapes restent sur le site d’origine. Tu peux les ajouter à la fiche avec « Modifier ».</p>` : '<p class="hint">Pas encore d’étapes. Ajoute-les avec « Modifier ».</p>'}
@@ -1426,7 +1468,7 @@ function openPickForList(r, factor){
     openSheet(`<h3>Que faut-il acheter ?</h3>
       <p class="hint">Décoche ce que tu as déjà. Ajout dans « ${esc(curList().name)} ».</p>
       <div class="pickbar"><button class="link" type="button" id="pAll">Tout cocher</button><button class="link" type="button" id="pNone">Tout décocher</button></div>
-      <ul class="pick">${rows.map((x,ix) => `<li class="${x.on?'':'off'}"><label><input type="checkbox" data-pk="${ix}" ${x.on?'checked':''}><span class="em" aria-hidden="true">${iconFor({name:x.name, cat:guessCat(x.name)})}</span><b>${esc(fmtQty(x.q, x.unit).replace(/^× /,''))}</b><span>${esc(x.name)}${x.inList ? ' <small class="hint">(déjà dans la liste)</small>' : ''}</span></label></li>`).join('')}</ul>
+      <ul class="pick">${rows.map((x,ix) => `<li class="${x.on?'':'off'}"><label><input type="checkbox" data-pk="${ix}" ${x.on?'checked':''}><span class="em" aria-hidden="true">${ICH(iconFor({name:x.name, cat:guessCat(x.name)}))}</span><b>${esc(fmtQty(x.q, x.unit).replace(/^× /,''))}</b><span>${esc(x.name)}${x.inList ? ' <small class="hint">(déjà dans la liste)</small>' : ''}</span></label></li>`).join('')}</ul>
       <div class="actions"><button class="btn ghost" type="button" id="pBack">Retour</button><button class="btn" type="button" id="pGo" ${n?'':'disabled'}>Ajouter ${n} article${n>1?'s':''}</button></div>`, true);
     $('#sheet').onchange = e => { const c = e.target.closest('[data-pk]'); if (c) { rows[+c.dataset.pk].on = c.checked; draw(); } };
     $('#sheet').oninput = null;
@@ -1463,8 +1505,8 @@ function openRecipeForm(id, prefill){
     openSheet(`<h3>${isNew ? 'Nouvelle recette' : 'Modifier la recette'}</h3>
       <div class="rhero small" ${r.photo && !photoBlob ? `data-photo="${esc(r.photo)}"` : ''} id="fHero" ${photoBlob ? `style="background-image:url('${URL.createObjectURL(photoBlob)}')"` : ''}><span class="remoji" aria-hidden="true">📷</span></div>
       <label class="btn ghost filebtn">Photo du plat (facultatif)<input type="file" accept="image/*" id="fPhoto" hidden></label>
-      <div class="field"><span class="lab">Icône de la recette</span><button type="button" class="iconpick" id="fIconBtn"><span id="fIcon">${r.icon || recipeIcon({...r, icon:null})}</span> Changer l’icône</button>
-      <div class="icongrid" id="fIcons" hidden>${[...new Set([...DISH_ICONS.map(d => d.icon), ...ICON_CHOICES])].map(e => `<button type="button" data-fic="${e}">${e}</button>`).join('')}</div></div>
+      <div class="field"><span class="lab">Icône de la recette</span><button type="button" class="iconpick" id="fIconBtn"><span id="fIcon">${ICH(r.icon || recipeIcon({...r, icon:null}))}</span> Changer l’icône</button>
+      <div class="icongrid" id="fIcons" hidden>${[...new Set([...DISH_ICONS.map(d => d.icon), ...ICON_CHOICES])].map(e => `<button type="button" data-fic="${e}">${ICH(e)}</button>`).join('')}</div></div>
       <div class="field"><label for="fTitle">Nom de la recette</label><input id="fTitle" value="${esc(r.title)}" placeholder="ex. Papet vaudois"></div>
       <div class="row"><div class="field"><label for="fPers">Personnes</label><input id="fPers" inputmode="numeric" value="${esc(String(r.persons||4))}"></div>
       <div class="field"><label for="fTime">Temps (min)</label><input id="fTime" inputmode="numeric" value="${esc(String(r.time||''))}"></div></div>
@@ -1475,7 +1517,7 @@ function openRecipeForm(id, prefill){
       <div class="actions">${isNew ? '<button class="btn ghost" type="button" data-close>Annuler</button>' : '<button class="btn danger" type="button" id="fDel">Supprimer</button>'}<button class="btn" type="button" id="fSave">Enregistrer</button></div>`, true);
     hydratePhotos($('#sheet'));
     $('#fIconBtn').onclick = () => { $('#fIcons').hidden = !$('#fIcons').hidden; };
-    $('#fIcons').onclick = e => { const b = e.target.closest('[data-fic]'); if (!b) return; r.icon = b.dataset.fic; $('#fIcon').textContent = r.icon; $('#fIcons').hidden = true; };
+    $('#fIcons').onclick = e => { const b = e.target.closest('[data-fic]'); if (!b) return; r.icon = b.dataset.fic; $('#fIcon').innerHTML = ICH(r.icon); $('#fIcons').hidden = true; };
     $('#fPhoto').onchange = async e => { const f = e.target.files[0]; if (!f) return; collect(); try { photoBlob = await shrink(f); draw(); } catch(_) { toast('Cette image ne peut pas être lue.'); } };
     $('#sheet').onclick = async e => {
       if (e.target.id === 'fAddIng') { collect(); r.ingredients.push({name:'', qty:null, unit:''}); draw(); const rows = document.querySelectorAll('.ingrow .iq'); rows[rows.length-1].focus(); return; }
