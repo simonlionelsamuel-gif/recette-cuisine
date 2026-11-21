@@ -98,6 +98,7 @@ header .btn{background:var(--sun);color:#4A2A00}
 #app li:last-child{border-bottom:0}
 .check{flex:none;width:50px;height:62px;border:0;background:none;display:grid;place-items:center}
 .check span{width:26px;height:26px;border-radius:50%;border:2.5px solid #C9D6CE;display:grid;place-items:center;transition:background .15s,border-color .15s}
+li.done .doneinfo{color:var(--fresh);font-weight:700}
 li.done .check span{background:var(--fresh);border-color:var(--fresh)}
 li.done .check span::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .tint{font-style:normal;display:inline-block}
@@ -808,7 +809,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.26';
+const APP_VERSION = '1.0.27';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -972,7 +973,7 @@ function addItem({name, qty=null, unit='', cat, from}, opts={}){
   if (existing){
     const [id, i] = existing, d = {...i, from:[...(i.from||[])]};
     let result = 'same';
-    if (d.done) { d.done = false; d.doneAt = null; d.qty = qty; d.unit = unit || d.unit; d.from = []; result = 'back'; }
+    if (d.done) { d.done = false; d.doneAt = null; d.doneBy = ''; d.qty = qty; d.unit = unit || d.unit; d.from = []; result = 'back'; }
     else if (qty != null && d.qty != null && sameUnit(d.unit, unit)) { d.qty = d.qty + toBase(qty, unit, d.unit); result = 'merged'; }
     else if (qty != null && d.qty == null) { d.qty = qty; d.unit = unit; result = 'merged'; }
     if (from && !d.from.includes(from)) d.from.push(from);
@@ -991,7 +992,7 @@ const toBase = (q, from, to) => q * baseOf(from)[1] / baseOf(to)[1];
 function toggle(id){
   const i = CUR().items[id]; if (!i || i.deleted) return;
   const before = {...i};
-  putItem(id, {...i, done: !i.done, doneAt: !i.done ? Date.now() : null});
+  putItem(id, {...i, done: !i.done, doneAt: !i.done ? Date.now() : null, doneBy: !i.done ? (cfg.name || '') : ''});
   if (!before.done) { if (ui().vibrate) { try { navigator.vibrate && navigator.vibrate(25); } catch(e){} } toast(`${i.name} dans le caddie`, () => putItem(id, before)); }
 }
 function clearDone(){
@@ -1259,12 +1260,22 @@ function renderList(){
   if (done.length) html += `<section class="cart"><div class="cartbar"><h2>Dans le caddie · ${done.length}</h2><button class="link" type="button" id="clearDone">Retirer les cochés</button></div><ul class="rows">${done.map(rowHtml).join('')}</ul></section>`;
   $('#list').innerHTML = html;
 }
+function doneWhen(t){
+  const d = new Date(t), now = new Date(), hm = d.toLocaleTimeString('fr-CH', {hour:'2-digit', minute:'2-digit'});
+  const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(now) - day(d)) / 86400000);
+  if (diff === 0) return 'aujourd’hui ' + hm;
+  if (diff === 1) return 'hier ' + hm;
+  const J = ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+  return `${J[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}${d.getFullYear() !== now.getFullYear() ? '.' + d.getFullYear() : ''} ${hm}`;
+}
 function rowHtml([id, i]){
   const q = fmtQty(i.qty, i.unit);
   const meta = [];
   if (q) meta.push(`<span class="qty">${esc(q)}</span>`);
   if (i.note) meta.push(`<span>${esc(i.note)}</span>`);
   if (i.from && i.from.length) meta.push(`<span>pour ${esc(i.from.join(', '))}</span>`);
+  if (i.done && i.doneAt) meta.push(`<span class="doneinfo">✓ ${i.doneBy ? esc(i.doneBy) + ' · ' : ''}${doneWhen(i.doneAt)}</span>`);
   const who = i.by ? `<span class="who" title="Ajouté par ${esc(i.by)}">${esc(i.by.trim().charAt(0).toUpperCase())}</span>` : '';
   const col = (CAT[i.cat]||CAT.aut).color;
   return `<li class="${i.done?'done':''}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
