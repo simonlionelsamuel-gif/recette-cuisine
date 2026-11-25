@@ -363,6 +363,7 @@ body[data-tab="rec"] .hwrap{gap:10px}
 .cards{margin-top:8px}
 .more{width:100%;margin-top:14px}
 .ver{text-align:center;color:var(--muted);font-size:13px;font-weight:700;margin:18px 0 0}
+#app li[data-row]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;cursor:pointer}
 </style>
 </head>
 <body data-tab="list">
@@ -989,7 +990,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.43';
+const APP_VERSION = '1.0.44';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -2100,8 +2101,8 @@ function rowHtml([id, i]){
   if (i.done && i.doneAt) meta.push(`<span class="doneinfo">✓ ${i.doneBy ? esc(i.doneBy) + ' · ' : ''}${doneWhen(i.doneAt)}</span>`);
   const who = i.by ? `<span class="who" title="Ajouté par ${esc(i.by)}">${esc(i.by.trim().charAt(0).toUpperCase())}</span>` : '';
   const col = (CAT[i.cat]||CAT.aut).color;
-  return `<li class="${i.done?'done':''}" data-row="${id}" style="${i.done ? '' : `background:${col}40`}"><button class="check" type="button" data-check="${id}" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
-    <span class="icon" aria-hidden="true">${ICH(iconFor(i))}</span><button class="body" type="button" data-edit="${id}"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</button>${who}</li>`;
+  return `<li class="${i.done?'done':''}" data-row="${id}" style="${i.done ? '' : `background:${col}40`}"><button class="check" type="button" tabindex="-1" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
+    <span class="icon" aria-hidden="true">${ICH(iconFor(i))}</span><span class="body"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</span>${who}</li>`;
 }
 function renderRecipes(){
   const noFilter = (state.recMode === 'search' ? !state.recQuery : !state.have.length) && !state.favOnly && !state.basesOnly;
@@ -3881,10 +3882,27 @@ $('#lists').onclick = e => {
   state.listId = b.dataset.list; try{ localStorage.setItem('rc-list', state.listId); }catch(_){} render();
 };
 $('#tabRec').onclick = () => setTab('rec');
+// Ligne de course : un appui n'importe où la coche ; double appui ou appui long ouvre l'édition
+let tapTimer = null, tapId = null, longTimer = null, longDone = false, pressXY = null;
+const DOUBLE_MS = 280, LONG_MS = 500;
+$('#list').addEventListener('pointerdown', e => {
+  const row = e.target.closest('[data-row]'); if (!row || e.button > 0) return;
+  longDone = false; pressXY = [e.clientX, e.clientY];
+  clearTimeout(longTimer);
+  longTimer = setTimeout(() => { longDone = true; clearTimeout(tapTimer); tapTimer = null; try { navigator.vibrate && navigator.vibrate(15); } catch(_){} openEdit(row.dataset.row); }, LONG_MS);
+});
+const cancelLong = () => { clearTimeout(longTimer); longTimer = null; };
+$('#list').addEventListener('pointermove', e => { if (pressXY && Math.hypot(e.clientX - pressXY[0], e.clientY - pressXY[1]) > 10) cancelLong(); });
+['pointerup','pointercancel','pointerleave'].forEach(t => $('#list').addEventListener(t, cancelLong));
+$('#list').addEventListener('contextmenu', e => { if (e.target.closest('[data-row]')) e.preventDefault(); });
 $('#list').onclick = e => {
-  const c = e.target.closest('[data-check]'); if (c) return toggle(c.dataset.check);
   if (e.target.closest('#clearDone')) return clearDone();
-  const ed = e.target.closest('[data-edit],[data-row]'); if (ed) return openEdit(ed.dataset.edit || ed.dataset.row);
+  const row = e.target.closest('[data-row]'); if (!row) return;
+  if (longDone) { longDone = false; return; }
+  const id = row.dataset.row;
+  if (tapTimer && tapId === id) { clearTimeout(tapTimer); tapTimer = null; return openEdit(id); }
+  clearTimeout(tapTimer); tapId = id;
+  tapTimer = setTimeout(() => { tapTimer = null; toggle(id); }, DOUBLE_MS);
 };
 $('#addForm').onsubmit = e => { e.preventDefault(); const p = parseLine($('#addInput').value); if (!p) return; addItem(withDefaults(p)); $('#addInput').value = ''; $('#sugg').hidden = true; };
 attachSuggest($('#addInput'), $('#sugg'), p => addItem(withDefaults(p)));
