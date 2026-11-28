@@ -990,7 +990,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.45';
+const APP_VERSION = '1.0.46';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1011,16 +1011,39 @@ function mergeMaps(a={}, b={}, stamp){
   return out;
 }
 
+/* ---------- Stockage local : IndexedDB (localStorage est limité à ~5 Mo, et l'iPhone le vide au-delà) ---------- */
+const IDB = (() => {
+  let p;
+  const db = () => p || (p = new Promise((res, rej) => { const r = indexedDB.open('rc-data', 1); r.onupgradeneeded = () => r.result.createObjectStore('files'); r.onsuccess = () => res(r.result); r.onerror = () => { p = null; rej(r.error); }; }));
+  const run = async (mode, fn) => { const d = await db(); return new Promise((res, rej) => { const t = d.transaction('files', mode), rq = fn(t.objectStore('files')); t.oncomplete = () => res(rq && rq.result); t.onerror = t.onabort = () => rej(t.error); }); };
+  return { get: k => run('readonly', s => s.get(k)), set: (k, v) => run('readwrite', s => s.put(v, k)) };
+})();
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
+
 /* ---------- Fichiers synchronisés avec le dépôt privé ---------- */
 function syncFile(path, empty, merge, onChange, every){
   const f = { path, doc: empty(), sha:null, etag:null, dirty:false, pulling:false, pushing:false, timer:null, every: every || 1, tick:0, ok:true };
   const lsKey = 'rc-file:' + path;
-  f.save = () => { try{ localStorage.setItem(lsKey, JSON.stringify({doc:f.doc, sha:f.sha, dirty:f.dirty})); }catch(e){} };
-  f.load = () => { try{ const d = JSON.parse(localStorage.getItem(lsKey)); if (d && d.doc) { f.doc = d.doc; f.sha = d.sha; f.dirty = !!d.dirty; } }catch(e){} };
+  f.save = () => {
+    const v = {doc:f.doc, sha:f.sha, dirty:f.dirty};
+    IDB.set(lsKey, v).catch(() => { try{ localStorage.setItem(lsKey, JSON.stringify(v)); }catch(e){} });
+  };
+  // chargement asynchrone ; toute synchro attend qu'il soit fini
+  f.load = () => f.loadP || (f.loadP = (async () => {
+    let d;
+    try { d = await IDB.get(lsKey); } catch(e){}
+    if (!d || !d.doc) {
+      try { d = JSON.parse(localStorage.getItem(lsKey)); } catch(e){}
+      if (d && d.doc) { try { await IDB.set(lsKey, d); localStorage.removeItem(lsKey); } catch(e){} }   // reprise de l'ancien stockage
+    }
+    if (d && d.doc) { f.doc = merge(d.doc, f.doc); if (!f.sha) f.sha = d.sha; f.dirty = f.dirty || !!d.dirty; }
+    f.loaded = true;
+  })());
   f.pull = async () => {
     if (!cfg.token || f.pulling) return;
     f.pulling = true;
     try {
+      await f.load();
       const h = headers(); if (f.etag && !f.dirty) h['If-None-Match'] = f.etag;
       const r = await fetch(API_BASE + path + '?ref=' + GH.branch + '&t=' + Date.now(), {headers:h, cache:'no-store'});
       if (r.status === 304) { f.ok = true; return; }
@@ -1052,6 +1075,7 @@ function syncFile(path, empty, merge, onChange, every){
   f.schedule = (delay=700) => { clearTimeout(f.timer); f.timer = setTimeout(() => f.push(), delay); refreshStatus(); };
   f.push = async (attempt=0) => {
     if (!cfg.token || !f.dirty) return;
+    if (!f.loaded) { await f.load(); }
     if (f.pushing) { f.schedule(500); return; }
     f.pushing = true; refreshStatus();
     try {
@@ -1087,7 +1111,7 @@ const listFile = syncFile('data/liste.json',
 const recFile = syncFile('data/recettes.json',
   () => ({version:1, recipes:{}}),
   (l, r={}) => ({ version:1, recipes: mergeMaps(l.recipes, r.recipes, x => x.updatedAt) }),
-  () => render(), 3);
+  () => { resolvePending(); render(); }, 3);
 let FILES = [listFile, recFile];
 let privFile = null;
 function setupPrivate(){
@@ -1097,7 +1121,7 @@ function setupPrivate(){
   privFile = syncFile(path, () => ({version:1, lists:{}, items:{}, catalog:{}}),
     (l, r={}) => ({ version:1, lists: mergeMaps(l.lists, r.lists, x => x.updatedAt), items: mergeMaps(l.items, r.items, x => x.updatedAt), catalog: mergeMaps(l.catalog, r.catalog, x => x.last) }),
     () => render(), 2);
-  privFile.load();
+  privFile.load().then(() => render());
   FILES = [listFile, recFile, privFile];
 }
 
@@ -1234,6 +1258,31 @@ const jac = (a,b) => { if (!a.size || !b.size) return 0; let n = 0; a.forEach(x 
 function recipeSimilarity(a, b){
   const tj = jac(simToks(a.title), simToks(b.title)), ij = jac(simIngs(a), simIngs(b));
   return (tj >= 0.75 || (tj >= 0.5 && ij >= 0.6)) ? Math.round((0.6*tj + 0.4*ij)*100)/100 : 0;
+}
+// Mêmes ingrédients et mêmes quantités (ramenées à 1 personne) : c'est la même recette
+function qtySet(r){
+  const p = +r.persons || 4;
+  return (r.ingredients||[]).map(i => {
+    const m = UNITS[norm(i.unit)] || [norm(i.unit), 1], u = m[0] === 'pce' ? '' : m[0];
+    return [norm(i.name).split(' ').filter(Boolean).map(sing).join(' '), i.qty == null || i.qty === '' ? null : Math.round(+i.qty * m[1] / p * 1000) / 1000, u];
+  })
+    .filter(x => x[0]).map(x => JSON.stringify(x)).sort();
+}
+function sameQuantities(a, b){ const qa = qtySet(a), qb = qtySet(b); return qa.length > 1 && qa.length === qb.length && qa.every((x, k) => x === qb[k]); }
+function duplicateOf(r, exceptId){
+  // même liste d'ingrédients avec les mêmes quantités = même recette, quel que soit son nom
+  for (const [id, x] of recipes()) { if (id === exceptId) continue; if (sameQuantities(r, x)) return id; }
+  return null;
+}
+// Recettes importées « à vérifier » : plus de vérification manuelle. Identique -> retirée, sinon gardée.
+function resolvePending(){
+  const list = pendingRecipes(); if (!list.length) return;
+  for (const [id, r] of list) {
+    const {pending, ...rec} = r;
+    if (duplicateOf(rec, id)) R().recipes[id] = {deleted:true, source: rec.source ? {url: rec.source.url} : undefined, updatedAt: Date.now()};
+    else R().recipes[id] = {...rec, updatedAt: Date.now()};
+  }
+  recFile.changed();
 }
 function mostSimilar(r, exceptId){
   let best = null, bs = 0;
@@ -2111,7 +2160,7 @@ function rowHtml([id, i]){
   const who = i.by ? `<span class="who" title="Ajouté par ${esc(i.by)}">${esc(i.by.trim().charAt(0).toUpperCase())}</span>` : '';
   const col = (CAT[i.cat]||CAT.aut).color;
   return `<li class="${i.done?'done':''}" data-row="${id}" style="${i.done ? '' : `background:${col}40`}"><button class="check" type="button" tabindex="-1" aria-label="${i.done?'Décocher':'Cocher'} ${esc(i.name)}"><span></span></button>
-    <span class="icon" aria-hidden="true">${ICH(iconFor(i))}</span><span class="body"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</span>${who}</li>`;
+    <span class="icon" aria-hidden="true">${ICH(ui().genericIcons ? (CAT_ICON[i.cat] || '🛒') : iconFor(i))}</span><span class="body"><span class="name">${esc(i.name)}</span>${meta.length?`<span class="meta">${meta.join('')}</span>`:''}</span>${who}</li>`;
 }
 function renderRecipes(){
   const noFilter = (state.recMode === 'search' ? !state.recQuery : !state.have.length) && !state.favOnly && !state.basesOnly;
@@ -2387,8 +2436,8 @@ function openRecipeForm(id, prefill){
         collect();
         if (!r.title) { toast('Donne un nom à la recette.'); return; }
         const rid = id || uid();
+        if (isNew) { const d = duplicateOf(r, rid); if (d) { toast(`Déjà enregistrée : « ${R().recipes[d].title} » a les mêmes ingrédients et quantités.`); return; } }
         if (photoBlob) { e.target.disabled = true; e.target.textContent = 'Envoi de la photo…'; try { r.photo = await uploadPhoto(photoBlob, rid); } catch(_) { toast('La photo n’a pas pu être envoyée. La recette est enregistrée sans photo.'); } }
-        if (isNew) { const sim = mostSimilar(r, rid); if (sim) { openCompare(rid, r, sim, true); return; } }
         putRecipe(rid, r); closeSheet(); toast(isNew ? 'Recette ajoutée' : 'Recette modifiée');
       }
     };
@@ -2475,7 +2524,8 @@ function openAddRecipe(){
   $('#sheet').onclick = e => { if (e.target.closest('#imManual')) return openRecipeForm(null); if (e.target.closest('[data-close]')) closeSheet(); };
 }
 
-const UI_DEFAULT = {accent:'orange', mode:'clair', size:'normal', compact:false, checkRight:false, awake:false, vibrate:true};
+// genericIcons : une icône par rayon
+const UI_DEFAULT = {accent:'orange', mode:'clair', size:'normal', compact:false, checkRight:false, genericIcons:false, awake:false, vibrate:true};
 function ui(){ return {...UI_DEFAULT, ...(cfg.ui || {})}; }
 let wakeLock = null;
 async function applyAwake(){
@@ -2508,6 +2558,7 @@ function openSettings(){
     <div class="opt"><span class="lab">Couleur</span><div class="swatches" id="uiAccent">${ACCENTS.map(([k,c,n]) => `<button type="button" data-v="${k}" style="background:${c}" aria-label="Couleur ${n}" title="${n}" aria-pressed="${ui().accent===k}"></button>`).join('')}</div></div>
     <div class="opt"><span class="lab">Thème</span><div class="segs" id="uiMode">${[['clair','☀️ Clair'],['sombre','🌙 Sombre'],['auto','📱 Comme le téléphone']].map(([k,l]) => `<button type="button" data-v="${k}" aria-pressed="${ui().mode===k}">${l}</button>`).join('')}</div></div>
     <div class="opt"><span class="lab">Taille du texte</span><div class="segs" id="uiSize">${[['xs','Très petite'],['s','Petite'],['normal','Normale'],['l','Grande'],['xl','Très grande'],['xxl','Énorme']].map(([k,l]) => `<button type="button" data-v="${k}" aria-pressed="${(ui().size==='grand'?'l':ui().size)===k}">${l}</button>`).join('')}</div></div>
+    <label class="switch"><input type="checkbox" id="uiGeneric" ${ui().genericIcons?'checked':''}><span><b>Icônes par rayon</b><small>Une seule icône par rayon (🥬 fruits & légumes, 🧀 laitages…) au lieu d’une icône par article.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiCheckRight" ${ui().checkRight?'checked':''}><span><b>Rond pour cocher à droite</b><small>L’initiale de qui a ajouté l’article reste à droite, juste avant le rond.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiCompact" ${ui().compact?'checked':''}><span><b>Liste compacte</b><small>Lignes plus basses : environ un tiers d’articles en plus à l’écran.</small></span></label>
     <label class="switch"><input type="checkbox" id="uiAwake" ${ui().awake?'checked':''}><span><b>Garder l’écran allumé</b><small>Pratique en magasin. Consomme un peu plus de batterie.</small></span></label>
@@ -2527,6 +2578,7 @@ function openSettings(){
   segPick('#uiAccent', 'accent'); segPick('#uiMode', 'mode'); segPick('#uiSize', 'size');
   $('#uiCompact').onchange = e => setUI({compact: e.target.checked});
   $('#uiCheckRight').onchange = e => setUI({checkRight: e.target.checked});
+  $('#uiGeneric').onchange = e => { setUI({genericIcons: e.target.checked}); render(); };
   $('#uiAwake').onchange = e => { setUI({awake: e.target.checked}); if (e.target.checked && !navigator.wakeLock) toast('Ce téléphone ne permet pas de garder l’écran allumé depuis l’app.'); };
   $('#uiVibrate').onchange = e => setUI({vibrate: e.target.checked});
   $('#sSync').onclick = () => { FILES.forEach(f => f.etag = null); pullAll(true); closeSheet(); };
@@ -3967,12 +4019,13 @@ try{ const c = JSON.parse(localStorage.getItem(KEY_CFG)); if (c) cfg = c; }catch
 try{ const old = JSON.parse(localStorage.getItem('rc-doc')); if (old && old.doc && !localStorage.getItem('rc-file:data/liste.json')) { localStorage.setItem('rc-file:data/liste.json', JSON.stringify(old)); } }catch(e){}
 applyUI();
 setupPrivate();
-FILES.forEach(f => f.load());
 try{ const li = localStorage.getItem('rc-list'); if (li) state.listId = li; }catch(e){}
 try{ const t = localStorage.getItem(KEY_TAB); if (t === 'rec' || t === 'list') state.tab = t; }catch(e){}
 $('#ver').textContent = 'Nos courses · version ' + APP_VERSION;
-if (!cfg.token) showSetup(false);
-else { $('#app').hidden = false; render(); pullAll(true); startPolling(); }
+Promise.all(FILES.map(f => f.load())).then(() => {
+  if (!cfg.token) showSetup(false);
+  else { $('#app').hidden = false; resolvePending(); render(); pullAll(true); startPolling(); }
+});
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 // Web app (iPhone) : se met à jour seule, sans rien demander.
 async function webUpdate(){
