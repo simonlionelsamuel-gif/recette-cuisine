@@ -990,7 +990,7 @@ function withDefaults(p){
   return p;
 }
 
-const APP_VERSION = '1.0.44';
+const APP_VERSION = '1.0.45';
 const IS_APK = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /* ---------- Configuration GitHub ---------- */
 const GH = { owner:'simonlionelsamuel-gif', repo:'recette-cuisine-data', branch:'main' };
@@ -1029,7 +1029,15 @@ function syncFile(path, empty, merge, onChange, every){
       if (!r.ok) { f.ok = false; return; }
       f.etag = r.headers.get('ETag');
       const j = await r.json();
-      let remote = {}; try { remote = JSON.parse(dec(j.content)); } catch(e){}
+      // Au-delà de 1 Mo, GitHub ne renvoie pas le contenu (encoding « none ») : on le relit en brut.
+      // Si on n'arrive pas à lire le fichier, on n'écrit RIEN (sinon on écraserait les données distantes).
+      let remote;
+      if (j.content && j.encoding === 'base64') { try { remote = JSON.parse(dec(j.content)); } catch(e){} }
+      if (remote === undefined) {
+        const rr = await fetch(API_BASE + path + '?ref=' + GH.branch + '&t=' + Date.now(), {headers:{...headers(), 'Accept':'application/vnd.github.raw+json'}, cache:'no-store'});
+        if (rr.ok) { try { remote = JSON.parse(await rr.text()); } catch(e){} }
+      }
+      if (!remote || typeof remote !== 'object') { f.ok = false; f.etag = null; console.warn('Lecture impossible de', path); return; }
       f.sha = j.sha;
       const merged = merge(f.doc, remote);
       const changedForUs = !same(merged, f.doc);
@@ -1048,8 +1056,9 @@ function syncFile(path, empty, merge, onChange, every){
     f.pushing = true; refreshStatus();
     try {
       const snapshot = JSON.stringify(f.doc);
-      const body = { message: 'Mise à jour par ' + (cfg.name || 'un téléphone'), content: enc(JSON.stringify(f.doc, null, 1)), branch: GH.branch };
+      const body = { message: 'Mise à jour par ' + (cfg.name || 'un téléphone'), content: enc(JSON.stringify(f.doc)), branch: GH.branch };
       if (f.sha) body.sha = f.sha;
+      else if (!f.ok) { f.pushing = false; f.schedule(15000); return; }
       const r = await fetch(API_BASE + path, {method:'PUT', headers:{...headers(), 'Content-Type':'application/json'}, body: JSON.stringify(body)});
       if (r.status === 409 || r.status === 422) {
         f.pushing = false; f.etag = null;
